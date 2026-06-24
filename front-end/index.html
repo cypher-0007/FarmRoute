@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmRoute - Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    
+    <!-- HERO -->
+    <section class="bg-[url('assets/hero_bg.png')] px-16 min-h-[93vh] bg-no-repeat bg-cover bg-center">
+         <!-- NAV -->
+          <nav class="flex pt-4 justify-between items-center">
+             <!-- logo -->
+              <img class="h-20" src="assets/logo.png" alt="">
+     
+              <!-- links -->
+               <div class="text-[1.15rem] font-semibold gap-5 flex items-center">
+                 <a class="text-emerald-800" href="">Home</a>
+                 <a class="text-gray-600 hover:text-emerald-800" href="">How It Works</a>
+                 <a class="text-gray-600 hover:text-emerald-800 flex gap-1 items-center" href="">Features <i id="angle-down" class="fa-solid fa-angle-down"></i></a>
+                 <a class="text-gray-600 hover:text-emerald-800" href="">About Us</a>
+                 <a class="text-gray-600 hover:text-emerald-800" href="">Contact</a>
+               </div>
+     
+               <!-- btns -->
+                <div class="flex gap-3 text-[1.1rem] font-bold">
+                 <button class="border-[2px] px-4 py-1.5 rounded-md border-[#569c41] bg-white text-[#569c41]">Login</button>
+                 <button class="border-[2px] bg-emerald-800 px-4 py-1.5 rounded-md border-[#569c41] text-white">Sign Up</button>
+                </div>
+          </nav>
+
+          <!-- hero content -->
+          <div class="mt-20 w-[40%] flex flex-col gap-6">
+            <!-- heading -->
+             <h1 class="font-bold text-[#111827] text-[4rem] leading-none">Move More Crops. Waste Less Food.</h1>
+            <!-- description -->
+            <p class="text-[1.4rem] text-gray-600">AI-powered logistics that connects farmers, <br> optimizes routes, and gets your harvest <br> to market faster and cheaper.</p>
+             <!-- btns -->
+              <div>
+                <button class="py-3  font-semibold rounded-md text-semibold text-[1.3rem] bg-emerald-800 text-white px-6">Find Transport</button>
+                <button class="py-3 font-semibold rounded-md text-semibold text-[1.3rem] bg-white border-emerald-800 border text-emerald-800 px-6">Become a Driver</button>
+              </div>
+          </div>
+     </section> 
+
+     <!-- feature cards -->
+     <section class="px-10 justify-center grid grid-cols-3 my-10 items-cente gap-6">
+
+      <!-- route optimization -->
+      <div class="flex gap-4 border hover:border-blue-400 shadow-lg bg-blue-50 items-center rounded-md  border-gray-500 px-4 py-4 hover:-translate-y-2 hover:shadow-xl transition-all duration-300">
+        <!-- icon -->
+        <i class="fa-solid py-3 px-9 rounded-md fa-route bg-blue-300 flex justify-center text-blue-600 text-[3rem]"></i>
+        <!-- text -->
+       <article>
+          <!-- heading -->
+          <h3 class="font-bold text-blue-600 text-lg">AI Route Optimization</h3>
+          <!-- text -->
+          <p class="text-[1.2rem] leading-tight">Matches Farmers to the best routes and trucks automatically.</p>
+        </article>
+      </div>
+
+      <!-- quality assessment -->
+      <div class="flex gap-4 border hover:border-green-400 shadow-lg bg-green-50 items-center rounded-md  border-gray-500 px-4 py-4 hover:-translate-y-2 hover:shadow-xl transition-all duration-300">
+        <!-- icon -->
+        <i class="fa-solid px-9 py-3 rounded-md fa-magnifying-glass bg-emerald-700 flex justify-center text-white text-[3rem]"></i>
+        <!-- text -->
+       <article>
+        <!-- heading -->
+         <h3 class="font-bold text-emerald-700 text-lg">Quality Assessment</h3>
+        <!-- text -->
+         <p class="text-[1.2rem] leading-tight">AI scans your produce and rates freshness instantly.</p>
+      </article>
+      </div>
+
+      <!-- shelf life -->
+      <div class="flex gap-4 border hover:border-amber-400 shadow-lg bg-amber-50 items-center rounded-md  border-gray-500 px-4 py-4 hover:-translate-y-2 hover:shadow-xl transition-all duration-300">
+        <!-- icon -->
+        <i class="fa-solid px-9 py-3 rounded-md fa-clock bg-amber-700 flex justify-center text-white text-[3rem]"></i>
+        <!-- text -->
+       <article>
+        <!-- heading -->
+         <h3 class="font-bold text-amber-700 text-lg">Shelf-Life Clock</h3>
+        <!-- text -->
+         <p class="text-[1.2rem] leading-tight">We prioritize urgent crops to get them to market on time.We prioritize urgent crops to get them to market on time.</p>
+      </article>
+      </div>
+
+     </section>
+
+     <!-- how it works -->
+      <section>
+        <!-- heading -->
+         <h3 class="text-emerald-800 text-[1.7rem] text-center font-bold">How It Works</h3>
+         <!-- cards -->
+          <div class="flex justify-center items-center">
+            <!-- 1st step -->
+             <article class="px-2 py-2 w-[240px]">
+              <!-- top -->
+               <div class="flex items-start">
+                <!-- number -->
+                 <p class="bg-emerald-600 px-3 py-1 text-white font-bold text-lg rounded-full">1</p>
+                <!-- picture -->
+                 <img class="bg-gray-100 px-3 pt-4 object-contain w-36 flex bg-gray-200 rounded-full h-36" src="assets/farmer.png" alt="">
+               </div>
+              <!-- bottom/head -->
+               <h4 class="font-semibold mt-2 text-[1.2rem] text-center ">Farmers Lists Produce</h4>
+              <!-- bottom/text -->
+               <p class="text-center text-gray-800 mt-1 leading-none">Farmers list their crops, quantity, and pick-up location.</p>
+             </article>
+
+             <!-- arrow-->
+              <div class="flex items-center">
+                <div class="w-12 border-t-2 border-[2px] border-dashed border-black"></div>
+                <i class="fa-solid fa-caret-right text-[1.25rem] -ml-1"></i>
+              </div>
+
+            <!-- 2nd step -->
+             <article class="px-2 py-2 w-[240px]">
+              <!-- top -->
+               <div class="flex items-start">
+                <!-- number -->
+                 <p class="bg-emerald-600 px-3 py-1 text-white font-bold text-lg rounded-full">2</p>
+                <!-- picture -->
+                 <img class="bg-gray-100 px-3 pt-4 object-contain w-36 flex bg-gray-200 rounded-full h-36" src="assets/computer.png" alt="">
+               </div>
+              <!-- bottom/head -->
+               <h4 class="font-semibold mt-2 text-[1.2rem] text-center ">AI Matches & Optimizes</h4>
+              <!-- bottom/text -->
+               <p class="text-center text-gray-800 mt-1 leading-none">Our AI finds the best trucks and optimizes the most efficient routes.</p>
+             </article>
+
+             <!-- arrow-->
+              <div class="flex items-center">
+                <div class="w-12 border-t-2 border-[2px] border-dashed border-black"></div>
+                <i class="fa-solid fa-caret-right text-[1.25rem] -ml-1"></i>
+              </div>
+
+              
+            <!-- 3rd step -->
+             <article class="px-2 py-2 w-[240px]">
+              <!-- top -->
+               <div class="flex items-start">
+                <!-- number -->
+                 <p class="bg-emerald-600 px-3 py-1 text-white font-bold text-lg rounded-full">3</p>
+                <!-- picture -->
+                 <img class="bg-gray-100 px-3 pt-4 object-contain w-36 flex bg-gray-200 rounded-full h-36" src="assets/truck.png" alt="">
+               </div>
+              <!-- bottom/head -->
+               <h4 class="font-semibold mt-2 text-[1.2rem] text-center ">Deliver to Market</h4>
+              <!-- bottom/text -->
+               <p class="text-center text-gray-800 mt-1 leading-none">Crops are picked up and delivered faster, cheaper, and with less waste.</p>
+             </article>
+          </div>
+      </section>
+
+    <section class="mt-16 bg-emerald-950 p-6 flex justify-center gap-10 items-center w-full">
+            <h2 class="text-white text-center text-2xl font-bold">Ready to move your harvest smarter?</h2>
+            <button class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow transition">
+              Start Shipping Now
+            </button>
+    </section>
+</body>
+</html>
