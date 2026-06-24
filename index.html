@@ -10,14 +10,15 @@
 <body class="bg-gray-100">
     
     <!-- HERO -->
-    <section class="bg-[url('assets/hero_bg.png')] px-16 min-h-[93vh] bg-no-repeat bg-cover bg-center">
+    <section class="bg-[url('assets/hero_bg.png')] px-6 md:px-1 min-h-[85vh] md:min-h-[93vh] bg-no-repeat bg-cover bg-center">
+      <header id="main-header" class="max-sm:fixed max-sm:bg-white top-0 left-0 w-full z-50 px-6 md:px-16 py-3 transition-all duration-300 ease-in-out">
          <!-- NAV -->
-          <nav class="flex pt-4 justify-between items-center">
+          <nav class="flex pt-4 justify-between items-center w-full">
              <!-- logo -->
-              <img class="h-20" src="assets/logo.png" alt="">
+              <img class="h-16 md:h-20" src="assets/logo.png" alt="FarmRoute Logo">
      
               <!-- links -->
-               <div class="text-[1.15rem] font-semibold gap-5 flex items-center">
+               <div class="hidden md:flex text-[1.15rem] font-semibold gap-5 flex items-center">
                  <a class="text-emerald-800" href="">Home</a>
                  <a class="text-gray-600 hover:text-emerald-800" href="">How It Works</a>
                  <a class="text-gray-600 hover:text-emerald-800 flex gap-1 items-center" href="">Features <i id="angle-down" class="fa-solid fa-angle-down"></i></a>
@@ -26,46 +27,65 @@
                </div>
      
                <!-- btns -->
-                <div class="flex gap-3 text-[1.1rem] font-bold">
-                 <button class="border-[2px] px-4 py-1.5 rounded-md border-[#569c41] bg-white text-[#569c41]">Login</button>
-                 <button class="border-[2px] bg-emerald-800 px-4 py-1.5 rounded-md border-[#569c41] text-white">Sign Up</button>
+                <div class="flex gap-3 text-[1.1rem] items-center font-bold">
+                 <button class="hidden md:block border-[2px] px-4 py-1.5 rounded-md border-[#569c41] bg-white text-[#569c41]">Login</button>
+                 <button class="hidden md:block border-[2px] bg-emerald-800 px-4 py-1.5 rounded-md border-[#569c41] text-white">Sign Up</button>
+                 <!-- hamburger icon -->
+                  <button id="dropdown-btn" class="block md:hidden text-emerald-950 text-2xl focus:outline-none" aria-label="Toggle Menu">
+                    <i id="dropdown-icon" class="fa-solid fa-bars"></i>
+                  </button> 
                 </div>
           </nav>
 
+          <!-- dropdown links -->
+               <div id="dropdown-menu" class="text-[1.15rem] mt-1 rounded-sm md:hidden bg-white font-semibold gap-1 flex flex-col">
+                 <a class="text-emerald-800 border-b border-gray-300 py-1 px-1" href="">Home</a>
+                 <a class="text-gray-600 hover:text-emerald-800 border-b border-gray-300 py-1 px-1" href="">How It Works</a>
+                 <a class="text-gray-600 hover:text-emerald-800 flex gap-1 items-center border-b justify-between border-gray-300 py-1 px-1" href="">Features <i id="angle-down" class="fa-solid fa-angle-down"></i></a>
+                 <a class="text-gray-600 hover:text-emerald-800 border-b border-gray-300 py-1 px-1" href="">About Us</a>
+                 <a class="text-gray-600 hover:text-emerald-800 py-1 px-1" href="">Contact</a>
+
+                 <div class="flex flex-col gap-2 pb-1 pt-2">
+                     <button class="border-[2px] py-2 rounded-md border-[#569c41] bg-white text-[#569c41] font-bold">Login</button>
+                     <button class="border-[2px] bg-emerald-800 py-2 rounded-md border-[#569c41] text-white font-bold">Sign Up</button>
+                 </div>
+               </div>
+
+               </header>
           <!-- hero content -->
-          <div class="mt-20 w-[40%] flex flex-col gap-6">
+          <div class="mt-24 max-sm:pt-3 md:pl-14 md:mt-20 w-full md:w-[50%] lg:w-[40%] flex flex-col gap-6">
             <!-- heading -->
-             <h1 class="font-bold text-[#111827] text-[4rem] leading-none">Move More Crops. Waste Less Food.</h1>
+             <h1 class="font-bold text-[#111827] text-[2.2rem] md:text-[4rem] leading-none">Move More Crops. Waste Less Food.</h1>
             <!-- description -->
-            <p class="text-[1.4rem] text-gray-600">AI-powered logistics that connects farmers, <br> optimizes routes, and gets your harvest <br> to market faster and cheaper.</p>
+            <p class="text-[1.3rem] pt-3 max-sm:leading-none md:text-[1.4rem] text-gray-600">AI-powered logistics that connects farmers, <br> optimizes routes, and gets your harvest <br> to market faster and cheaper.</p>
              <!-- btns -->
-              <div>
-                <button class="py-3  font-semibold rounded-md text-semibold text-[1.3rem] bg-emerald-800 text-white px-6">Find Transport</button>
-                <button class="py-3 font-semibold rounded-md text-semibold text-[1.3rem] bg-white border-emerald-800 border text-emerald-800 px-6">Become a Driver</button>
+              <div class="flex flex-col sm:flex-row gap-3">
+                <button class="py-3  font-semibold rounded-md text-semibold md:text-[1.3rem] bg-emerald-800 text-white px-6 w-full sm:w-auto">Find Transport</button>
+                <button class="py-3 font-semibold rounded-md text-semibold md:text-[1.3rem] bg-white border-emerald-800 border text-emerald-800 px-6 w-full sm:w-auto">Become a Driver</button>
               </div>
           </div>
      </section> 
 
      <!-- feature cards -->
-     <section class="px-10 justify-center grid grid-cols-3 my-10 items-cente gap-6">
+     <section class="px-6 md:px-10 justify-center grid grid-cols-1 md:grid-cols-3 my-10 items-center gap-6">
 
       <!-- route optimization -->
       <div class="flex gap-4 border hover:border-blue-400 shadow-lg bg-blue-50 items-center rounded-md  border-gray-500 px-4 py-4 hover:-translate-y-2 hover:shadow-xl transition-all duration-300">
         <!-- icon -->
-        <i class="fa-solid py-3 px-9 rounded-md fa-route bg-blue-300 flex justify-center text-blue-600 text-[3rem]"></i>
+        <i class="fa-solid py-3 w-24 md:w-28 px-9 rounded-md fa-route bg-blue-300 flex justify-center text-blue-600 text-[2.5rem] md:text-[3rem]"></i>
         <!-- text -->
        <article>
           <!-- heading -->
           <h3 class="font-bold text-blue-600 text-lg">AI Route Optimization</h3>
           <!-- text -->
-          <p class="text-[1.2rem] leading-tight">Matches Farmers to the best routes and trucks automatically.</p>
+          <p class="md:text-[1.2rem] text-[1rem] text-gray-700 leading-tight">Matches Farmers to the best routes and trucks automatically.</p>
         </article>
       </div>
 
       <!-- quality assessment -->
       <div class="flex gap-4 border hover:border-green-400 shadow-lg bg-green-50 items-center rounded-md  border-gray-500 px-4 py-4 hover:-translate-y-2 hover:shadow-xl transition-all duration-300">
         <!-- icon -->
-        <i class="fa-solid px-9 py-3 rounded-md fa-magnifying-glass bg-emerald-700 flex justify-center text-white text-[3rem]"></i>
+        <i class="fa-solid w-24 md:w-28 px-9 py-3 rounded-md fa-magnifying-glass bg-emerald-700 flex justify-center text-white text-[2.5rem] md:text-[3rem]"></i>
         <!-- text -->
        <article>
         <!-- heading -->
@@ -78,53 +98,53 @@
       <!-- shelf life -->
       <div class="flex gap-4 border hover:border-amber-400 shadow-lg bg-amber-50 items-center rounded-md  border-gray-500 px-4 py-4 hover:-translate-y-2 hover:shadow-xl transition-all duration-300">
         <!-- icon -->
-        <i class="fa-solid px-9 py-3 rounded-md fa-clock bg-amber-700 flex justify-center text-white text-[3rem]"></i>
+        <i class="fa-solid w-24 md:w-28 px-9 py-3 rounded-md fa-clock bg-amber-700 flex justify-center text-white text-[2.5rem] md:text-[3rem]"></i>
         <!-- text -->
        <article>
         <!-- heading -->
          <h3 class="font-bold text-amber-700 text-lg">Shelf-Life Clock</h3>
         <!-- text -->
-         <p class="text-[1.2rem] leading-tight">We prioritize urgent crops to get them to market on time.We prioritize urgent crops to get them to market on time.</p>
+         <p class="text-[1.2rem] leading-tight">We prioritize urgent crops to get them to market on time.</p>
       </article>
       </div>
 
      </section>
 
-     <!-- how it works -->
-      <section>
+    <!-- how it works -->
+      <section class="px-6 md:px-10 py-10">
         <!-- heading -->
          <h3 class="text-emerald-800 text-[1.7rem] text-center font-bold">How It Works</h3>
          <!-- cards -->
-          <div class="flex justify-center items-center">
+          <div class="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-0">
             <!-- 1st step -->
-             <article class="px-2 py-2 w-[240px]">
+             <article class="px-2 py-2 w-full max-w-[280px] flex flex-col items-center">
               <!-- top -->
-               <div class="flex items-start">
+               <div class="flex items-start justify-center relative w-full">
                 <!-- number -->
-                 <p class="bg-emerald-600 px-3 py-1 text-white font-bold text-lg rounded-full">1</p>
+                 <p class="bg-emerald-600 px-3 py-1 text-white font-bold text-lg rounded-full z-10">1</p>
                 <!-- picture -->
-                 <img class="bg-gray-100 px-3 pt-4 object-contain w-36 flex bg-gray-200 rounded-full h-36" src="assets/farmer.png" alt="">
+                 <img class="bg-gray-200 px-3 pt-4 object-contain w-36 rounded-full h-36 -ml-4" src="assets/farmer.png" alt="Farmer listing crops">
                </div>
               <!-- bottom/head -->
                <h4 class="font-semibold mt-2 text-[1.2rem] text-center ">Farmers Lists Produce</h4>
               <!-- bottom/text -->
-               <p class="text-center text-gray-800 mt-1 leading-none">Farmers list their crops, quantity, and pick-up location.</p>
+               <p class="text-center text-gray-800 mt-1  leading-none">Farmers list their crops, quantity, and pick-up location.</p>
              </article>
 
              <!-- arrow-->
-              <div class="flex items-center">
+              <div class="md:flex items-center hidden">
                 <div class="w-12 border-t-2 border-[2px] border-dashed border-black"></div>
                 <i class="fa-solid fa-caret-right text-[1.25rem] -ml-1"></i>
               </div>
 
             <!-- 2nd step -->
-             <article class="px-2 py-2 w-[240px]">
+             <article class="px-2 py-2 w-full max-w-[280px] flex flex-col items-center">
               <!-- top -->
-               <div class="flex items-start">
+               <div class="flex items-start justify-center relative w-full">
                 <!-- number -->
-                 <p class="bg-emerald-600 px-3 py-1 text-white font-bold text-lg rounded-full">2</p>
+                 <p class="bg-emerald-600 px-3 py-1 text-white font-bold text-lg rounded-full z-10">2</p>
                 <!-- picture -->
-                 <img class="bg-gray-100 px-3 pt-4 object-contain w-36 flex bg-gray-200 rounded-full h-36" src="assets/computer.png" alt="">
+                 <img class="bg-gray-200 px-3 pt-4 object-contain w-36 rounded-full h-36 -ml-4" src="assets/computer.png" alt="">
                </div>
               <!-- bottom/head -->
                <h4 class="font-semibold mt-2 text-[1.2rem] text-center ">AI Matches & Optimizes</h4>
@@ -133,20 +153,20 @@
              </article>
 
              <!-- arrow-->
-              <div class="flex items-center">
+              <div class="md:flex items-center hidden">
                 <div class="w-12 border-t-2 border-[2px] border-dashed border-black"></div>
                 <i class="fa-solid fa-caret-right text-[1.25rem] -ml-1"></i>
               </div>
 
               
             <!-- 3rd step -->
-             <article class="px-2 py-2 w-[240px]">
+             <article class="px-2 py-2 w-full max-w-[280px] flex flex-col items-center">
               <!-- top -->
-               <div class="flex items-start">
+               <div class="flex items-start justify-center relative w-full">
                 <!-- number -->
-                 <p class="bg-emerald-600 px-3 py-1 text-white font-bold text-lg rounded-full">3</p>
+                 <p class="bg-emerald-600 px-3 py-1 text-white font-bold text-lg rounded-full z-10">3</p>
                 <!-- picture -->
-                 <img class="bg-gray-100 px-3 pt-4 object-contain w-36 flex bg-gray-200 rounded-full h-36" src="assets/truck.png" alt="">
+                 <img class="bg-gray-200 px-3 pt-4 object-contain w-36 rounded-full h-36 -ml-4" src="assets/truck.png" alt="">
                </div>
               <!-- bottom/head -->
                <h4 class="font-semibold mt-2 text-[1.2rem] text-center ">Deliver to Market</h4>
@@ -155,12 +175,43 @@
              </article>
           </div>
       </section>
-<!-- CTA -->
-    <section class="mt-16 bg-emerald-950 p-6 flex justify-center gap-10 items-center w-full">
-            <h2 class="text-white text-center text-2xl font-bold">Ready to move your harvest smarter?</h2>
-            <button class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow transition">
+
+    <!-- CTA -->
+    <section class="mt-16 bg-emerald-950 p-8 md:p-12 flex flex-col md:flex-row justify-center gap-6 md:gap-10 items-center w-full text-center md:text-left">
+            <h2 class="text-white text-xl md:text-2xl font-bold">Ready to move your harvest smarter?</h2>
+            <button class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow transition w-full md:w-auto">
               Start Shipping Now
             </button>
     </section>
+
+
+    <script>
+      const toggleBtn = document.getElementById("dropdown-btn");
+      const menuIcon = document.getElementById("dropdown-icon");
+      const menuList = document.getElementById("dropdown-menu");
+      const mainHeader = document.getElementById("main-header");
+
+      // Mobile Menu Dropdown Toggle logic
+      toggleBtn.addEventListener("click", () => {
+        menuList.classList.toggle("hidden");
+        if (menuList.classList.contains('hidden')) {
+            menuIcon.classList.replace('fa-xmark', 'fa-bars');
+        } else {
+            menuIcon.classList.replace('fa-bars', 'fa-xmark');
+        }
+      });
+
+      // Scroll Event Listener to dynamically inject background classes
+      window.addEventListener("scroll", () => {
+        // Triggers the state transformation after scrolling down past 50px
+        if (window.scrollY > 50) {
+            mainHeader.classList.add("bg-white", "shadow-md", "py-2", "fixed");
+            mainHeader.classList.remove("py-3");
+        } else {
+            mainHeader.classList.remove("bg-white", "shadow-md", "py-2","fixed");
+            mainHeader.classList.add("py-3");
+        }
+      });
+    </script>
 </body>
 </html>
