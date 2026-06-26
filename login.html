@@ -1,17 +1,419 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FarmRoute - Login</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmRoute - Login & Sign Up</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
 </head>
-<body class="bg-gray-900 flex items-center justify-center h-screen text-white">
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
 
+    <div class="w-full max-w-5xl bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col lg:flex-row min-h-[800px]">
+        
+        <div class="hidden lg:flex lg:w-1/2 relative bg-cover bg-center p-12 flex-col justify-between text-white" style="background-image: linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.25)), url('https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&q=80&w=1000');">
+            <div class="flex items-center space-x-2 bg-white/90 text-emerald-800 py-2 px-4 rounded-full w-fit backdrop-blur-sm shadow-sm">
+                <i class="fa-solid fa-tractor text-xl text-emerald-600"></i>
+                <span class="font-bold text-xl tracking-tight">FarmRoute</span>
+            </div>
+
+            <div class="my-auto max-w-md">
+                <h1 class="text-4xl font-extrabold text-neutral-900 leading-tight mb-4 drop-shadow-sm">
+                    Farm Fresh.<br>Delivered Right.
+                </h1>
+                <p class="text-neutral-800 font-medium text-lg mb-8 opacity-90">
+                    Connecting farms to markets and people, one route at a time.
+                </p>
+
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-3 text-neutral-900 font-semibold bg-white/40 backdrop-blur-md p-3 rounded-xl border border-white/20">
+                        <div class="w-8 h-8 rounded-full bg-emerald-700 flex items-center justify-center text-white text-sm">
+                            <i class="fa-solid fa-leaf"></i>
+                        </div>
+                        <span>Fresh Produce</span>
+                    </div>
+                    <div class="flex items-center space-x-3 text-neutral-900 font-semibold bg-white/40 backdrop-blur-md p-3 rounded-xl border border-white/20">
+                        <div class="w-8 h-8 rounded-full bg-emerald-700 flex items-center justify-center text-white text-sm">
+                            <i class="fa-solid fa-truck-fast"></i>
+                        </div>
+                        <span>Smart Routes</span>
+                    </div>
+                    <div class="flex items-center space-x-3 text-neutral-900 font-semibold bg-white/40 backdrop-blur-md p-3 rounded-xl border border-white/20">
+                        <div class="w-8 h-8 rounded-full bg-emerald-700 flex items-center justify-center text-white text-sm">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                        <span>Stronger Connections</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-emerald-950/90 text-emerald-50 backdrop-blur-md p-4 rounded-2xl border border-emerald-800/50 flex items-start space-x-3">
+                <i class="fa-solid fa-seedling text-emerald-400 mt-1"></i>
+                <p class="text-sm font-medium leading-relaxed">
+                    Supporting farmers. Building communities. Growing together.
+                </p>
+            </div>
+        </div>
+
+        <div class="w-full lg:w-1/2 p-6 sm:p-12 flex flex-col justify-center bg-stone-50/30">
+            
+            <div class="flex border-b border-gray-200 mb-8 max-w-sm mx-auto w-full">
+                <button id="tab-login" onclick="switchTab('login')" class="w-1/2 text-center pb-4 text-base font-semibold border-b-4 border-emerald-700 text-emerald-800 transition-all duration-200">
+                    Login
+                </button>
+                <button id="tab-signup" onclick="switchTab('signup')" class="w-1/2 text-center pb-4 text-base font-medium text-gray-400 hover:text-gray-600 border-b-4 border-transparent transition-all duration-200">
+                    Sign Up
+                </button>
+            </div>
+
+            <div class="max-w-sm mx-auto w-full relative">
+                
+                <div id="form-container-login" class="transition-all duration-300 opacity-100 scale-100">
+                    <div class="text-center mb-6">
+                        <div class="w-12 h-12 bg-emerald-50 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fa-solid fa-seedling text-xl"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-800">Welcome Back!</h2>
+                        <p class="text-sm text-gray-500 mt-1">Login to your FarmRoute account</p>
+                    </div>
+
+                    <form id="login-form" class="space-y-4">
+                        <div>
+                            <label for="login-email" class="block text-xs font-semibold text-gray-600 mb-1">Email Address</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                    <i class="fa-regular fa-envelope"></i>
+                                </span>
+                                <input name="email" id="login-email" type="email" autocomplete="email" required placeholder="name@example.com" class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <label for="login-password" class="text-xs font-semibold text-gray-600">Password</label>
+                                <a href="#" id="forgot-password" class="text-xs font-semibold text-emerald-600 hover:underline">Forgot Password?</a>
+                            </div>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                    <i class="fa-solid fa-lock"></i>
+                                </span>
+                                <input name="password" id="login-password" type="password" autocomplete="current-password" required placeholder="Enter your password" class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center">
+                            <input name="remember" id="remember_me" type="checkbox" class="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500">
+                            <label for="remember_me" class="ml-2 text-xs text-gray-500 cursor-pointer select-none">Remember me</label>
+                        </div>
+
+                        <button type="submit" class="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-sm font-semibold shadow-md transition">
+                            Login
+                        </button>
+                    </form>
+
+                    <div class="relative my-6 text-center">
+                        <hr class="border-gray-200">
+                        <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-stone-50/30 px-3 text-[10px] font-medium uppercase tracking-wider text-gray-400">or continue with</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <button id="google-login" type="button" class="flex items-center justify-center space-x-2 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 hover:bg-gray-50 transition">
+                            <i class="fa-brands fa-google text-red-500"></i>
+                            <span>Google</span>
+                        </button>
+                        <button id="apple-login" type="button" class="flex items-center justify-center space-x-2 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 hover:bg-gray-50 transition">
+                            <i class="fa-brands fa-apple text-black"></i>
+                            <span>Apple</span>
+                        </button>
+                    </div>
+
+                    <p class="text-center text-xs text-gray-500 mt-6">
+                        Don't have an account? <button type="button" onclick="switchTab('signup')" class="text-emerald-600 font-semibold hover:underline focus:outline-none">Sign up</button>
+                    </p>
+                </div>
+
+                <div id="form-container-signup" class="transition-all duration-300 opacity-0 scale-95 hidden">
+                    <div class="text-center mb-6">
+                        <div class="w-12 h-12 bg-emerald-50 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fa-regular fa-user text-xl"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-800">Create Account</h2>
+                        <p class="text-sm text-gray-500 mt-1">Join FarmRoute today</p>
+                    </div>
+
+                    <form id="signup-form" class="space-y-4">
+                        
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Join as a:</label>
+                            <input type="hidden" name="role" id="user-role" value="farmer">
+                            <div class="grid grid-cols-2 gap-3">
+                                <button type="button" id="role-farmer" onclick="selectRole('farmer')" class="flex items-center justify-center space-x-2 py-2.5 rounded-xl text-sm font-semibold border-2 border-emerald-700 bg-emerald-50 text-emerald-800 transition">
+                                    <i class="fa-solid fa-wheat-awn"></i>
+                                    <span>Farmer</span>
+                                </button>
+                                <button type="button" id="role-driver" onclick="selectRole('driver')" class="flex items-center justify-center space-x-2 py-2.5 rounded-xl text-sm font-medium border-2 border-gray-200 bg-white text-gray-500 hover:border-gray-300 transition">
+                                    <i class="fa-solid fa-truck"></i>
+                                    <span>Driver</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="signup-name" class="block text-xs font-semibold text-gray-600 mb-1">Full Name</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                    <i class="fa-regular fa-user"></i>
+                                </span>
+                                <input name="name" id="signup-name" type="text" autocomplete="name" required placeholder="John Doe" class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="signup-phone" class="block text-xs font-semibold text-gray-600 mb-1">Phone Number</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                    <i class="fa-solid fa-phone text-xs"></i>
+                                </span>
+                                <input name="number" id="signup-phone" type="tel" autocomplete="tel" required placeholder="08012345678" class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="signup-email" class="block text-xs font-semibold text-gray-600 mb-1">Email Address</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                    <i class="fa-regular fa-envelope"></i>
+                                </span>
+                                <input name="email" id="signup-email" type="email" autocomplete="email" required placeholder="name@example.com" class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="signup-password" class="block text-xs font-semibold text-gray-600 mb-1">Password</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                    <i class="fa-solid fa-lock"></i>
+                                </span>
+                                <input name="password" id="signup-password" type="password" autocomplete="new-password" required placeholder="Minimium 6 characters" class="w-full pl-9 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
+                                <span id="toggle-signup-password" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 cursor-pointer hover:text-gray-600">
+                                    <i class="fa-regular fa-eye text-xs"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <input name="terms" id="terms" type="checkbox" required class="w-4 h-4 mt-0.5 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500">
+                            <label for="terms" class="ml-2 text-xs text-gray-500 cursor-pointer select-none leading-normal">
+                                I agree to the <a href="#" class="text-emerald-600 font-semibold hover:underline">Terms of Service</a> and <a href="#" class="text-emerald-600 font-semibold hover:underline">Privacy Policy</a>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-sm font-semibold shadow-md transition">
+                            Sign Up
+                        </button>
+                    </form>
+
+                    <div class="relative my-6 text-center">
+                        <hr class="border-gray-200">
+                        <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-stone-50/30 px-3 text-[10px] font-medium uppercase tracking-wider text-gray-400">or continue with</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <button id="google-signup" type="button" class="flex items-center justify-center space-x-2 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 hover:bg-gray-50 transition">
+                            <i class="fa-brands fa-google text-red-500"></i>
+                            <span>Google</span>
+                        </button>
+                        <button id="apple-signup" type="button" class="flex items-center justify-center space-x-2 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 hover:bg-gray-50 transition">
+                            <i class="fa-brands fa-apple text-black"></i>
+                            <span>Apple</span>
+                        </button>
+                    </div>
+
+                    <p class="text-center text-xs text-gray-500 mt-6">
+                        Already have an account? <button type="button" onclick="switchTab('login')" class="text-emerald-600 font-semibold hover:underline focus:outline-none">Login</button>
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // Tab switching setup
+        function switchTab(tab) {
+            const loginForm = document.getElementById('form-container-login');
+            const signupForm = document.getElementById('form-container-signup');
+            const loginTab = document.getElementById('tab-login');
+            const signupTab = document.getElementById('tab-signup');
+
+            if (tab === 'login') {
+                signupForm.classList.add('hidden', 'opacity-0', 'scale-95');
+                loginForm.classList.remove('hidden');
+                setTimeout(() => {
+                    loginForm.classList.remove('opacity-0', 'scale-95');
+                    loginForm.classList.add('opacity-100', 'scale-100');
+                }, 50);
+
+                loginTab.className = "w-1/2 text-center pb-4 text-base font-semibold border-b-4 border-emerald-700 text-emerald-800 transition-all duration-200";
+                signupTab.className = "w-1/2 text-center pb-4 text-base font-medium text-gray-400 hover:text-gray-600 border-b-4 border-transparent transition-all duration-200";
+            } else if (tab === 'signup') {
+                loginForm.classList.add('hidden', 'opacity-0', 'scale-95');
+                signupForm.classList.remove('hidden');
+                setTimeout(() => {
+                    signupForm.classList.remove('opacity-0', 'scale-95');
+                    signupForm.classList.add('opacity-100', 'scale-100');
+                }, 50);
+
+                signupTab.className = "w-1/2 text-center pb-4 text-base font-semibold border-b-4 border-emerald-700 text-emerald-800 transition-all duration-200";
+                loginTab.className = "w-1/2 text-center pb-4 text-base font-medium text-gray-400 hover:text-gray-600 border-b-4 border-transparent transition-all duration-200";
+            }
+        }
+
+        // Custom segment selection logic for Farmer/Driver role assignment
+        function selectRole(role) {
+            document.getElementById('user-role').value = role;
+            const farmerBtn = document.getElementById('role-farmer');
+            const driverBtn = document.getElementById('role-driver');
+
+            if (role === 'farmer') {
+                farmerBtn.className = "flex items-center justify-center space-x-2 py-2.5 rounded-xl text-sm font-semibold border-2 border-emerald-700 bg-emerald-50 text-emerald-800 transition";
+                driverBtn.className = "flex items-center justify-center space-x-2 py-2.5 rounded-xl text-sm font-medium border-2 border-gray-200 bg-white text-gray-500 hover:border-gray-300 transition";
+            } else {
+                driverBtn.className = "flex items-center justify-center space-x-2 py-2.5 rounded-xl text-sm font-semibold border-2 border-emerald-700 bg-emerald-50 text-emerald-800 transition";
+                farmerBtn.className = "flex items-center justify-center space-x-2 py-2.5 rounded-xl text-sm font-medium border-2 border-gray-200 bg-white text-gray-500 hover:border-gray-300 transition";
+            }
+        }
+
+        // Toggle Password Visibility
+        const togglePassword = document.getElementById('toggle-signup-password');
+        const signupPasswordInput = document.getElementById('signup-password');
+        
+        if (togglePassword && signupPasswordInput) {
+            togglePassword.addEventListener('click', function() {
+                const type = signupPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                signupPasswordInput.setAttribute('type', type);
+                
+                const icon = this.querySelector('i');
+                if (type === 'text') {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+        }
+    </script>
+
+    <script type="module">
+  // 1. Import your existing initialized auth and db instances 
+  // Adjust the relative path below ('./config.js') to match where your file sits relative to this HTML file
+  import { auth, db } from "./Backend/firebaseConfig.js";
   
+  // 2. Import only the specific method functions you need from the SDK
+  import { 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, 
+    signInWithPopup, 
+    GoogleAuthProvider,
+    updateProfile
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  <!-- DO NOT TOUCH UNLESS TOLD!!!! -->
-  <script type="module" src="firebase-config.js"></script>
-  <script type="module" src="app.js"></script>
+  const googleProvider = new GoogleAuthProvider();
+  const DASHBOARD_URL = "dashboard.html"; // Change this to your exact dashboard path
+
+  // ==========================================
+  // SIGN UP FLOW
+  // ==========================================
+  document.getElementById('signup-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const name = document.getElementById('signup-name').value.trim();
+    const phone = document.getElementById('signup-phone').value.trim();
+    const email = document.getElementById('signup-email').value.trim();
+    const password = document.getElementById('signup-password').value;
+    const role = document.getElementById('user-role').value; 
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Update the Auth Profile standard Display Name attribute
+      await updateProfile(user, { displayName: name });
+
+      // Save additional application data (Role and Phone Number) inside Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        name: name,
+        email: email,
+        phone: phone,
+        role: role,
+        createdAt: new Date().toISOString()
+      });
+
+      window.location.href = DASHBOARD_URL;
+
+    } catch (error) {
+      console.error("Signup error:", error);
+      alert(`Signup Failed: ${error.message}`);
+    }
+  });
+
+  // ==========================================
+  // LOGIN FLOW
+  // ==========================================
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      window.location.href = DASHBOARD_URL;
+
+    } catch (error) {
+      console.error("Login error:", error);
+      alert(`Login Failed: ${error.message}`);
+    }
+  });
+
+  // ==========================================
+  // GOOGLE OAUTH FLOW
+  // ==========================================
+  const handleGoogleAuth = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+
+      // Provision/Merge a Firestore user document on social sign-in
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        name: user.displayName,
+        email: user.email,
+        phone: user.phoneNumber || "",
+        role: "farmer", // Default fallback role
+        updatedAt: new Date().toISOString()
+      }, { merge: true }); 
+
+      window.location.href = DASHBOARD_URL;
+    } catch (error) {
+      console.error("Google Auth error:", error);
+      alert(`OAuth Failed: ${error.message}`);
+    }
+  };
+
+  document.getElementById('google-login').addEventListener('click', handleGoogleAuth);
+  document.getElementById('google-signup').addEventListener('click', handleGoogleAuth);
+</script>
 </body>
 </html>

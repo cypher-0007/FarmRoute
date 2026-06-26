@@ -16,11 +16,11 @@
 <div class="flex h-screen">
 
     <!-- Sidebar -->
-    <aside class="w-64 bg-green-950 text-white flex flex-col">
+    <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col">
 
         <!-- Logo -->
-        <div class="p-6 border-b border-green-900">
-            <h1 class="text-2xl font-bold">🌱 FarmRoute</h1>
+        <div class="px-6 py-2 border-b border-green-900">
+            <img class="h-16" src="assets/logo3.png" alt="">
         </div>
 
         <!-- Menu -->
@@ -100,7 +100,7 @@
         <header
             class="bg-white h-20 px-8 flex items-center justify-between border-b">
 
-            <button class="text-2xl">
+            <button id="side-btn" class="text-2xl">
                 <i class="fa-solid fa-bars"></i>
             </button>
 
@@ -645,5 +645,12 @@
 
 </div>
 
+<script>
+    const sideBar = document.getElementById("side-bar");
+    const sideBtn = document.getElementById("side-btn");
+    
+    sideBtn.addEventListener("click", () => sideBar.classList.toggle("hidden"))
+
+</script>
 </body>
 </html>

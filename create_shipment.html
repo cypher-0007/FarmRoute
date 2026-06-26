@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Shipment | AgroPlug</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<style>
+    * {
+        font-family: 'Montserrat', sans-serif;
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+    }
+    /* Style the Google Autocomplete dropdown panel to match the dark theme */
+    .pac-container {
+        background-color: #1e293b !important; /* slate-800 */
+        border: 1px solid #334155 !important; /* slate-700 */
+        border-radius: 0.75rem !important;
+        margin-top: 4px !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        font-family: 'Montserrat', sans-serif !important;
+    }
+    .pac-item {
+        border-top: 1px solid #334155 !important;
+        padding: 10px 14px !important;
+        color: #cbd5e1 !important; /* slate-300 */
+        cursor: pointer;
+    }
+    .pac-item:hover {
+        background-color: #0f172a !important; /* slate-900 */
+    }
+    .pac-item-query {
+        color: #ffffff !important;
+        font-size: 14px !important;
+    }
+    .pac-matched {
+        color: #10b981 !important; /* emerald-500 */
+    }
+    .hdpi .pac-icon {
+        display: none !important; /* Removes the default tiny map pin icon for a cleaner look */
+    }
+</style>
+  
+<body class="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+
+    <!-- CONTAINER CARD -->
+    <div class="w-full max-w-md bg-[#131b26] rounded-2xl p-6 shadow-2xl border border-slate-800">
+
+        <!-- HEADER AREA -->
+        <div class="flex items-center mb-6 text-white">
+            <button type="button" class="text-xl p-1 hover:text-emerald-400 transition duration-200">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <h1 class="ml-4 text-xl font-bold tracking-tight">
+                Create Shipment
+            </h1>
+        </div>
+
+        <!-- FORM ELEMENTS -->
+        <form class="space-y-4" onsubmit="event.preventDefault();">
+
+            <!-- CROP TYPE -->
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-1.5">
+                    Crop Type
+                </label>
+                <div class="relative">
+                    <select class="w-full appearance-none bg-transparent text-slate-200 border border-slate-700 rounded-xl py-3.5 pl-4 pr-10 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition [&>option]:text-slate-950">
+                        <option>Tomatoes</option>
+                        <option>Maize</option>
+                        <option>Rice</option>
+                        <option>Yam</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400 text-xs">
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QUANTITY -->
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-1.5">
+                    Quantity
+                </label>
+                <div class="flex border border-slate-700 rounded-xl overflow-hidden focus-within:border-emerald-600 focus-within:ring-1 focus-within:ring-emerald-600 transition">
+                    <input 
+                        type="number" 
+                        value="20" 
+                        class="w-2/3 bg-transparent text-slate-200 placeholder-slate-600 py-3.5 px-4 outline-none border-r border-slate-700"
+                    >
+                    <div class="w-1/3 relative bg-transparent">
+                        <select class="w-full h-full appearance-none bg-transparent text-slate-300 py-3.5 pl-3 pr-8 outline-none [&>option]:text-slate-950 text-sm">
+                            <option>Bags (50kg)</option>
+                            <option>Tons</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400 text-xs">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DYNAMIC PICKUP LOCATION (Changed from Select to Input) -->
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-1.5">
+                    Pickup Location
+                </label>
+                <div class="relative">
+                    <input 
+                        id="pickup-location"
+                        type="text" 
+                        placeholder="Search street, city, or state..." 
+                        class="w-full bg-transparent text-slate-200 placeholder-slate-600 border border-slate-700 rounded-xl py-3.5 pl-4 pr-10 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition"
+                    >
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400 text-sm">
+                        <i class="fa-solid fa-map-pin"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DESTINATION MARKET -->
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-1.5">
+                    Destination Market
+                </label>
+                <div class="relative">
+                    <select class="w-full appearance-none bg-transparent text-slate-200 border border-slate-700 rounded-xl py-3.5 pl-4 pr-10 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition [&>option]:text-slate-950">
+                        <option>Lagos Mile 12 Market</option>
+                        <option>Abuja Market</option>
+                        <option>Ibadan Market</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400 text-xs">
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PREFERRED DATE -->
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-1.5">
+                    Preferred Date
+                </label>
+                <div class="flex border border-slate-700 rounded-xl overflow-hidden focus-within:border-emerald-600 focus-within:ring-1 focus-within:ring-emerald-600 transition">
+                    <input 
+                        type="text" 
+                        value="July 4, 2025" 
+                        class="w-full bg-transparent text-slate-200 py-3.5 px-4 outline-none"
+                    >
+                    <div class="flex items-center px-4 border-l border-slate-700 text-slate-400 bg-transparent">
+                        <i class="fa-regular fa-calendar"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ESTIMATED COST CARD -->
+            <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 mt-6">
+                <p class="text-xs font-semibold text-emerald-400">
+                    Estimated Cost Range
+                </p>
+                <h2 class="text-2xl font-bold text-emerald-400 mt-1">
+                    ₦18,000 - ₦22,000
+                </h2>
+                <p class="text-xs text-slate-400 mt-1">
+                    per 50kg bag
+                </p>
+            </div>
+
+            <!-- FIND TRANSPORT BUTTON -->
+            <button type="submit" class="w-full bg-emerald-800 hover:bg-emerald-700 active:scale-[0.99] text-white py-4 rounded-xl font-bold transition duration-200 mt-2 shadow-lg shadow-emerald-950/40">
+                Find Shared Transport
+            </button> 
+
+        </form>
+
+    </div>
+
+    <!-- GOOGLE MAPS PLACES SCRIPT -->
+    <!-- Replace YOUR_API_KEY with your actual Google Cloud API Key -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&callback=initAutocomplete" async defer></script>
+
+    <script>
+        function initAutocomplete() {
+            const input = document.getElementById('pickup-location');
+            
+            const options = {
+                componentRestrictions: { country: 'ng' }, // Restricts searches strictly to Nigeria
+                fields: ['address_components', 'geometry', 'formatted_address'],
+                types: ['geocode', 'establishment'] 
+            };
+
+            const autocomplete = new google.maps.places.Autocomplete(input, options);
+
+            // Triggered when a user selects a location from the dropdown suggestions
+            autocomplete.addListener('place_changed', () => {
+                const place = autocomplete.getPlace();
+                if (!place.geometry) {
+                    console.log("No details available for input: '" + place.name + "'");
+                    return;
+                }
+                
+                // You now have access to precise coordinate values:
+                console.log("Selected Address:", place.formatted_address);
+                console.log("Latitude:", place.geometry.location.lat());
+                console.log("Longitude:", place.geometry.location.lng());
+            });
+        }
+    </script>
+</body>
+</html>

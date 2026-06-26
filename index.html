@@ -28,8 +28,8 @@
      
                <!-- btns -->
                 <div class="flex gap-3 text-[1.1rem] items-center font-bold">
-                 <button class="hidden md:block border-[2px] px-4 py-1.5 rounded-md border-[#569c41] bg-white text-[#569c41]">Login</button>
-                 <button class="hidden md:block border-[2px] bg-emerald-800 px-4 py-1.5 rounded-md border-[#569c41] text-white">Sign Up</button>
+                 <button onclick="window.location.href='login.html'" class="hidden md:block border-[2px] px-4 py-1.5 rounded-md border-[#569c41] bg-white text-[#569c41]">Login</button>
+                 <button onclick="window.location.href='login.html'" class="hidden md:block border-[2px] bg-emerald-800 px-4 py-1.5 rounded-md border-[#569c41] text-white">Sign Up</button>
                  <!-- hamburger icon -->
                   <button id="dropdown-btn" class="block md:hidden text-emerald-950 text-2xl focus:outline-none" aria-label="Toggle Menu">
                     <i id="dropdown-icon" class="fa-solid fa-bars"></i>
@@ -46,8 +46,8 @@
                  <a class="text-gray-600 hover:text-emerald-800 py-1 px-1" href="">Contact</a>
 
                  <div class="flex flex-col gap-2 pb-1 pt-2">
-                     <button class="border-[2px] py-2 rounded-md border-[#569c41] bg-white text-[#569c41] font-bold">Login</button>
-                     <button class="border-[2px] bg-emerald-800 py-2 rounded-md border-[#569c41] text-white font-bold">Sign Up</button>
+                     <button onclick="window.location.href='login.html'" class="border-[2px] py-2 rounded-md border-[#569c41] bg-white text-[#569c41] font-bold">Login</button>
+                      <button onclick="window.location.href='login.html'" class="border-[2px] bg-emerald-800 py-2 rounded-md border-[#569c41] text-white font-bold">Sign Up</button>
                  </div>
                </div>
 
@@ -198,6 +198,14 @@
             menuIcon.classList.replace('fa-xmark', 'fa-bars');
         } else {
             menuIcon.classList.replace('fa-bars', 'fa-xmark');
+        }
+      });
+
+      // Close mobile menu when switching to desktop
+      window.addEventListener("resize", () => {
+        if (window.innerWidth >= 768) {
+          menuList.classList.add("hidden");
+          menuIcon.classList.replace("fa-xmark", "fa-bars");
         }
       });
 
