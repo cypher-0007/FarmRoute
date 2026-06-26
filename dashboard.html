@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmRoute Dashboard</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-100">
+
+<div class="flex h-screen">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-green-950 text-white flex flex-col">
+
+        <!-- Logo -->
+        <div class="p-6 border-b border-green-900">
+            <h1 class="text-2xl font-bold">🌱 FarmRoute</h1>
+        </div>
+
+        <!-- Menu -->
+        <nav class="flex-1 mt-6">
+
+            <a href="#"
+                class="flex items-center gap-3 bg-green-700 mx-4 px-4 py-3 rounded-lg mb-2">
+                <i class="fa-solid fa-house"></i>
+                Dashboard
+            </a>
+
+            <a href="#"
+                class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800">
+                <i class="fa-solid fa-truck"></i>
+                My Shipments
+            </a>
+
+            <a href="#"
+                class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800">
+                <i class="fa-solid fa-location-dot"></i>
+                Find Transport
+            </a>
+
+            <a href="#"
+                class="flex items-center justify-between px-4 py-3 mx-4 rounded-lg hover:bg-green-800">
+                <div class="flex items-center gap-3">
+                    <i class="fa-regular fa-message"></i>
+                    Messages
+                </div>
+
+                <span class="bg-green-500 text-xs px-2 py-1 rounded-full">
+                    3
+                </span>
+            </a>
+
+            <a href="#"
+                class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800">
+                <i class="fa-solid fa-chart-line"></i>
+                Market Prices
+            </a>
+
+            <a href="#"
+                class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800">
+                <i class="fa-solid fa-wallet"></i>
+                Payments
+            </a>
+
+            <a href="#"
+                class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800">
+                <i class="fa-regular fa-user"></i>
+                Profile
+            </a>
+
+            <a href="#"
+                class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800">
+                <i class="fa-solid fa-gear"></i>
+                Settings
+            </a>
+
+        </nav>
+
+        <!-- Logout -->
+        <div class="p-4">
+            <a href="#"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-green-800">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Logout
+            </a>
+        </div>
+
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto">
+
+        <!-- Top Navbar -->
+        <header
+            class="bg-white h-20 px-8 flex items-center justify-between border-b">
+
+            <button class="text-2xl">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <div class="flex items-center gap-8">
+
+                <button class="relative text-xl">
+                    <i class="fa-regular fa-message"></i>
+
+                    <span
+                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                        5
+                    </span>
+                </button>
+
+                <button class="text-xl">
+                    <i class="fa-regular fa-bell"></i>
+                </button>
+
+                <div class="flex items-center gap-3">
+
+                    <img
+                        src="https://i.pravatar.cc/50"
+                        class="w-10 h-10 rounded-full">
+
+                    <div>
+                        <h4 class="font-semibold">
+                            John Ayodele
+                        </h4>
+                        <p class="text-sm text-gray-500">
+                            Farmer
+                        </p>
+                    </div>
+
+                    <i class="fa-solid fa-chevron-down"></i>
+
+                </div>
+
+            </div>
+
+        </header>
+
+        <!-- Dashboard Body -->
+        <section class="p-8">
+
+            <div class="flex justify-between items-center mb-8">
+
+                <h2 class="text-3xl font-bold">
+                    Dashboard Overview
+                </h2>
+
+                <select
+                    class="border rounded-lg px-4 py-2 bg-white">
+                    <option>June 20, 2025</option>
+                </select>
+
+            </div>
+
+            <!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+
+    <!-- Active Shipments -->
+    <div class="bg-white rounded-2xl border p-6 shadow-sm">
+
+        <h3 class="text-gray-700 font-medium mb-6">
+            Active Shipments
+        </h3>
+
+        <div class="flex items-center justify-between">
+
+            <h2 class="text-5xl font-bold">
+                4
+            </h2>
+
+            <div
+                class="w-14 h-14 rounded-xl bg-green-100 flex items-center justify-center">
+
+                <i
+                    class="fa-solid fa-truck text-green-600 text-2xl">
+                </i>
+
+            </div>
+
+        </div>
+
+        <a href="#"
+            class="text-green-700 mt-6 block font-medium">
+            View all shipments
+        </a>
+
+    </div>
+
+    <!-- Available Trucks -->
+    <div class="bg-white rounded-2xl border p-6 shadow-sm">
+
+        <h3 class="text-gray-700 font-medium mb-6">
+            Available Trucks
+        </h3>
+
+        <div class="flex items-center justify-between">
+
+            <h2 class="text-5xl font-bold">
+                6
+            </h2>
+
+            <div
+                class="w-14 h-14 rounded-xl bg-yellow-100 flex items-center justify-center">
+
+                <i
+                    class="fa-solid fa-truck text-yellow-500 text-2xl">
+                </i>
+
+            </div>
+
+        </div>
+
+        <a href="#"
+            class="text-green-700 mt-6 block font-medium">
+            View all trucks
+        </a>
+
+    </div>
+
+    <!-- Saved This Month -->
+    <div class="bg-white rounded-2xl border p-6 shadow-sm">
+
+        <h3 class="text-gray-700 font-medium mb-6">
+            Saved This Month
+        </h3>
+
+        <div class="flex items-center justify-between">
+
+            <h2
+                class="text-4xl font-bold text-green-700">
+                ₦78,400
+            </h2>
+
+            <div
+                class="w-14 h-14 rounded-xl bg-green-100 flex items-center justify-center">
+
+                <i
+                    class="fa-solid fa-sack-dollar text-green-600 text-2xl">
+                </i>
+
+            </div>
+
+        </div>
+
+        <p
+            class="text-gray-500 mt-6">
+            Compared to private hire
+        </p>
+
+    </div>
+
+    <!-- Pending Matches -->
+    <div class="bg-white rounded-2xl border p-6 shadow-sm">
+
+        <h3 class="text-gray-700 font-medium mb-6">
+            Pending Matches
+        </h3>
+
+        <div class="flex items-center justify-between">
+
+            <h2 class="text-5xl font-bold">
+                2
+            </h2>
+
+            <div
+                class="w-14 h-14 rounded-xl bg-purple-100 flex items-center justify-center">
+
+                <i
+                    class="fa-solid fa-users text-purple-600 text-2xl">
+                </i>
+
+            </div>
+
+        </div>
+
+        <a href="#"
+            class="text-green-700 mt-6 block font-medium">
+            View pending
+        </a>
+
+    </div>
+
+</div>
+
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+    <!-- Recent Shipments -->
+    <div class="xl:col-span-2 bg-white rounded-2xl border p-6">
+
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-semibold">
+                Recent Shipments
+            </h2>
+        </div>
+
+        <!-- Shipment 1 -->
+        <div class="flex items-center justify-between py-5 border-b">
+
+            <div class="flex items-center gap-4">
+
+                <img
+                    src="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=200"
+                    class="w-16 h-16 rounded-xl object-cover">
+
+                <div>
+                    <h3 class="font-semibold text-lg">
+                        Tomatoes
+                    </h3>
+
+                    <p class="text-gray-500">
+                        20 Bags
+                    </p>
+                </div>
+
+            </div>
+
+            <div>
+                <h4 class="font-medium">
+                    Benue → Lagos
+                </h4>
+
+                <p class="text-gray-500">
+                    Matched with 3 farmers
+                </p>
+            </div>
+
+            <div>
+                <h4 class="font-semibold text-xl">
+                    ₦18,000
+                </h4>
+
+                <p class="text-gray-500">
+                    per bag
+                </p>
+            </div>
+
+            <span
+                class="bg-blue-100 text-blue-700 px-5 py-2 rounded-lg">
+                In Transit
+            </span>
+
+        </div>
+
+        <!-- Shipment 2 -->
+        <div class="flex items-center justify-between py-5 border-b">
+
+            <div class="flex items-center gap-4">
+
+                <img
+                    src="https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=200"
+                    class="w-16 h-16 rounded-xl object-cover">
+
+                <div>
+                    <h3 class="font-semibold text-lg">
+                        Pepper
+                    </h3>
+
+                    <p class="text-gray-500">
+                        15 Bags
+                    </p>
+                </div>
+
+            </div>
+
+            <div>
+                <h4 class="font-medium">
+                    Kano → Abuja
+                </h4>
+
+                <p class="text-gray-500">
+                    Matched with 2 farmers
+                </p>
+            </div>
+
+            <div>
+                <h4 class="font-semibold text-xl">
+                    ₦12,500
+                </h4>
+
+                <p class="text-gray-500">
+                    per bag
+                </p>
+            </div>
+
+            <span
+                class="bg-green-100 text-green-700 px-5 py-2 rounded-lg">
+                Matched
+            </span>
+
+        </div>
+
+        <!-- Shipment 3 -->
+        <div class="flex items-center justify-between py-5 border-b">
+
+            <div class="flex items-center gap-4">
+
+                <img
+                    src="https://images.unsplash.com/photo-1603048297172-c92544798d5a?w=200"
+                    class="w-16 h-16 rounded-xl object-cover">
+
+                <div>
+                    <h3 class="font-semibold text-lg">
+                        Yam
+                    </h3>
+
+                    <p class="text-gray-500">
+                        30 Tubers
+                    </p>
+                </div>
+
+            </div>
+
+            <div>
+                <h4 class="font-medium">
+                    Oyo → Ibadan
+                </h4>
+
+                <p class="text-gray-500">
+                    Matched with 4 farmers
+                </p>
+            </div>
+
+            <div>
+                <h4 class="font-semibold text-xl">
+                    ₦10,000
+                </h4>
+
+                <p class="text-gray-500">
+                    per tuber
+                </p>
+            </div>
+
+            <span
+                class="bg-yellow-100 text-yellow-700 px-5 py-2 rounded-lg">
+                Pending
+            </span>
+
+        </div>
+
+        <!-- Shipment 4 -->
+        <div class="flex items-center justify-between py-5">
+
+            <div class="flex items-center gap-4">
+
+                <img
+                    src="https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=200"
+                    class="w-16 h-16 rounded-xl object-cover">
+
+                <div>
+                    <h3 class="font-semibold text-lg">
+                        Maize
+                    </h3>
+
+                    <p class="text-gray-500">
+                        10 Bags
+                    </p>
+                </div>
+
+            </div>
+
+            <div>
+                <h4 class="font-medium">
+                    Benue → Abuja
+                </h4>
+
+                <p class="text-gray-500">
+                    Matched with 1 farmer
+                </p>
+            </div>
+
+            <div>
+                <h4 class="font-semibold text-xl">
+                    ₦9,000
+                </h4>
+
+                <p class="text-gray-500">
+                    per bag
+                </p>
+            </div>
+
+            <span
+                class="bg-purple-100 text-purple-700 px-5 py-2 rounded-lg">
+                Searching
+            </span>
+
+        </div>
+
+        <div class="text-center mt-8">
+
+            <button
+                class="border-2 border-green-600 text-green-600 px-8 py-3 rounded-xl hover:bg-green-600 hover:text-white transition">
+                View all shipments
+            </button>
+
+        </div>
+
+    </div>
+
+<!-- Right Sidebar -->
+<div class="space-y-6">
+
+    <!-- Market Demand -->
+    <div class="bg-white rounded-2xl border p-6">
+
+        <h2 class="text-2xl font-semibold mb-6">
+            Market Demand
+        </h2>
+
+        <!-- Lagos -->
+        <div class="pb-5 border-b">
+
+            <div class="flex justify-between items-center">
+
+                <div>
+
+                    <h3 class="font-semibold text-xl">
+                        Lagos
+                    </h3>
+
+                    <p class="text-gray-500 mt-1">
+                        High demand for Pepper
+                    </p>
+
+                </div>
+
+                <i class="fa-solid fa-arrow-up text-red-500 text-xl"></i>
+
+            </div>
+
+        </div>
+
+        <!-- Abuja -->
+        <div class="py-5 border-b">
+
+            <div class="flex justify-between items-center">
+
+                <div>
+
+                    <h3 class="font-semibold text-xl">
+                        Abuja
+                    </h3>
+
+                    <p class="text-gray-500 mt-1">
+                        Medium demand for Tomatoes
+                    </p>
+
+                </div>
+
+                <i class="fa-solid fa-arrow-right text-yellow-500 text-xl"></i>
+
+            </div>
+
+        </div>
+
+        <!-- Ibadan -->
+        <div class="py-5">
+
+            <div class="flex justify-between items-center">
+
+                <div>
+
+                    <h3 class="font-semibold text-xl">
+                        Ibadan
+                    </h3>
+
+                    <p class="text-gray-500 mt-1">
+                        High demand for Yam
+                    </p>
+
+                </div>
+
+                <i class="fa-solid fa-arrow-up text-red-500 text-xl"></i>
+
+            </div>
+
+        </div>
+
+        <a href="#"
+            class="text-green-700 font-medium mt-4 inline-block">
+            View all market trends
+        </a>
+
+    </div>
+
+    <!-- Spoilage Risk -->
+    <div class="bg-white rounded-2xl border p-6">
+
+        <h2 class="text-2xl font-semibold mb-6">
+            Spoilage Risk
+        </h2>
+
+        <div class="flex items-center gap-4">
+
+            <div
+                class="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center">
+
+                🍅
+
+            </div>
+
+            <div>
+
+                <h3 class="text-3xl font-semibold">
+                    Tomatoes
+                </h3>
+
+                <p class="text-red-600 text-xl font-bold mt-2">
+                    Risk: HIGH
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="mt-6">
+
+            <p class="text-gray-600">
+                Transport needed within
+            </p>
+
+            <h3 class="text-4xl text-red-600 font-bold mt-2">
+                24 Hours
+            </h3>
+
+        </div>
+
+        <a href="#"
+            class="text-green-700 font-medium mt-6 inline-block">
+            View all spoilage alerts
+        </a>
+
+    </div>
+
+</div>    
+        </section>
+
+    </main>
+
+</div>
+
+</body>
+</html>

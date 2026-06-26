@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Route Optimizer</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-100 min-h-screen p-4">
+
+<!-- <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-lg p-6"> -->
+<!-- <div class="w-full max-w-md bg-white rounded-3xl shadow-sm p-6"> -->
+     <div class="max-w-md mx-auto bg-white rounded-3xl shadow-sm p-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+
+        <div class="flex items-center gap-4">
+            <button>
+                <i class="fa-solid fa-arrow-left text-xl"></i>
+            </button>
+
+            <h1 class="text-2xl font-bold">
+                Route Optimizer
+            </h1>
+        </div>
+
+        <span
+            class="bg-green-100 text-green-700 px-4 py-2 rounded-xl font-semibold">
+            AI
+        </span>
+
+    </div>
+
+    <!-- Best Route Card -->
+    <div
+        class="border rounded-2xl p-5 mb-8 flex justify-between items-center">
+
+        <div>
+
+            <h2 class="font-bold text-xl mb-2">
+                Best Route Found
+            </h2>
+
+            <p class="text-lg">
+                Benue
+                <span class="text-green-600 font-bold mx-2">→</span>
+                Lagos Mile 12
+            </p>
+
+        </div>
+
+        <div class="text-green-600 font-semibold">
+            Departs in 2 Days
+        </div>
+
+    </div>
+
+    <!-- Main Content -->
+    <div class="grid md:grid-cols-2 gap-8">
+
+        <!-- Route Plan -->
+        <div>
+
+            <h2 class="text-xl font-bold mb-8">
+                Route Plan
+            </h2>
+
+            <div class="relative">
+
+                <!-- Line -->
+                <div
+                    class="absolute left-5 top-5 h-[320px] w-1 bg-green-500">
+                </div>
+
+                <!-- Stop 1 -->
+                <div class="flex gap-5 mb-10 relative">
+
+                    <div
+                        class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white z-10">
+                        <i class="fa-solid fa-location-dot"></i>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-xl">
+                            Makurdi, Benue
+                        </h3>
+                        <p class="text-gray-500">
+                            Pickup 1.5 Tons
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- Stop 2 -->
+                <div class="flex gap-5 mb-10 relative">
+
+                    <div
+                        class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white z-10">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-xl">
+                            Gboko, Benue
+                        </h3>
+                        <p class="text-gray-500">
+                            Pickup 2.0 Tons
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- Stop 3 -->
+                <div class="flex gap-5 mb-10 relative">
+
+                    <div
+                        class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white z-10">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-xl">
+                            Lokoja, Kogi
+                        </h3>
+                        <p class="text-gray-500">
+                            Pickup 3.0 Tons
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- Destination -->
+                <div class="flex gap-5 relative">
+
+                    <div
+                        class="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-white z-10">
+                        <i class="fa-solid fa-location-dot"></i>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-xl">
+                            Lagos Mile 12 Market
+                        </h3>
+                        <p class="text-gray-500">
+                            Drop-off
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Stats -->
+        <div class="space-y-5">
+
+            <!-- Capacity -->
+            <div class="border rounded-xl p-5">
+
+                <p class="text-gray-500 mb-2">
+                    Truck Capacity
+                </p>
+
+                <h2 class="text-3xl font-bold">
+                    10 Tons
+                </h2>
+
+            </div>
+
+            <!-- Current Load -->
+            <div class="border rounded-xl p-5">
+
+                <p class="text-gray-500 mb-2">
+                    Current Load
+                </p>
+
+                <h2 class="text-3xl font-bold mb-4">
+                    6.5 Tons
+                </h2>
+
+                <div
+                    class="w-full bg-gray-200 rounded-full h-4">
+
+                    <div
+                        class="bg-green-600 h-4 rounded-full w-[65%]">
+                    </div>
+
+                </div>
+
+                <p class="text-right mt-2 text-gray-500">
+                    65%
+                </p>
+
+            </div>
+
+            <!-- Duration -->
+            <div class="border rounded-xl p-5">
+
+                <p class="text-gray-500 mb-2">
+                    Est. Duration
+                </p>
+
+                <h2 class="text-3xl font-bold">
+                    14.5 Hours
+                </h2>
+
+            </div>
+
+            <!-- Cost -->
+            <div class="border rounded-xl p-5">
+
+                <p class="text-gray-500 mb-2">
+                    Est. Cost per Bag
+                </p>
+
+                <h2 class="text-3xl font-bold">
+                    ₦1,800
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Button -->
+    <div class="mt-10">
+
+        <button
+            class="w-full bg-green-700 hover:bg-green-800 text-white py-4 rounded-xl text-xl font-semibold">
+            Confirm & Book
+        </button>
+
+    </div>
+
+</div>
+
+</body>
+</html>
