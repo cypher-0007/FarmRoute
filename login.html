@@ -323,19 +323,19 @@
             signInWithEmailAndPassword, 
             signInWithPopup, 
             GoogleAuthProvider,
-            updateProfile
+            updateProfile,
+            onAuthStateChanged
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const googleProvider = new GoogleAuthProvider();
 
-        // Target destinations configured mapped to role keys
         const ROUTES = {
             farmer: "Farmers/dashboard.html",
             driver: "Drivers/dashboard.html"
         };
 
-        // Reusable function to fetch the user profile and direct to correct folder
+        // Reusable redirection router logic
         async function redirectUserByRole(uid) {
             try {
                 const userDocRef = doc(db, "users", uid);
@@ -357,9 +357,17 @@
                 }
             } catch (error) {
                 console.error("Error reading database configuration setup:", error);
-                alert("Failed to retrieve your access credentials configuration permissions.");
+                alert("Failed to retrieve your access credentials.");
             }
         }
+
+        // Active Session Checker: Resolves immediate loops if user is already logged in
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log("Active session detected for UID:", user.uid);
+                redirectUserByRole(user.uid);
+            }
+        });
 
         // SIGN UP FLOW
         document.getElementById('signup-form').addEventListener('submit', async (e) => {
@@ -385,8 +393,8 @@
                     role: role,
                     createdAt: new Date().toISOString()
                 });
-
-                await redirectUserByRole(user.uid);
+                
+                // Redirection is handled by onAuthStateChanged natively upon success
             } catch (error) {
                 console.error("Signup error:", error);
                 alert(`Signup Failed: ${error.message}`);
@@ -400,8 +408,8 @@
             const password = document.getElementById('login-password').value;
 
             try {
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                await redirectUserByRole(userCredential.user.uid);
+                await signInWithEmailAndPassword(auth, email, password);
+                // Redirection is handled by onAuthStateChanged natively upon success
             } catch (error) {
                 console.error("Login error:", error);
                 alert(`Login Failed: ${error.message}`);
@@ -417,7 +425,6 @@
                 const userDocRef = doc(db, "users", user.uid);
                 const userDoc = await getDoc(userDocRef);
                 
-                // Fallback context default if user record doesn't exist yet
                 let role = "farmer"; 
                 if (userDoc.exists()) {
                     role = userDoc.data().role || "farmer";
@@ -432,7 +439,7 @@
                     updatedAt: new Date().toISOString()
                 }, { merge: true }); 
 
-                await redirectUserByRole(user.uid);
+                // Redirection is handled by onAuthStateChanged natively upon success
             } catch (error) {
                 console.error("Google Auth error:", error);
                 alert(`OAuth Failed: ${error.message}`);
