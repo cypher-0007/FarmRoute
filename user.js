@@ -43,7 +43,7 @@ authForm.addEventListener("submit", async (e) => {
       console.log("User logged in:", userCredential.user);
       
       // Next step: redirect to dashboard here
-      // window.location.href = "dashboard.html";
+      // window.location.href = "Farmers/dashboard.html";
 
     } else {
       // 📝 Firebase Sign Up Logic

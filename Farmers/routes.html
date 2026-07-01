@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmRoute - AI Route Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-[#f8fafc] text-gray-900 antialiased">
+
+    <div class="flex h-screen overflow-hidden">
+
+        <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col h-screen shrink-0">
+            <div class="px-6 py-2 items-center justify-between flex border-b border-green-900">
+                <img class="h-16" src="../assets/logo3.png" alt="FarmRoute Logo">
+                <button id="closeside-btn" class="hidden max-sm:flex text-2xl">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+
+            <nav class="flex-1 mt-6 overflow-y-auto">
+                <a href="dashboard.html" class="flex items-center gap-3 hover:bg-green-800 mx-4 px-4 py-3 rounded-lg mb-2 text-gray-300 hover:text-white">
+                    <i class="fa-solid fa-house"></i> Dashboard
+                </a>
+                <a href="listings.html" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-white mb-2">
+                    <i class="fa-solid fa-box-open"></i> My Listings
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
+                    <i class="fa-solid fa-truck"></i> Orders
+                </a>
+                <a href="#" class="flex items-center justify-between px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-regular fa-message"></i> Messages
+                    </div>
+                    <span class="bg-green-500 text-xs px-2 py-1 rounded-full text-white">3</span>
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg bg-green-700 text-white hover:text-white mb-2">
+                    <i class="fa-solid fa-route"></i> Routes
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
+                    <i class="fa-solid fa-wallet"></i> Payments
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
+                    <i class="fa-regular fa-user"></i> Profile
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-6">
+                    <i class="fa-solid fa-gear"></i> Settings
+                </a>
+                <div class="px-4 mb-4">
+                    <a href="add_produce.html" class="flex items-center justify-center gap-2 w-full bg-emerald-100 hover:bg-emerald-200 text-emerald-900 font-semibold py-3 px-4 rounded-xl transition duration-200 shadow-sm text-sm">
+                        <i class="fa-solid fa-plus text-base"></i> List New Produce
+                    </a>
+                </div>
+            </nav>
+
+            <div class="p-4 border-t border-green-900">
+                <button id="logout-btn" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-green-800 text-left text-gray-300 hover:text-white transition">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+            
+            <header class="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-8 shrink-0">
+                <div class="flex items-center gap-2">
+                    <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                        AI Route Planner <i class="fa-solid fa-sparkles text-emerald-600 text-lg"></i>
+                    </h1>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <button class="w-10 h-10 rounded-full border border-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-50 relative">
+                        <i class="fa-regular fa-bell text-lg"></i>
+                        <span class="absolute top-2 right-2.5 w-2 h-2 bg-amber-500 rounded-full"></span>
+                    </button>
+                    <div class="flex items-center gap-3 border-l border-gray-100 pl-4">
+                        <img src="https://randomuser.me/api/portraits/men/11.jpg" class="w-10 h-10 rounded-full object-cover border border-gray-100" alt="Avatar">
+                        <div class="text-left hidden sm:block">
+                            <h4 class="text-sm font-bold text-gray-900 leading-tight">John Farmer</h4>
+                            <span class="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                                <i class="fa-solid fa-circle-check text-[10px]"></i> Verified Farmer
+                            </span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-xs text-gray-400 ml-1"></i>
+                    </div>
+                </div>
+            </header>
+
+            <main class="flex-1 overflow-y-auto p-8">
+                <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    
+                    <div class="lg:col-span-8 space-y-8">
+                        
+                        <section class="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
+                            <h2 class="text-xl font-bold text-gray-900">Plan a Pickup & Delivery</h2>
+                            <p class="text-sm text-gray-400 mt-0.5 mb-6">Tell us where your produce is and where it needs to go.</p>
+
+                            <div class="space-y-5">
+                                <div>
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
+                                        Pickup Location (Your Farm) <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <i class="fa-solid fa-location-dot absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                        <input type="text" value="Akinyele Area, Ibadan, Oyo State" class="w-full h-12 pl-11 pr-11 border border-gray-200 bg-gray-50/50 rounded-xl font-medium text-gray-800 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition">
+                                        <button class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-emerald-600"><i class="fa-solid fa-crosshairs"></i></button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
+                                        Delivery Destination <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <i class="fa-solid fa-location-dot absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                        <input type="text" value="Oyo Central Market, Oyo State" class="w-full h-12 pl-11 pr-11 border border-gray-200 bg-gray-50/50 rounded-xl font-medium text-gray-800 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition">
+                                        <button class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-emerald-600"><i class="fa-solid fa-crosshairs"></i></button>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
+                                            Preferred Pickup Date <span class="text-red-500">*</span>
+                                        </label>
+                                        <div class="relative">
+                                            <i class="fa-regular fa-calendar absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                                            <input type="date" value="2025-05-30" class="w-full h-12 pl-11 pr-4 border border-gray-200 bg-gray-50/50 rounded-xl font-medium text-gray-700 outline-none focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition">
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Preferred Pickup Time</label>
+                                        <div class="relative">
+                                            <i class="fa-regular fa-clock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                                            <select class="w-full h-12 pl-11 pr-10 border border-gray-200 bg-gray-50/50 rounded-xl font-medium text-gray-700 appearance-none outline-none focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition cursor-pointer">
+                                                <option>Morning (8AM - 12PM)</option>
+                                                <option>Afternoon (12PM - 4PM)</option>
+                                                <option>Evening (4PM - 8PM)</option>
+                                            </select>
+                                            <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="pt-2">
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">Produce to be Delivered</label>
+                                    <div class="border border-gray-100 bg-gray-50/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                        <div class="flex items-center gap-4">
+                                            <img src="https://images.unsplash.com/photo-1546094096-0df4bcaaa337?w=200" class="w-14 h-14 rounded-xl object-cover" alt="Tomatoes">
+                                            <div>
+                                                <div class="flex items-center gap-2">
+                                                    <h4 class="font-bold text-gray-900">Fresh Tomatoes</h4>
+                                                    <span class="bg-emerald-50 text-emerald-700 text-[11px] font-semibold px-2 py-0.5 rounded-full">Vegetables</span>
+                                                </div>
+                                                <p class="text-xs font-medium text-gray-400 mt-0.5">120 kg</p>
+                                            </div>
+                                        </div>
+                                        <button class="w-full sm:w-auto px-4 py-2 border border-gray-200 rounded-xl bg-white text-xs font-bold text-gray-700 hover:bg-gray-50 transition shadow-sm flex items-center justify-center gap-2">
+                                            <i class="fa-regular fa-pen-to-square"></i> Edit
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
+                            <h2 class="text-xl font-bold text-gray-900">AI Route Recommendation</h2>
+                            <p class="text-sm text-gray-400 mt-0.5">Our AI analyzes traffic, road conditions, and driver availability to suggest the best route.</p>
+
+                            <div class="mt-5 bg-emerald-50/50 border border-emerald-100 rounded-2xl p-4 flex items-start gap-3">
+                                <div class="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-emerald-200">
+                                    <i class="fa-solid fa-route text-sm"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-emerald-800">Best Route Found!</h4>
+                                    <p class="text-xs text-emerald-600/90 mt-0.5">Fastest & most reliable route with reliable drivers available near you.</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
+                                <div class="bg-gray-50/50 border border-gray-100/70 rounded-2xl p-4">
+                                    <div class="flex items-center gap-1.5 text-gray-400 mb-1">
+                                        <i class="fa-regular fa-clock text-xs"></i>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider">Est. Pickup</span>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-gray-900">9:15 AM</h3>
+                                </div>
+                                <div class="bg-gray-50/50 border border-gray-100/70 rounded-2xl p-4">
+                                    <div class="flex items-center gap-1.5 text-gray-400 mb-1">
+                                        <i class="fa-solid fa-truck-fast text-xs"></i>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider">Est. Delivery</span>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-gray-900">10:45 AM</h3>
+                                </div>
+                                <div class="bg-gray-50/50 border border-gray-100/70 rounded-2xl p-4">
+                                    <div class="flex items-center gap-1.5 text-gray-400 mb-1">
+                                        <i class="fa-solid fa-road text-xs"></i>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider">Total Distance</span>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-gray-900">38 km</h3>
+                                </div>
+                                <div class="bg-gray-50/50 border border-gray-100/70 rounded-2xl p-4">
+                                    <div class="flex items-center gap-1.5 text-gray-400 mb-1">
+                                        <i class="fa-solid fa-wallet text-xs"></i>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider">Est. Cost</span>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-emerald-700">₦6,500</h3>
+                                </div>
+                            </div>
+
+                            <div class="mt-6 border border-gray-100 rounded-2xl overflow-hidden relative">
+                                <div class="h-64 bg-slate-100 relative overflow-hidden flex items-center justify-center">
+                                    <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#059669_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                                    
+                                    <svg class="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M 80 180 Q 250 140, 320 160 T 580 120" fill="none" stroke="#059669" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+
+                                    <div class="absolute left-[70px] top-[155px] flex flex-col items-center">
+                                        <div class="bg-emerald-700 text-white w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shadow-md"><i class="fa-solid fa-farm"></i></div>
+                                        <span class="text-[10px] bg-white px-1.5 py-0.5 rounded shadow font-bold text-gray-700 mt-1">Akinyele</span>
+                                    </div>
+
+                                    <div class="absolute left-[565px] top-[95px] flex flex-col items-center">
+                                        <div class="bg-red-500 text-white w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shadow-md"><i class="fa-solid fa-shop"></i></div>
+                                        <span class="text-[10px] bg-white px-1.5 py-0.5 rounded shadow font-bold text-gray-700 mt-1">Oyo Market</span>
+                                    </div>
+
+                                    <div class="absolute left-[310px] top-[110px] bg-white px-2.5 py-1 rounded-full shadow-sm border border-gray-100 flex items-center gap-1.5 text-xs font-semibold text-gray-800">
+                                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span> 1 hr 30 mins
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-2">
+                                <p class="text-xs text-gray-400">Route may change dynamically based on real-time traffic updates.</p>
+                                <button class="w-full sm:w-auto px-4 py-2 border border-gray-200 rounded-xl bg-white text-xs font-bold text-gray-700 hover:bg-gray-50 transition flex items-center justify-center gap-2">
+                                    View Full Route <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                                </button>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="lg:col-span-4 space-y-6">
+                        
+                        <section class="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
+                            <h2 class="text-xl font-bold text-gray-900">Available Drivers</h2>
+                            <p class="text-sm text-gray-400 mt-0.5 mb-5">Drivers near you ready to pick up.</p>
+
+                            <div class="space-y-4">
+                                <div class="border-2 border-emerald-600 bg-emerald-50/30 rounded-2xl p-4 relative cursor-pointer">
+                                    <div class="absolute top-4 right-4 w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center text-white text-[10px]">
+                                        <i class="fa-solid fa-check"></i>
+                                    </div>
+
+                                    <div class="flex gap-3">
+                                        <img src="https://randomuser.me/api/portraits/men/32.jpg" class="w-12 h-12 rounded-full object-cover border border-gray-100" alt="Driver">
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center gap-2">
+                                                <h4 class="font-bold text-gray-900 text-sm truncate">Tunde Adesina</h4>
+                                                <span class="bg-emerald-100 text-emerald-800 text-[9px] uppercase font-bold px-1.5 py-0.5 rounded">Top Match</span>
+                                            </div>
+                                            
+                                            <div class="flex items-center gap-1.5 text-xs text-gray-500 mt-0.5">
+                                                <i class="fa-solid fa-star text-amber-400"></i>
+                                                <span class="font-bold text-gray-700">4.8</span>
+                                                <span>(120 trips)</span>
+                                            </div>
+
+                                            <div class="flex items-end justify-between mt-4">
+                                                <div class="text-[11px] text-gray-400 space-y-0.5">
+                                                    <div><i class="fa-solid fa-truck text-gray-300 mr-1 w-3.5"></i> Medium Truck</div>
+                                                    <div><i class="fa-solid fa-location-dot text-gray-300 mr-1 w-3.5"></i> 2.1 km from you</div>
+                                                </div>
+                                                <div class="text-right">
+                                                    <span class="text-xl font-black text-emerald-700">₦6,500</span>
+                                                    <p class="text-[9px] text-gray-400 uppercase font-bold tracking-wider">Est. Price</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="border border-gray-100 bg-white rounded-2xl p-4 relative cursor-pointer hover:border-gray-200 transition">
+                                    <div class="absolute top-4 right-4 w-5 h-5 rounded-full border border-gray-200 bg-white"></div>
+                                    
+                                    <div class="flex gap-3">
+                                        <img src="https://randomuser.me/api/portraits/men/44.jpg" class="w-12 h-12 rounded-full object-cover" alt="Driver">
+                                        <div class="flex-1 min-w-0">
+                                            <h4 class="font-bold text-gray-900 text-sm truncate">Ibrahim Musa</h4>
+                                            <div class="flex items-center gap-1.5 text-xs text-gray-500 mt-0.5">
+                                                <i class="fa-solid fa-star text-amber-400"></i>
+                                                <span class="font-bold text-gray-700">4.6</span>
+                                                <span>(85 trips)</span>
+                                            </div>
+
+                                            <div class="flex items-end justify-between mt-4">
+                                                <div class="text-[11px] text-gray-400 space-y-0.5">
+                                                    <div><i class="fa-solid fa-truck text-gray-300 mr-1 w-3.5"></i> Medium Truck</div>
+                                                    <div><i class="fa-solid fa-location-dot text-gray-300 mr-1 w-3.5"></i> 2.8 km from you</div>
+                                                </div>
+                                                <div class="text-right">
+                                                    <span class="text-xl font-bold text-gray-900">₦6,900</span>
+                                                    <p class="text-[9px] text-gray-400 uppercase font-bold tracking-wider">Est. Price</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="border border-gray-100 bg-white rounded-2xl p-4 relative cursor-pointer hover:border-gray-200 transition">
+                                    <div class="absolute top-4 right-4 w-5 h-5 rounded-full border border-gray-200 bg-white"></div>
+                                    
+                                    <div class="flex gap-3">
+                                        <img src="https://randomuser.me/api/portraits/men/84.jpg" class="w-12 h-12 rounded-full object-cover" alt="Driver">
+                                        <div class="flex-1 min-w-0">
+                                            <h4 class="font-bold text-gray-900 text-sm truncate">Segun Oluwole</h4>
+                                            <div class="flex items-center gap-1.5 text-xs text-gray-500 mt-0.5">
+                                                <i class="fa-solid fa-star text-amber-400"></i>
+                                                <span class="font-bold text-gray-700">4.5</span>
+                                                <span>(68 trips)</span>
+                                            </div>
+
+                                            <div class="flex items-end justify-between mt-4">
+                                                <div class="text-[11px] text-gray-400 space-y-0.5">
+                                                    <div><i class="fa-solid fa-truck text-gray-300 mr-1 w-3.5"></i> Small Truck</div>
+                                                    <div><i class="fa-solid fa-location-dot text-gray-300 mr-1 w-3.5"></i> 3.4 km from you</div>
+                                                </div>
+                                                <div class="text-right">
+                                                    <span class="text-xl font-bold text-gray-900">₦7,200</span>
+                                                    <p class="text-[9px] text-gray-400 uppercase font-bold tracking-wider">Est. Price</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="w-full mt-4 py-2 text-xs font-bold text-gray-400 hover:text-emerald-700 flex items-center justify-center gap-1.5 transition">
+                                View more drivers <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                            </button>
+                        </section>
+
+                        <section class="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
+                            <h3 class="text-base font-bold text-gray-900">Why this route?</h3>
+                            <p class="text-xs text-gray-400 mt-0.5 mb-4">AI routing recommendation metrics breakdown:</p>
+                            
+                            <ul class="space-y-3">
+                                <li class="flex items-center gap-2.5 text-xs font-medium text-gray-700">
+                                    <div class="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-[10px] shrink-0"><i class="fa-solid fa-clock"></i></div>
+                                    Least traffic on your preferred time
+                                </li>
+                                <li class="flex items-center gap-2.5 text-xs font-medium text-gray-700">
+                                    <div class="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-[10px] shrink-0"><i class="fa-solid fa-road-circle-check"></i></div>
+                                    Best road surface conditions
+                                </li>
+                                <li class="flex items-center gap-2.5 text-xs font-medium text-gray-700">
+                                    <div class="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-[10px] shrink-0"><i class="fa-solid fa-user-shield"></i></div>
+                                    Trusted drivers available
+                                </li>
+                                <li class="flex items-center gap-2.5 text-xs font-medium text-gray-700">
+                                    <div class="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-[10px] shrink-0"><i class="fa-solid fa-piggy-bank"></i></div>
+                                    Saves overall time and delivery costs
+                                </li>
+                            </ul>
+                        </section>
+
+                        <section class="bg-emerald-950 rounded-3xl p-6 text-white shadow-xl shadow-emerald-950/10 relative overflow-hidden">
+                            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-emerald-900/40 rounded-full blur-xl pointer-events-none"></div>
+                            
+                            <div class="flex items-start gap-3">
+                                <div class="bg-emerald-900 text-emerald-400 p-2.5 rounded-xl text-lg shrink-0 border border-emerald-800/30">
+                                    <i class="fa-solid fa-box-open"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold">Ready to book this route?</h3>
+                                    <p class="text-xs text-emerald-300/80 mt-1 leading-relaxed">Confirm and a driver will be assigned immediately to your order layout request.</p>
+                                </div>
+                            </div>
+
+                            <div class="mt-6 border-t border-emerald-900/60 pt-4 flex items-end justify-between">
+                                <div>
+                                    <span class="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">Estimated Cost</span>
+                                    <h2 class="text-3xl font-black text-white mt-0.5">₦6,500</h2>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">Arrival ETA</span>
+                                    <p class="text-base font-bold text-white mt-0.5">9:15 AM</p>
+                                </div>
+                            </div>
+
+                            <div class="mt-6 space-y-2.5">
+                                <button class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-3 rounded-xl transition text-sm flex items-center justify-center gap-2 shadow-md shadow-emerald-950/50">
+                                    <i class="fa-solid fa-truck-ramp-box"></i> Request Delivery
+                                </button>
+                                <div class="text-center pt-1">
+                                    <span class="text-[11px] text-emerald-400/80 font-medium inline-flex items-center gap-1.5">
+                                        <i class="fa-solid fa-shield-halved text-[10px]"></i> Secure & safe transactions
+                                    </span>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                </div>
+            </main>
+        </div>
+
+    </div>
+
+</body>
+</html>

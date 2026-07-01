@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmRoute Driver Dashboard</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-100">
+
+<div id="loading-screen" class="fixed inset-0 bg-white z-50 flex items-center justify-center font-semibold text-gray-600">
+    <div class="text-center">
+        <i class="fa-solid fa-circle-notch fa-spin text-3xl text-green-700 mb-2"></i>
+        <p>Verifying session security details...</p>
+    </div>
+</div>
+
+<!-- Main body -->
+<div class="flex h-screen">
+    <!-- SIDE-NAV -->
+    <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col h-screen">
+
+            <div class="px-6 py-2 items-center justify-between flex border-b border-green-900">
+                <img class="h-16" src="../assets/logo3.png" alt="FarmRoute Logo">
+
+                <button id="closeside-btn" class="hidden max-sm:flex text-2xl">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+
+            <nav class="flex-1 mt-6 overflow-y-auto">
+
+                <a href="dashboard.html"
+                    class="flex items-center gap-3 bg-green-700 mx-4 px-4 py-3 rounded-lg mb-2">
+                    <i class="fa-solid fa-house"></i>
+                    Dashboard
+                </a>
+
+                <a href="available-loads.html"
+                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                    Available Loads
+                </a>
+
+                <a href="active-trips.html"
+                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
+                    <i class="fa-solid fa-truck-fast"></i>
+                    My Active Trips
+                </a>
+
+                <a href="#"
+                    class="flex items-center justify-between px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-regular fa-message"></i>
+                        Messages
+                    </div>
+
+                    <span class="bg-green-500 text-xs px-2 py-1 rounded-full">
+                        3
+                    </span>
+                </a>
+
+                <a href="#"
+                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
+                    <i class="fa-solid fa-wallet"></i>
+                    Payments
+                </a>
+
+                <a href="#"
+                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
+                    <i class="fa-regular fa-user"></i>
+                    Profile
+                </a>
+
+                <a href="#"
+                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-6">
+                    <i class="fa-solid fa-gear"></i>
+                    Settings
+                </a>
+
+                <div class="px-4 mb-4">
+                    <button id="go-online-btn"
+                        class="flex items-center justify-center gap-2 w-full bg-green-600 hover:bg-green-500 font-semibold py-3 px-4 rounded-xl transition duration-200 shadow-sm text-sm">
+                        <i class="fa-solid fa-circle text-xs" id="online-dot"></i>
+                        <span id="online-label">Go Online</span>
+                    </button>
+                </div>
+
+            </nav>
+
+            <div class="p-4 border-t border-green-900">
+                <button id="logout-btn"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-green-800 text-left text-gray-300 hover:text-white transition">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Logout
+                </button>
+            </div>
+
+        </aside>
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 overflow-y-auto">
+
+        <header
+            class="bg-white h-20 px-8 flex items-center justify-between border-b">
+
+            <button id="side-btn" class="text-2xl">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <div class="flex items-center gap-8">
+
+                <button class="relative text-xl">
+                    <i class="fa-regular fa-message"></i>
+
+                    <span
+                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                        5
+                    </span>
+                </button>
+
+                <button class="text-xl">
+                    <i class="fa-regular fa-bell"></i>
+                </button>
+
+                <div class="flex items-center gap-3">
+
+                    <img
+                        src="https://i.pravatar.cc/50"
+                        class="w-10 h-10 rounded-full">
+
+                    <div>
+                        <h4 id="user-display-name" class="font-semibold">
+                            Loading...
+                        </h4>
+                        <p id="user-display-role" class="text-sm text-gray-500 capitalize">
+                            ...
+                        </p>
+                    </div>
+
+                    <i class="fa-solid fa-chevron-down"></i>
+
+                </div>
+
+            </div>
+
+        </header>
+
+        <section class="p-8">
+
+            <div class="flex justify-between items-center mb-8">
+
+                <h2 class="text-3xl font-bold">
+                    Dashboard Overview
+                </h2>
+
+                <select
+                    class="border rounded-lg px-4 py-2 bg-white">
+                    <option>June 20, 2025</option>
+                </select>
+
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+
+                <div class="bg-white rounded-2xl border p-6 shadow-sm">
+
+                    <h3 class="text-gray-700 font-medium mb-6">
+                        Active Trips
+                    </h3>
+
+                    <div class="flex items-center justify-between">
+
+                        <h2 class="text-5xl font-bold">
+                            2
+                        </h2>
+
+                        <div class="w-14 h-14 rounded-xl bg-green-100 flex items-center justify-center">
+                            <i class="fa-solid fa-truck-fast text-green-600 text-2xl"></i>
+                        </div>
+
+                    </div>
+
+                    <a href="active-trips.html"
+                        class="text-green-700 mt-6 block font-medium">
+                        View active trips
+                    </a>
+
+                </div>
+
+                <div class="bg-white rounded-2xl border p-6 shadow-sm">
+
+                    <h3 class="text-gray-700 font-medium mb-6">
+                        Available Loads Nearby
+                    </h3>
+
+                    <div class="flex items-center justify-between">
+
+                        <h2 class="text-5xl font-bold">
+                            5
+                        </h2>
+
+                        <div class="w-14 h-14 rounded-xl bg-yellow-100 flex items-center justify-center">
+                            <i class="fa-solid fa-boxes-stacked text-yellow-500 text-2xl"></i>
+                        </div>
+
+                    </div>
+
+                    <a href="available-loads.html"
+                        class="text-green-700 mt-6 block font-medium">
+                        View load board
+                    </a>
+
+                </div>
+
+                <div class="bg-white rounded-2xl border p-6 shadow-sm">
+
+                    <h3 class="text-gray-700 font-medium mb-6">
+                        Earnings This Month
+                    </h3>
+
+                    <div class="flex items-center justify-between">
+
+                        <h2 class="text-4xl font-bold text-green-700">
+                            ₦612,000
+                        </h2>
+
+                        <div class="w-14 h-14 rounded-xl bg-green-100 flex items-center justify-center">
+                            <i class="fa-solid fa-sack-dollar text-green-600 text-2xl"></i>
+                        </div>
+
+                    </div>
+
+                    <p class="text-gray-500 mt-6">
+                        Across 9 completed trips
+                    </p>
+
+                </div>
+
+                <div class="bg-white rounded-2xl border p-6 shadow-sm">
+
+                    <h3 class="text-gray-700 font-medium mb-6">
+                        Completed This Week
+                    </h3>
+
+                    <div class="flex items-center justify-between">
+
+                        <h2 class="text-5xl font-bold">
+                            6
+                        </h2>
+
+                        <div class="w-14 h-14 rounded-xl bg-purple-100 flex items-center justify-center">
+                            <i class="fa-solid fa-circle-check text-purple-600 text-2xl"></i>
+                        </div>
+
+                    </div>
+
+                    <a href="#"
+                        class="text-green-700 mt-6 block font-medium">
+                        View trip history
+                    </a>
+
+                </div>
+
+            </div>
+
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+                <div class="xl:col-span-2 bg-white rounded-2xl border p-6">
+
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-semibold">
+                            Recent Trips
+                        </h2>
+                    </div>
+
+                    <div class="flex items-center justify-between py-5 border-b">
+
+                        <div class="flex items-center gap-4">
+
+                            <img
+                                src="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=200"
+                                class="w-16 h-16 rounded-xl object-cover">
+
+                            <div>
+                                <h3 class="font-semibold text-lg">
+                                    Tomatoes
+                                </h3>
+
+                                <p class="text-gray-500">
+                                    50 Bags
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <div>
+                            <h4 class="font-medium">
+                                Jos → Lagos
+                            </h4>
+
+                            <p class="text-gray-500">
+                                Mile 12 Depot
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-semibold text-xl">
+                                ₦185,000
+                            </h4>
+
+                            <p class="text-gray-500">
+                                total payout
+                            </p>
+                        </div>
+
+                        <span
+                            class="bg-blue-100 text-blue-700 px-5 py-2 rounded-lg">
+                            In Transit
+                        </span>
+
+                    </div>
+
+                    <div class="flex items-center justify-between py-5 border-b">
+
+                        <div class="flex items-center gap-4">
+
+                            <img
+                                src="https://images.unsplash.com/photo-1586201375761-83865001e31c?w=200"
+                                class="w-16 h-16 rounded-xl object-cover">
+
+                            <div>
+                                <h3 class="font-semibold text-lg">
+                                    Milled Rice
+                                </h3>
+
+                                <p class="text-gray-500">
+                                    120 Bags
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <div>
+                            <h4 class="font-medium">
+                                Kebbi → Lagos
+                            </h4>
+
+                            <p class="text-gray-500">
+                                Mile 12 Grains Depot
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-semibold text-xl">
+                                ₦240,000
+                            </h4>
+
+                            <p class="text-gray-500">
+                                total payout
+                            </p>
+                        </div>
+
+                        <span
+                            class="bg-green-100 text-green-700 px-5 py-2 rounded-lg">
+                            Delivered
+                        </span>
+
+                    </div>
+
+                    <div class="flex items-center justify-between py-5 border-b">
+
+                        <div class="flex items-center gap-4">
+
+                            <img
+                                src="https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=200"
+                                class="w-16 h-16 rounded-xl object-cover">
+
+                            <div>
+                                <h3 class="font-semibold text-lg">
+                                    Pepper
+                                </h3>
+
+                                <p class="text-gray-500">
+                                    35 Bags
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <div>
+                            <h4 class="font-medium">
+                                Zaria → Ibadan
+                            </h4>
+
+                            <p class="text-gray-500">
+                                Bodija Perishables Bay
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-semibold text-xl">
+                                ₦142,000
+                            </h4>
+
+                            <p class="text-gray-500">
+                                total payout
+                            </p>
+                        </div>
+
+                        <span
+                            class="bg-yellow-100 text-yellow-700 px-5 py-2 rounded-lg">
+                            Awaiting Pickup
+                        </span>
+
+                    </div>
+
+                    <div class="flex items-center justify-between py-5">
+
+                        <div class="flex items-center gap-4">
+
+                            <img
+                                src="https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=200"
+                                class="w-16 h-16 rounded-xl object-cover">
+
+                            <div>
+                                <h3 class="font-semibold text-lg">
+                                    Maize
+                                </h3>
+
+                                <p class="text-gray-500">
+                                    60 Bags
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <div>
+                            <h4 class="font-medium">
+                                Makurdi → Abuja
+                            </h4>
+
+                            <p class="text-gray-500">
+                                Wuse Bulk Store
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-semibold text-xl">
+                                ₦98,000
+                            </h4>
+
+                            <p class="text-gray-500">
+                                total payout
+                            </p>
+                        </div>
+
+                        <span
+                            class="bg-green-100 text-green-700 px-5 py-2 rounded-lg">
+                            Delivered
+                        </span>
+
+                    </div>
+
+                    <div class="text-center mt-8">
+
+                        <a href="active-trips.html"
+                            class="inline-block border-2 border-green-600 text-green-600 px-8 py-3 rounded-xl hover:bg-green-600 hover:text-white transition">
+                            View all trips
+                        </a>
+
+                    </div>
+
+                </div>
+
+                <div class="space-y-6">
+
+                    <div class="bg-white rounded-2xl border p-6">
+
+                        <h2 class="text-2xl font-semibold mb-6">
+                            Load Demand Nearby
+                        </h2>
+
+                        <div class="pb-5 border-b">
+
+                            <div class="flex justify-between items-center">
+
+                                <div>
+
+                                    <h3 class="font-semibold text-xl">
+                                        Lagos
+                                    </h3>
+
+                                    <p class="text-gray-500 mt-1">
+                                        High demand for Tomatoes
+                                    </p>
+
+                                </div>
+
+                                <i class="fa-solid fa-arrow-up text-red-500 text-xl"></i>
+
+                            </div>
+
+                        </div>
+
+                        <div class="py-5 border-b">
+
+                            <div class="flex justify-between items-center">
+
+                                <div>
+
+                                    <h3 class="font-semibold text-xl">
+                                        Abuja
+                                    </h3>
+
+                                    <p class="text-gray-500 mt-1">
+                                        Medium demand for Rice
+                                    </p>
+
+                                </div>
+
+                                <i class="fa-solid fa-arrow-right text-yellow-500 text-xl"></i>
+
+                            </div>
+
+                        </div>
+
+                        <div class="py-5">
+
+                            <div class="flex justify-between items-center">
+
+                                <div>
+
+                                    <h3 class="font-semibold text-xl">
+                                        Ibadan
+                                    </h3>
+
+                                    <p class="text-gray-500 mt-1">
+                                        High demand for Pepper
+                                    </p>
+
+                                </div>
+
+                                <i class="fa-solid fa-arrow-up text-red-500 text-xl"></i>
+
+                            </div>
+
+                        </div>
+
+                        <a href="available-loads.html"
+                            class="text-green-700 font-medium mt-4 inline-block">
+                            View load board
+                        </a>
+
+                    </div>
+
+                    <div class="bg-white rounded-2xl border p-6">
+
+                        <h2 class="text-2xl font-semibold mb-6">
+                            Priority Pickup
+                        </h2>
+
+                        <div class="flex items-center gap-4">
+
+                            <div class="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center">
+                                🍅
+                            </div>
+
+                            <div>
+
+                                <h3 class="text-3xl font-semibold">
+                                    Tomatoes
+                                </h3>
+
+                                <p class="text-red-600 text-xl font-bold mt-2">
+                                    Priority: HIGH
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        <div class="mt-6">
+
+                            <p class="text-gray-600">
+                                Accept within
+                            </p>
+
+                            <h3 class="text-4xl text-red-600 font-bold mt-2">
+                                24 Hours
+                            </h3>
+
+                            <p class="text-gray-500 mt-2 text-sm">
+                                Full payout locked in only if picked up before the freshness window closes.
+                            </p>
+
+                        </div>
+
+                        <a href="available-loads.html"
+                            class="text-green-700 font-medium mt-6 inline-block">
+                            View load details
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<script type="module">
+    import { auth, db } from "../Backend/firebaseConfig.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const LOGIN_PAGE_URL = "Drivers/login.html";
+
+    const nameEl = document.getElementById("user-display-name");
+    const roleEl = document.getElementById("user-display-role");
+    const loadingScreen = document.getElementById("loading-screen");
+
+    // Clear loading states safely
+    function hideLoading() {
+        if (loadingScreen) loadingScreen.classList.add("hidden");
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            // No session active -> instantly redirect to login
+            window.location.href = LOGIN_PAGE_URL;
+            return;
+        }
+
+        // 1. Immediate fallback: Use basic auth info so it stops showing "Loading..."
+        nameEl.innerText = user.displayName || "FarmRoute Driver";
+        roleEl.innerText = "Driver";
+        hideLoading();
+
+        // 2. Background fetch: Try loading extended profile data from Firestore
+        try {
+            const userDocRef = doc(db, "users", user.uid);
+            const userDocSnap = await getDoc(userDocRef);
+
+            if (userDocSnap.exists()) {
+                const userData = userDocSnap.data();
+                if (userData.name) nameEl.innerText = userData.name;
+                if (userData.role) roleEl.innerText = userData.role;
+            }
+        } catch (err) {
+            console.error("Firestore profile fetch failed, using Auth defaults:", err);
+        }
+    });
+
+    // Logout Action Handler
+    const logoutBtn = document.getElementById("logout-btn");
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", () => {
+            signOut(auth)
+                .then(() => {
+                    window.location.href = LOGIN_PAGE_URL;
+                })
+                .catch((error) => {
+                    console.error("Signout error:", error);
+                });
+        });
+    }
+</script>
+
+<script>
+    const sideBar = document.getElementById("side-bar");
+    const sideBtn = document.getElementById("side-btn");
+    const closeSide = document.getElementById("closeside-btn");
+
+    // CLOSE & OPEN SIDE-BAR
+    sideBtn.addEventListener("click", () => sideBar.classList.toggle("hidden"))
+    closeSide.addEventListener("click", () => sideBar.classList.toggle("hidden"))
+
+    // ONLINE / OFFLINE TOGGLE (cosmetic — wire up to real driver-status field later)
+    const goOnlineBtn = document.getElementById("go-online-btn");
+    const onlineLabel = document.getElementById("online-label");
+    let isOnline = false;
+
+    goOnlineBtn.addEventListener("click", () => {
+        isOnline = !isOnline;
+        if (isOnline) {
+            onlineLabel.textContent = "Online — Visible to Farmers";
+            goOnlineBtn.classList.remove("bg-green-600", "hover:bg-green-500");
+            goOnlineBtn.classList.add("bg-gray-700", "hover:bg-gray-600");
+        } else {
+            onlineLabel.textContent = "Go Online";
+            goOnlineBtn.classList.remove("bg-gray-700", "hover:bg-gray-600");
+            goOnlineBtn.classList.add("bg-green-600", "hover:bg-green-500");
+        }
+    });
+</script>
+
+</body>
+</html>

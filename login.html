@@ -74,6 +74,7 @@
 
             <div class="max-w-sm mx-auto w-full relative">
                 
+                <!-- LOGIN FORM -->
                 <div id="form-container-login" class="transition-all duration-300 opacity-100 scale-100">
                     <div class="text-center mb-6">
                         <div class="w-12 h-12 bg-emerald-50 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -138,6 +139,7 @@
                     </p>
                 </div>
 
+                <!-- SIGN-UP FORM -->
                 <div id="form-container-signup" class="transition-all duration-300 opacity-0 scale-95 hidden">
                     <div class="text-center mb-6">
                         <div class="w-12 h-12 bg-emerald-50 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -314,11 +316,9 @@
     </script>
 
     <script type="module">
-  // 1. Import your existing initialized auth and db instances 
-  // Adjust the relative path below ('./config.js') to match where your file sits relative to this HTML file
-  import { auth, db } from "./Backend/firebaseConfig.js";
-  
-  // 2. Import only the specific method functions you need from the SDK
+  // Importing existing initialized auth and db instances 
+  import { auth, db } from "../Backend/firebaseConfig.js";
+
   import { 
     createUserWithEmailAndPassword, 
     signInWithEmailAndPassword, 
@@ -329,7 +329,7 @@
   import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const googleProvider = new GoogleAuthProvider();
-  const DASHBOARD_URL = "dashboard.html"; // Change this to your exact dashboard path
+  const DASHBOARD_URL = "Farmers/dashboard.html";
 
   // ==========================================
   // SIGN UP FLOW

@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmRoute - List New Produce</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50/50 text-gray-800">
+
+    <div class="flex h-screen overflow-hidden">
+        <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col h-screen">
+
+            <div class="px-6 py-2 items-center justify-between flex border-b border-green-900">
+                <img class="h-16" src="../assets/logo3.png" alt="FarmRoute Logo">
+
+                <button id="closeside-btn" class="hidden max-sm:flex text-2xl">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+
+            <nav class="flex-1 mt-6 overflow-y-auto">
+
+                <a href="dashboard.html"
+                    class="flex items-center gap-3 hover:bg-green-800 mx-4 px-4 py-3 rounded-lg mb-2">
+                    <i class="fa-solid fa-house"></i>
+                    Dashboard
+                </a>
+
+                <a href="listings.html"
+                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
+                    <i class="fa-solid fa-box-open"></i>
+                    My Listings
+                </a>
+
+                <a href="#"
+                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
+                    <i class="fa-solid fa-truck"></i>
+                    Orders
+                </a>
+
+                <a href="#"
+                    class="flex items-center justify-between px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-regular fa-message"></i>
+                        Messages
+                    </div>
+
+                    <span class="bg-green-500 text-xs px-2 py-1 rounded-full">
+                        3
+                    </span>
+                </a>
+
+                <a href="routes.html"
+                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
+                    <i class="fa-solid fa-route"></i>
+                    Routes
+                </a>
+
+                <a href="#"
+                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
+                    <i class="fa-solid fa-wallet"></i>
+                    Payments
+                </a>
+
+                <a href="#"
+                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
+                    <i class="fa-regular fa-user"></i>
+                    Profile
+                </a>
+
+                <a href="#"
+                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-6">
+                    <i class="fa-solid fa-gear"></i>
+                    Settings
+                </a>
+
+                <div class="px-4 mb-4">
+                    <a href="add_produce.html" 
+                        class="flex items-center justify-center gap-2 w-full bg-emerald-100 hover:bg-emerald-200 text-emerald-900 font-semibold py-3 px-4 rounded-xl transition duration-200 shadow-sm text-sm">
+                        <i class="fa-solid fa-plus text-base"></i>
+                        List New Produce
+                    </a>
+                </div>
+
+            </nav>
+
+            <div class="p-4 border-t border-green-900">
+                <button id="logout-btn"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-green-800 text-left text-gray-300 hover:text-white transition">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Logout
+                </button>
+            </div>
+
+        </aside>
+
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <header class="bg-white h-20 px-4 sm:px-8 flex items-center justify-between border-b shrink-0 z-30">
+                <div class="flex items-center gap-4">
+                    <button id="side-btn" class="text-xl text-gray-600 md:hidden"><i class="fa-solid fa-bars"></i></button>
+                    <div>
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900">List New Produce</h1>
+                        <p class="text-xs sm:text-sm text-gray-500 hidden sm:block">Add your fresh agricultural harvest items to connect instantly with buyers.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 sm:gap-6">
+                    <div class="flex items-center gap-3 border-l pl-4 sm:pl-6">
+                        <img src="https://i.pravatar.cc/100?img=12" class="w-10 h-10 rounded-full object-cover">
+                        <div class="hidden sm:block text-left">
+                            <h4 id="user-display-name" class="font-semibold text-sm text-gray-900 leading-tight">Loading...</h4>
+                            <span id="user-display-role" class="text-xs text-emerald-600 font-medium capitalize">Farmer</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+                <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
+                    
+                    <div class="lg:col-span-2 space-y-6">
+                        
+                        <div class="bg-white rounded-2xl border p-4 sm:p-6 shadow-sm">
+                            <div class="flex items-center justify-between max-w-md mx-auto relative">
+                                <div class="absolute left-0 right-0 top-4 h-0.5 bg-gray-200 z-0"></div>
+                                <div id="progress-line" class="absolute left-0 top-4 h-0.5 bg-emerald-700 z-0 transition-all duration-300 w-0"></div>
+
+                                <div class="z-10 flex flex-col items-center step-item" data-step="1">
+                                    <div class="w-9 h-9 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-sm ring-4 ring-emerald-50">1</div>
+                                    <span class="text-xs font-semibold text-emerald-800 mt-2">Product Info</span>
+                                </div>
+                                <div class="z-10 flex flex-col items-center step-item" data-step="2">
+                                    <div class="w-9 h-9 rounded-full bg-white border-2 border-gray-200 text-gray-400 flex items-center justify-center font-bold text-sm">2</div>
+                                    <span class="text-xs font-medium text-gray-400 mt-2">Pricing</span>
+                                </div>
+                                <div class="z-10 flex flex-col items-center step-item" data-step="3">
+                                    <div class="w-9 h-9 rounded-full bg-white border-2 border-gray-200 text-gray-400 flex items-center justify-center font-bold text-sm">3</div>
+                                    <span class="text-xs font-medium text-gray-400 mt-2">Availability</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form id="produce-listing-form" class="bg-white rounded-2xl border p-4 sm:p-6 shadow-sm space-y-6">
+                            
+                            <div id="step-panel-1" class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold uppercase text-gray-600 mb-2">Product Name *</label>
+                                    <input type="text" id="productName" required placeholder="e.g., Fresh Habanero Pepper, Sweet Potatoes" class="w-full px-4 py-3 bg-white border rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold uppercase text-gray-600 mb-2">Category *</label>
+                                        <select id="category" class="w-full px-4 py-3 bg-white border rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+                                            <option value="Vegetables">Vegetables</option>
+                                            <option value="Fruits">Fruits</option>
+                                            <option value="Grains">Grains & Cereals</option>
+                                            <option value="Tubers">Tubers & Roots</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold uppercase text-gray-600 mb-2">Measurement Unit *</label>
+                                        <select id="unit" class="w-full px-4 py-3 bg-white border rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+                                            <option value="kg">Kilogram (kg)</option>
+                                            <option value="bag">Bag</option>
+                                            <option value="tuber">Tuber</option>
+                                            <option value="crate">Crate</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="flex justify-between items-center mb-2">
+                                        <label class="block text-xs font-bold uppercase text-gray-600">Description *</label>
+                                        <span id="char-counter" class="text-xs text-gray-400">0/200</span>
+                                    </div>
+                                    <textarea id="description" rows="4" maxlength="200" required placeholder="Describe your produce quality, variety types, sorting conditions, or any custom details buyers should know..." class="w-full px-4 py-3 bg-white border rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none transition resize-none"></textarea>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold uppercase text-gray-600 mb-2">Upload Photos *</label>
+                                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                        <label class="border-2 border-dashed border-gray-200 hover:border-emerald-500 rounded-xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition bg-gray-50/50 aspect-square">
+                                            <i class="fa-regular fa-image text-2xl text-gray-400"></i>
+                                            <span class="text-[11px] font-medium text-gray-500 text-center">Click to upload</span>
+                                            <input type="file" id="imageFiles" accept="image/*" class="hidden" multiple>
+                                        </label>
+                                        <div id="image-previews-container" class="contents">
+                                            <div class="relative rounded-xl border overflow-hidden aspect-square">
+                                                <img src="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400" class="w-full h-full object-cover">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="step-panel-2" class="space-y-4 hidden">
+                                <div>
+                                    <label class="block text-xs font-bold uppercase text-gray-600 mb-2">Price per Unit (₦) *</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-500 font-bold text-sm">₦</span>
+                                        <input type="number" id="pricePerUnit" placeholder="e.g., 800" class="w-full pl-10 pr-4 py-3 bg-white border rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+                                    </div>
+                                    <p class="text-xs text-gray-400 mt-1">Set a competitive marketplace unit value rate pricing matrix structure.</p>
+                                </div>
+                            </div>
+
+                            <div id="step-panel-3" class="space-y-4 hidden">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold uppercase text-gray-600 mb-2">Quantity Available *</label>
+                                        <input type="number" id="quantity" placeholder="e.g., 100" class="w-full px-4 py-3 bg-white border rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold uppercase text-gray-600 mb-2">Harvest Date *</label>
+                                        <input type="date" id="harvestDate" class="w-full px-4 py-3 bg-white border rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold uppercase text-gray-600 mb-2">Route From (Origin State) *</label>
+                                        <input type="text" id="location" required placeholder="e.g., Ibadan, Oyo State" class="w-full px-4 py-3 bg-white border rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold uppercase text-gray-600 mb-2">Route To (Destination State) *</label>
+                                        <input type="text" id="destination" required placeholder="e.g., Lagos State" class="w-full px-4 py-3 bg-white border rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="pt-4 border-t flex justify-between items-center">
+                                <button type="button" id="prev-btn" class="px-5 py-2.5 rounded-xl border font-semibold text-gray-600 hover:bg-gray-50 transition invisible text-sm">Cancel</button>
+                                <button type="button" id="next-btn" class="px-6 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold rounded-xl transition text-sm flex items-center gap-2">
+                                    <span>Next: Pricing</span> <i class="fa-solid fa-arrow-right text-xs"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="space-y-6 lg:sticky lg:top-8">
+                        <section class="bg-white rounded-2xl border p-4 sm:p-6 shadow-sm space-y-4">
+                            <div class="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                <i class="fa-regular fa-eye"></i> <span>Live Output Preview</span>
+                            </div>
+
+                            <div class="border rounded-2xl overflow-hidden bg-white shadow-sm transition hover:shadow-md">
+                                <div class="relative bg-emerald-50 aspect-[4/3] flex items-center justify-center text-emerald-600 font-bold overflow-hidden">
+                                    <img src="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=600" class="w-full h-full object-cover">
+                                    <span class="absolute top-3 right-3 bg-white/90 backdrop-blur text-emerald-800 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase shadow-sm">Open for Orders</span>
+                                </div>
+                                <div class="p-4 space-y-2">
+                                    <div class="flex items-center gap-2">
+                                        <h3 id="prev-title" class="font-bold text-lg text-gray-900 truncate">Fresh Tomatoes</h3>
+                                        <span id="prev-cat" class="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-md">Vegetables</span>
+                                    </div>
+                                    <div class="flex items-center text-xs text-gray-500 gap-1.5 font-medium">
+                                        <i class="fa-solid fa-boxes-stacked text-gray-400"></i>
+                                        <span id="prev-qty">100 kg available</span>
+                                        <span class="text-gray-300">•</span>
+                                        <i class="fa-solid fa-location-dot text-gray-400"></i>
+                                        <span id="prev-loc" class="truncate">Ibadan, Oyo State → Lagos State</span>
+                                    </div>
+                                    <p id="prev-desc" class="text-xs text-gray-500 font-medium line-clamp-2">High-quality, farm-fresh tomatoes. Perfect for sauces, stews, and daily cooking workflows.</p>
+                                    <div class="pt-2 border-t flex items-baseline gap-0.5">
+                                        <span id="prev-price" class="text-xl font-extrabold text-emerald-700">₦800</span>
+                                        <span id="prev-unit" class="text-xs text-gray-500 font-medium">/ kg</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <div class="bg-white rounded-2xl border p-4 sm:p-6 shadow-sm">
+                            <h4 class="font-bold text-sm text-gray-900 mb-3 flex items-center gap-2"><i class="fa-regular fa-lightbulb text-emerald-600"></i> Tips for Better Listings</h4>
+                            <ul class="space-y-2 text-xs font-medium text-gray-600">
+                                <li class="flex items-center gap-2 text-emerald-700"><i class="fa-regular fa-circle-check"></i> Use clear, natural high-quality photos</li>
+                                <li class="flex items-center gap-2 text-emerald-700"><i class="fa-regular fa-circle-check"></i> Be completely honest about quantity variables</li>
+                                <li class="flex items-center gap-2 text-emerald-700"><i class="fa-regular fa-circle-check"></i> Set competitive rates market valuation metrics</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+        </div>
+    </div>
+
+ <script type="module">
+    import { auth, db } from "../Backend/firebaseConfig.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const LOGIN_PAGE_URL = "login.html";
+
+    // DOM Elements
+    const nameEl = document.getElementById("user-display-name");
+    const roleEl = document.getElementById("user-display-role");
+    
+    // Form & Wizard Navigation Elements
+    const form = document.getElementById("produce-listing-form");
+    const nextBtn = document.getElementById("next-btn");
+    const prevBtn = document.getElementById("prev-btn");
+    const progressLine = document.getElementById("progress-line");
+    const stepItems = document.querySelectorAll(".step-item");
+    
+    const panels = [
+        document.getElementById("step-panel-1"),
+        document.getElementById("step-panel-2"),
+        document.getElementById("step-panel-3")
+    ];
+
+    let currentStep = 0; 
+
+    // Real-time Preview Elements
+    const descriptionInput = document.getElementById("description");
+    const charCounter = document.getElementById("char-counter");
+    
+    const prevTitle = document.getElementById("prev-title");
+    const prevCat = document.getElementById("prev-cat");
+    const prevQty = document.getElementById("prev-qty");
+    const prevLoc = document.getElementById("prev-loc");
+    const prevDesc = document.getElementById("prev-desc");
+    const prevPrice = document.getElementById("prev-price");
+    const prevUnit = document.getElementById("prev-unit");
+
+    // Check Authentication State
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            window.location.href = LOGIN_PAGE_URL;
+            return;
+        }
+
+        nameEl.innerText = user.displayName || "FarmRoute User";
+        roleEl.innerText = "Farmer"; 
+
+        try {
+            const userDocRef = doc(db, "users", user.uid);
+            const userDocSnap = await getDoc(userDocRef);
+            if (userDocSnap.exists()) {
+                const userData = userDocSnap.data();
+                if (userData.name) nameEl.innerText = userData.name;
+                if (userData.role) roleEl.innerText = userData.role;
+            }
+        } catch (err) {
+            console.error("Firestore profile fetch failed:", err);
+        }
+    });
+
+    // Character Counter UI
+    if (descriptionInput && charCounter) {
+        descriptionInput.addEventListener("input", (e) => {
+            charCounter.innerText = `${e.target.value.length}/200`;
+            prevDesc.innerText = e.target.value || "Describe your produce quality here...";
+        });
+    }
+
+    // Live Route Mapping Synchronization Link Engine
+    const syncRoutePreview = () => {
+        const origin = document.getElementById("location").value.trim() || "Ibadan, Oyo State";
+        const destination = document.getElementById("destination").value.trim() || "Lagos State";
+        prevLoc.innerText = `${origin} → ${destination}`;
+    };
+
+    document.getElementById("productName").addEventListener("input", (e) => prevTitle.innerText = e.target.value || "Fresh Tomatoes");
+    document.getElementById("category").addEventListener("change", (e) => prevCat.innerText = e.target.value);
+    document.getElementById("location").addEventListener("input", syncRoutePreview);
+    document.getElementById("destination").addEventListener("input", syncRoutePreview);
+    document.getElementById("pricePerUnit").addEventListener("input", (e) => prevPrice.innerText = e.target.value ? `₦${Number(e.target.value).toLocaleString()}` : "₦0");
+    
+    const syncQtyAndUnit = () => {
+        const qty = document.getElementById("quantity").value || "0";
+        const unit = document.getElementById("unit").value;
+        prevQty.innerText = `${qty} ${unit} available`;
+        prevUnit.innerText = `/ ${unit}`;
+    };
+    document.getElementById("quantity").addEventListener("input", syncQtyAndUnit);
+    document.getElementById("unit").addEventListener("change", syncQtyAndUnit);
+
+    // Multi-Step Wizard Engine
+    function updateWizardUI() {
+        panels.forEach((panel, idx) => {
+            if (idx === currentStep) {
+                panel.classList.remove("hidden");
+            } else {
+                panel.classList.add("hidden");
+            }
+        });
+
+        if (currentStep === 0) {
+            prevBtn.classList.add("invisible");
+        } else {
+            prevBtn.classList.remove("invisible");
+            prevBtn.innerText = "Back";
+        }
+
+        if (currentStep === panels.length - 1) {
+            nextBtn.innerHTML = `<span>Submit Listing</span> <i class="fa-solid fa-check text-xs"></i>`;
+        } else {
+            const stepTitles = ["Pricing", "Availability"];
+            nextBtn.innerHTML = `<span>Next: ${stepTitles[currentStep]}</span> <i class="fa-solid fa-arrow-right text-xs"></i>`;
+        }
+
+        const progressWidths = ["0%", "50%", "100%"];
+        progressLine.style.width = progressWidths[currentStep];
+
+        stepItems.forEach((item, idx) => {
+            const bubble = item.querySelector("div");
+            const label = item.querySelector("span");
+            if (idx <= currentStep) {
+                bubble.className = "w-9 h-9 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-sm ring-4 ring-emerald-50";
+                label.className = "text-xs font-semibold text-emerald-800 mt-2";
+            } else {
+                bubble.className = "w-9 h-9 rounded-full bg-white border-2 border-gray-200 text-gray-400 flex items-center justify-center font-bold text-sm";
+                label.className = "text-xs font-medium text-gray-400 mt-2";
+            }
+        });
+    }
+
+    // Next / Submit Routing Logic
+    nextBtn.addEventListener("click", async () => {
+        const inputs = panels[currentStep].querySelectorAll("[required], input, select, textarea");
+        let valid = true;
+        inputs.forEach(input => {
+            if (input.hasAttribute("required") && !input.value.trim()) {
+                input.reportValidity();
+                valid = false;
+            }
+        });
+
+        if (!valid) return;
+
+        if (currentStep < panels.length - 1) {
+            currentStep++;
+            updateWizardUI();
+        } else {
+            try {
+                nextBtn.disabled = true;
+                nextBtn.innerText = "Submitting...";
+
+                // Convert tracking files array directly into Base64 strings for simple Firestore MVP storage
+                const base64Images = await Promise.all(
+                    selectedImages.map(file => {
+                        return new Promise((resolve) => {
+                            const reader = new FileReader();
+                            reader.onloadend = () => resolve(reader.result);
+                            reader.readAsDataURL(file);
+                        });
+                    })
+                );
+
+                const productPayload = {
+                    farmerId: auth.currentUser.uid,
+                    name: document.getElementById("productName").value,
+                    category: document.getElementById("category").value,
+                    unit: document.getElementById("unit").value,
+                    description: document.getElementById("description").value,
+                    price: parseFloat(document.getElementById("pricePerUnit").value) || 0,
+                    quantity: parseInt(document.getElementById("quantity").value) || 0,
+                    harvestDate: document.getElementById("harvestDate").value,
+                    routeFrom: document.getElementById("location").value,
+                    routeTo: document.getElementById("destination").value,
+                    images: base64Images, // Added array payload to display inside listings.html
+                    status: "Searching", 
+                    createdAt: new Date()
+                };
+
+                await addDoc(collection(db, "products"), productPayload);
+                alert("Produce Listed Successfully!");
+                window.location.href = "listings.html"; 
+            } catch (error) {
+                console.error("Error creating listing payload: ", error);
+                alert("Failed to submit listing. Try again.");
+                nextBtn.disabled = false;
+                updateWizardUI();
+            }
+        }
+    });
+
+    prevBtn.addEventListener("click", () => {
+        if (currentStep > 0) {
+            currentStep--;
+            updateWizardUI();
+        }
+    });
+
+    const logoutBtn = document.getElementById("logout-btn");
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", () => {
+            signOut(auth)
+                .then(() => { window.location.href = LOGIN_PAGE_URL; })
+                .catch((error) => { console.error("Signout error:", error); });
+        });
+    }
+
+    // Global array to store the selected file objects temporarily
+    let selectedImages = [];
+
+    const imageInput = document.getElementById("imageFiles");
+    const previewContainer = document.getElementById("image-previews-container");
+    const mainPreviewImg = document.querySelector(".relative.bg-emerald-50 img"); 
+
+    // Isolated render function to decouple event dispatch loops
+    function renderPreviews() {
+        previewContainer.innerHTML = "";
+
+        if (selectedImages.length === 0 && mainPreviewImg) {
+            mainPreviewImg.src = "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=600";
+            return;
+        }
+
+        selectedImages.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                if (index === 0 && mainPreviewImg) {
+                    mainPreviewImg.src = event.target.result;
+                }
+
+                const thumbnailMarkup = `
+                    <div class="relative rounded-xl border overflow-hidden aspect-square group">
+                        <img src="${event.target.result}" class="w-full h-full object-cover">
+                        <button type="button" data-index="${index}" class="remove-img-btn absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition shadow">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                `;
+                previewContainer.insertAdjacentHTML("beforeend", thumbnailMarkup);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    if (imageInput) {
+        imageInput.addEventListener("change", (e) => {
+            const files = Array.from(e.target.files);
+            
+            files.forEach(file => {
+                if (file.type.startsWith("image/")) {
+                    selectedImages.push(file);
+                }
+            });
+
+            // Reset the input field so uploading the same file again still fires 'change'
+            imageInput.value = ""; 
+            renderPreviews();
+        });
+    }
+
+    // Handle thumbnail removal clicks safely
+    previewContainer.addEventListener("click", (e) => {
+        const removeBtn = e.target.closest(".remove-img-btn");
+        if (!removeBtn) return;
+        
+        const indexToRemove = parseInt(removeBtn.getAttribute("data-index"));
+        selectedImages.splice(indexToRemove, 1);
+        
+        // Refresh directly via internal display render function
+        renderPreviews();
+    });
+</script>
+</body>
+</html>

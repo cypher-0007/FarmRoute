@@ -13,90 +13,104 @@
 
 <body class="bg-gray-100">
 
+<div id="loading-screen" class="fixed inset-0 bg-white z-50 flex items-center justify-center font-semibold text-gray-600">
+    <div class="text-center">
+        <i class="fa-solid fa-circle-notch fa-spin text-3xl text-green-700 mb-2"></i>
+        <p>Verifying session security details...</p>
+    </div>
+</div>
+
+<!-- Main body -->
 <div class="flex h-screen">
+    <!-- SIDE-NAV -->
+    <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col h-screen">
 
-    <!-- Sidebar -->
-    <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col">
+            <div class="px-6 py-2 items-center justify-between flex border-b border-green-900">
+                <img class="h-16" src="../assets/logo3.png" alt="FarmRoute Logo">
 
-        <!-- Logo -->
-        <div class="px-6 py-2 border-b border-green-900">
-            <img class="h-16" src="assets/logo3.png" alt="">
-        </div>
+                <button id="closeside-btn" class="hidden max-sm:flex text-2xl">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
 
-        <!-- Menu -->
-        <nav class="flex-1 mt-6">
+            <nav class="flex-1 mt-6 overflow-y-auto">
 
-            <a href="#"
-                class="flex items-center gap-3 bg-green-700 mx-4 px-4 py-3 rounded-lg mb-2">
-                <i class="fa-solid fa-house"></i>
-                Dashboard
-            </a>
+                <a href="dashboard.html"
+                    class="flex items-center gap-3 bg-green-700 mx-4 px-4 py-3 rounded-lg mb-2">
+                    <i class="fa-solid fa-house"></i>
+                    Dashboard
+                </a>
 
-            <a href="#"
-                class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800">
-                <i class="fa-solid fa-truck"></i>
-                My Shipments
-            </a>
+                <a href="listings.html"
+                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
+                    <i class="fa-solid fa-box-open"></i>
+                    My Listings
+                </a>
 
-            <a href="#"
-                class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800">
-                <i class="fa-solid fa-location-dot"></i>
-                Find Transport
-            </a>
+                <a href=""
+                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
+                    <i class="fa-solid fa-truck"></i>
+                    Orders
+                </a>
 
-            <a href="#"
-                class="flex items-center justify-between px-4 py-3 mx-4 rounded-lg hover:bg-green-800">
-                <div class="flex items-center gap-3">
-                    <i class="fa-regular fa-message"></i>
-                    Messages
+                <a href="#"
+                    class="flex items-center justify-between px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-regular fa-message"></i>
+                        Messages
+                    </div>
+
+                    <span class="bg-green-500 text-xs px-2 py-1 rounded-full">
+                        3
+                    </span>
+                </a>
+
+                <a href="routes.html"
+                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
+                    <i class="fa-solid fa-route"></i>
+                    Routes
+                </a>
+
+                <a href="#"
+                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
+                    <i class="fa-solid fa-wallet"></i>
+                    Payments
+                </a>
+
+                <a href="#"
+                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
+                    <i class="fa-regular fa-user"></i>
+                    Profile
+                </a>
+
+                <a href="#"
+                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-6">
+                    <i class="fa-solid fa-gear"></i>
+                    Settings
+                </a>
+
+                <div class="px-4 mb-4">
+                    <a href="add_produce.html" 
+                        class="flex items-center gap-2 w-full  hover:bg-green-800  font-semibold py-3 px-4 rounded-xl transition duration-200 shadow-sm text-sm">
+                        <i class="fa-solid fa-plus text-base"></i>
+                        List New Produce
+                    </a>
                 </div>
 
-                <span class="bg-green-500 text-xs px-2 py-1 rounded-full">
-                    3
-                </span>
-            </a>
+            </nav>
 
-            <a href="#"
-                class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800">
-                <i class="fa-solid fa-chart-line"></i>
-                Market Prices
-            </a>
+            <div class="p-4 border-t border-green-900">
+                <button id="logout-btn"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-green-800 text-left text-gray-300 hover:text-white transition">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Logout
+                </button>
+            </div>
 
-            <a href="#"
-                class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800">
-                <i class="fa-solid fa-wallet"></i>
-                Payments
-            </a>
-
-            <a href="#"
-                class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800">
-                <i class="fa-regular fa-user"></i>
-                Profile
-            </a>
-
-            <a href="#"
-                class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800">
-                <i class="fa-solid fa-gear"></i>
-                Settings
-            </a>
-
-        </nav>
-
-        <!-- Logout -->
-        <div class="p-4">
-            <a href="#"
-                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-green-800">
-                <i class="fa-solid fa-right-from-bracket"></i>
-                Logout
-            </a>
-        </div>
-
-    </aside>
-
-    <!-- Main Content -->
+        </aside>
+    <!-- MAIN CONTENT -->
     <main class="flex-1 overflow-y-auto">
 
-        <!-- Top Navbar -->
         <header
             class="bg-white h-20 px-8 flex items-center justify-between border-b">
 
@@ -126,11 +140,11 @@
                         class="w-10 h-10 rounded-full">
 
                     <div>
-                        <h4 class="font-semibold">
-                            John Ayodele
+                        <h4 id="user-display-name" class="font-semibold">
+                            Loading...
                         </h4>
-                        <p class="text-sm text-gray-500">
-                            Farmer
+                        <p id="user-display-role" class="text-sm text-gray-500 capitalize">
+                            ...
                         </p>
                     </div>
 
@@ -142,7 +156,6 @@
 
         </header>
 
-        <!-- Dashboard Body -->
         <section class="p-8">
 
             <div class="flex justify-between items-center mb-8">
@@ -158,10 +171,8 @@
 
             </div>
 
-            <!-- Stats Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
 
-    <!-- Active Shipments -->
     <div class="bg-white rounded-2xl border p-6 shadow-sm">
 
         <h3 class="text-gray-700 font-medium mb-6">
@@ -192,7 +203,6 @@
 
     </div>
 
-    <!-- Available Trucks -->
     <div class="bg-white rounded-2xl border p-6 shadow-sm">
 
         <h3 class="text-gray-700 font-medium mb-6">
@@ -223,7 +233,6 @@
 
     </div>
 
-    <!-- Saved This Month -->
     <div class="bg-white rounded-2xl border p-6 shadow-sm">
 
         <h3 class="text-gray-700 font-medium mb-6">
@@ -255,7 +264,6 @@
 
     </div>
 
-    <!-- Pending Matches -->
     <div class="bg-white rounded-2xl border p-6 shadow-sm">
 
         <h3 class="text-gray-700 font-medium mb-6">
@@ -288,10 +296,8 @@
 
 </div>
 
-<!-- Main Content Grid -->
 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
-    <!-- Recent Shipments -->
     <div class="xl:col-span-2 bg-white rounded-2xl border p-6">
 
         <div class="flex justify-between items-center mb-6">
@@ -300,7 +306,6 @@
             </h2>
         </div>
 
-        <!-- Shipment 1 -->
         <div class="flex items-center justify-between py-5 border-b">
 
             <div class="flex items-center gap-4">
@@ -348,7 +353,6 @@
 
         </div>
 
-        <!-- Shipment 2 -->
         <div class="flex items-center justify-between py-5 border-b">
 
             <div class="flex items-center gap-4">
@@ -396,7 +400,6 @@
 
         </div>
 
-        <!-- Shipment 3 -->
         <div class="flex items-center justify-between py-5 border-b">
 
             <div class="flex items-center gap-4">
@@ -444,7 +447,6 @@
 
         </div>
 
-        <!-- Shipment 4 -->
         <div class="flex items-center justify-between py-5">
 
             <div class="flex items-center gap-4">
@@ -503,17 +505,14 @@
 
     </div>
 
-<!-- Right Sidebar -->
 <div class="space-y-6">
 
-    <!-- Market Demand -->
     <div class="bg-white rounded-2xl border p-6">
 
         <h2 class="text-2xl font-semibold mb-6">
             Market Demand
         </h2>
 
-        <!-- Lagos -->
         <div class="pb-5 border-b">
 
             <div class="flex justify-between items-center">
@@ -536,7 +535,6 @@
 
         </div>
 
-        <!-- Abuja -->
         <div class="py-5 border-b">
 
             <div class="flex justify-between items-center">
@@ -559,7 +557,6 @@
 
         </div>
 
-        <!-- Ibadan -->
         <div class="py-5">
 
             <div class="flex justify-between items-center">
@@ -589,7 +586,6 @@
 
     </div>
 
-    <!-- Spoilage Risk -->
     <div class="bg-white rounded-2xl border p-6">
 
         <h2 class="text-2xl font-semibold mb-6">
@@ -645,12 +641,73 @@
 
 </div>
 
+
+<script type="module">
+    import { auth, db } from "../Backend/firebaseConfig.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const LOGIN_PAGE_URL = "Farmers/login.html";
+
+    const nameEl = document.getElementById("user-display-name");
+    const roleEl = document.getElementById("user-display-role");
+    const loadingScreen = document.getElementById("loading-screen");
+
+    // Clear loading states safely
+    function hideLoading() {
+        if (loadingScreen) loadingScreen.classList.add("hidden");
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            // No session active -> instantly redirect to login
+            window.location.href = LOGIN_PAGE_URL;
+            return;
+        }
+
+        // 1. Immediate fallback: Use basic auth info so it stops showing "Loading..."
+        nameEl.innerText = user.displayName || "FarmRoute User";
+        roleEl.innerText = "Farmer"; 
+        hideLoading();
+
+        // 2. Background fetch: Try loading extended profile data from Firestore
+        try {
+            const userDocRef = doc(db, "users", user.uid);
+            const userDocSnap = await getDoc(userDocRef);
+
+            if (userDocSnap.exists()) {
+                const userData = userDocSnap.data();
+                if (userData.name) nameEl.innerText = userData.name;
+                if (userData.role) roleEl.innerText = userData.role;
+            }
+        } catch (err) {
+            console.error("Firestore profile fetch failed, using Auth defaults:", err);
+        }
+    });
+
+    // Logout Action Handler
+    const logoutBtn = document.getElementById("logout-btn");
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", () => {
+            signOut(auth)
+                .then(() => {
+                    window.location.href = LOGIN_PAGE_URL;
+                })
+                .catch((error) => {
+                    console.error("Signout error:", error);
+                });
+        });
+    }
+</script>
+
 <script>
     const sideBar = document.getElementById("side-bar");
     const sideBtn = document.getElementById("side-btn");
+    const closeSide = document.getElementById("closeside-btn");
     
+    // CLOSE & OPEN SIDE-BAR
     sideBtn.addEventListener("click", () => sideBar.classList.toggle("hidden"))
-
+    closeSide.addEventListener("click", () => sideBar.classList.toggle("hidden"))
 </script>
 </body>
 </html>

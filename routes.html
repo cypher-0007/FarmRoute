@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmRoute - AI Route Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="flex h-screen overflow-hidden">
+
+        <!-- Sidebar -->
+        <aside id="side-bar" class="md:w-64 w-full bg-white text-gray-700 flex flex-col border-r shrink-0 z-40 fixed md:relative hidden md:flex h-full">
+            <div class="px-6 py-5 flex items-center justify-between border-b">
+                <div class="flex items-center gap-2 text-emerald-700 font-bold text-xl">
+                    <i class="fa-solid fa-tractor text-2xl"></i>
+                    <span>FarmRoute</span>
+                </div>
+                <button id="closeside-btn" class="md:hidden text-2xl text-gray-500">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <nav class="flex-1 mt-6 space-y-1 px-4 overflow-y-auto">
+                <a href="dashboard.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 font-medium">
+                    <i class="fa-solid fa-house text-gray-400"></i>Dashboard
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 font-medium">
+                    <i class="fa-solid fa-tags text-gray-400"></i>My Listings
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 font-medium">
+                    <i class="fa-solid fa-cart-shopping text-gray-400"></i>Orders
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 font-medium">
+                    <i class="fa-regular fa-message text-gray-400"></i>Messages
+                </a>
+                <a href="routes.html" class="flex items-center gap-3 bg-emerald-50 text-emerald-700 px-4 py-3 rounded-xl font-semibold">
+                    <i class="fa-solid fa-route text-emerald-600"></i>Routes
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 font-medium">
+                    <i class="fa-solid fa-wallet text-gray-400"></i>Payments
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 font-medium">
+                    <i class="fa-solid fa-chart-simple text-gray-400"></i>Analytics
+                </a>
+
+                <div class="pt-6 border-t border-gray-100 my-4 space-y-1">
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 font-medium">
+                        <i class="fa-regular fa-circle-question text-gray-400"></i>Help Center
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 font-medium">
+                        <i class="fa-solid fa-gear text-gray-400"></i>Settings
+                    </a>
+                </div>
+            </nav>
+
+            <div class="p-4 border-t">
+                <button id="logout-btn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-red-50 hover:text-red-600 text-left font-medium transition">
+                    <i class="fa-solid fa-right-from-bracket text-gray-400"></i>Log out
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Workspace -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+            
+            <header class="bg-white h-20 px-4 sm:px-8 flex items-center justify-between border-b shrink-0 z-30">
+                <div class="flex items-center gap-4">
+                    <button id="side-btn" class="text-xl text-gray-600 md:hidden"><i class="fa-solid fa-bars"></i></button>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h1 class="text-xl sm:text-2xl font-bold text-gray-900">AI Route Planner</h1>
+                            <i class="fa-solid fa-wand-magic-sparkles text-emerald-600"></i>
+                        </div>
+                        <p class="text-xs sm:text-sm text-gray-500 hidden sm:block">Find the best way to get your produce to market.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4 sm:gap-6">
+                    <div class="flex items-center gap-3 border-l pl-4 sm:pl-6">
+                        <img src="https://i.pravatar.cc/100?img=12" class="w-10 h-10 rounded-full object-cover">
+                        <div class="hidden sm:block text-left">
+                            <h4 id="user-display-name" class="font-semibold text-sm text-gray-900 leading-tight">Loading...</h4>
+                            <span id="user-display-role" class="text-xs text-emerald-600 font-medium capitalize">...</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gray-50/50">
+                <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
+                    
+                    <!-- Form and Map Column -->
+                    <div class="lg:col-span-2 space-y-6">
+                        
+                        <!-- Form Section -->
+                        <section class="bg-white rounded-2xl border p-4 sm:p-6 shadow-sm">
+                            <h3 class="text-lg font-bold text-gray-900 mb-1">Plan a Pickup & Delivery</h3>
+                            <p class="text-sm text-gray-500 mb-6">Tell us where your produce is and where it needs to go.</p>
+                            
+                            <form id="route-form" class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold uppercase text-gray-600 mb-2">Pickup Location (Your Farm) *</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400"><i class="fa-solid fa-location-dot"></i></span>
+                                        <input type="text" id="pickupLocation" required placeholder="e.g., Akinyele Area, Ibadan, Oyo State" class="w-full pl-11 pr-4 py-3 bg-white border rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold uppercase text-gray-600 mb-2">Delivery Destination *</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400"><i class="fa-solid fa-location-dot"></i></span>
+                                        <input type="text" id="deliveryDestination" required placeholder="e.g., Oyo Central Market, Oyo State" class="w-full pl-11 pr-4 py-3 bg-white border rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold uppercase text-gray-600 mb-2">Preferred Pickup Date *</label>
+                                        <input type="date" id="pickupDate" required class="w-full px-4 py-3 bg-white border rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold uppercase text-gray-600 mb-2">Produce Type *</label>
+                                        <input type="text" id="produceType" required placeholder="e.g., Tomatoes, Pepper, Yam" class="w-full px-4 py-3 bg-white border rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold uppercase text-gray-600 mb-2">Quantity / Weight *</label>
+                                        <input type="text" id="quantity" required placeholder="e.g., 20 Bags, 120 kg" class="w-full px-4 py-3 bg-white border rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold uppercase text-gray-600 mb-2">Offer Price (per bag/kg) ₦ *</label>
+                                        <input type="number" id="pricePerUnit" required placeholder="e.g., 18000" class="w-full px-4 py-3 bg-white border rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                    </div>
+                                </div>
+                            </form>
+                        </section>
+
+                        <!-- Map Preview Section -->
+                        <section class="bg-white rounded-2xl border p-4 sm:p-6 shadow-sm">
+                            <h3 class="text-lg font-bold text-gray-900 mb-1">AI Route Recommendation</h3>
+                            <div class="relative rounded-xl border overflow-hidden h-64 bg-[#eef0eb] mt-4" style="background-image: radial-gradient(#d3d7cf 1.5px, transparent 1.5px); background-size: 20px 20px;">
+                                <div class="absolute inset-0 p-6 flex flex-col justify-between pointer-events-none">
+                                    <div class="bg-white px-3 py-1.5 border rounded-xl shadow-sm self-start text-xs font-bold" id="map-pickup-label">Pickup Point</div>
+                                    <div class="bg-white px-3 py-1.5 border rounded-xl shadow-sm self-end text-xs font-bold mt-auto" id="map-delivery-label">Destination</div>
+                                </div>
+                                <svg class="absolute inset-0 w-full h-full pointer-events-none">
+                                    <path d="M 80 60 Q 200 120 300 90 T 500 180" fill="none" stroke="#047857" stroke-width="4" stroke-dasharray="5 5" />
+                                </svg>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Sidebar Drivers and Booking Panel -->
+                    <div class="space-y-6">
+                        <section class="bg-white rounded-2xl border p-4 sm:p-6 shadow-sm">
+                            <h3 class="text-lg font-bold text-gray-900 mb-1">Available Drivers</h3>
+                            <p class="text-sm text-gray-500 mb-4">Drivers near you matching this area loop.</p>
+                            
+                            <div class="space-y-3">
+                                <div class="border rounded-xl p-3 bg-gray-50 flex gap-3 items-center">
+                                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" class="w-10 h-10 rounded-full object-cover">
+                                    <div>
+                                        <h4 class="font-bold text-xs text-gray-900">Tunde Adesina (Top Match)</h4>
+                                        <p class="text-[11px] text-gray-500">Medium Truck • 2.1 km away</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Action Submit Box -->
+                        <section class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center border text-2xl shadow-sm">📦</div>
+                                <div>
+                                    <h4 class="font-bold text-sm text-gray-900 leading-tight">Ready to book this route?</h4>
+                                    <p class="text-xs text-gray-500 mt-1">Submitting will broadcast this shipment route directly to available local haulers.</p>
+                                </div>
+                            </div>
+                            
+                            <button type="button" id="submit-shipment-btn" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 transition text-sm">
+                                <i class="fa-solid fa-truck-fast"></i> Request Delivery
+                            </button>
+                        </section>
+                    </div>
+
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Firebase System Modules Integration Pipeline -->
+    <script type="module">
+        import { auth, db } from "../Backend/firebaseConfig.js";
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        let currentUserId = null;
+        let currentUserName = "Farmer";
+
+        // Auth Listener Tracking User Profiles
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = "login.html";
+                return;
+            }
+
+            currentUserId = user.uid;
+            currentUserName = user.displayName || "FarmRoute User";
+            
+            document.getElementById("user-display-name").innerText = currentUserName;
+            document.getElementById("user-display-role").innerText = "Farmer";
+
+            try {
+                const userDocRef = doc(db, "users", user.uid);
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists()) {
+                    const userData = userDocSnap.data();
+                    if (userData.name) {
+                        currentUserName = userData.name;
+                        document.getElementById("user-display-name").innerText = userData.name;
+                    }
+                    if (userData.role) document.getElementById("user-display-role").innerText = userData.role;
+                }
+            } catch (err) {
+                console.error("Error reading profile document metadata details:", err);
+            }
+        });
+
+        // Live Dynamic Map Text Sync Handlers
+        const pInput = document.getElementById("pickupLocation");
+        const dInput = document.getElementById("deliveryDestination");
+        pInput.addEventListener("input", () => {
+            document.getElementById("map-pickup-label").innerText = pInput.value || "Pickup Point";
+        });
+        dInput.addEventListener("input", () => {
+            document.getElementById("map-delivery-label").innerText = dInput.value || "Destination";
+        });
+
+        // WRITE TO FIREBASE ON CLICK
+        document.getElementById("submit-shipment-btn").addEventListener("click", async () => {
+            const form = document.getElementById("route-form");
+            
+            // Trigger browser form validation checks
+            if (!form.reportValidity()) return;
+
+            const btn = document.getElementById("submit-shipment-btn");
+            btn.disabled = true;
+            btn.innerText = "Publishing Route...";
+
+            try {
+                // Read fresh dynamic parameters values straight from interactive form inputs
+                const shipmentPayload = {
+                    farmerId: currentUserId,
+                    farmerName: currentUserName,
+                    pickupLocation: document.getElementById("pickupLocation").value,
+                    deliveryDestination: document.getElementById("deliveryDestination").value,
+                    pickupDate: document.getElementById("pickupDate").value,
+                    produceType: document.getElementById("produceType").value,
+                    quantity: document.getElementById("quantity").value,
+                    pricePerUnit: Number(document.getElementById("pricePerUnit").value),
+                    status: "searching",
+                    driverId: null,
+                    createdAt: new Date().toISOString()
+                };
+
+                // Add to Firestore collection reference pipeline 
+                const docRef = await addDoc(collection(db, "shipments"), shipmentPayload);
+                console.log("Success! Document written with database references matching key:", docRef.id);
+                
+                alert(`Route successfully created for your ${shipmentPayload.produceType}! Drivers have been notified.`);
+                form.reset();
+                
+            } catch (error) {
+                console.error("Firestore database submission failed completely:", error);
+                alert("Error publishing route details parameters database rules layout settings verification failed.");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-truck-fast"></i> Request Delivery`;
+            }
+        });
+
+        // Global Logout Script Bindings
+        document.getElementById("logout-btn").addEventListener("click", () => {
+            signOut(auth).then(() => window.location.href = "login.html");
+        });
+    </script>
+</body>
+</html>
