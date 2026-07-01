@@ -74,7 +74,6 @@
 
             <div class="max-w-sm mx-auto w-full relative">
                 
-                <!-- LOGIN FORM -->
                 <div id="form-container-login" class="transition-all duration-300 opacity-100 scale-100">
                     <div class="text-center mb-6">
                         <div class="w-12 h-12 bg-emerald-50 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -139,7 +138,6 @@
                     </p>
                 </div>
 
-                <!-- SIGN-UP FORM -->
                 <div id="form-container-signup" class="transition-all duration-300 opacity-0 scale-95 hidden">
                     <div class="text-center mb-6">
                         <div class="w-12 h-12 bg-emerald-50 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -202,7 +200,7 @@
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                     <i class="fa-solid fa-lock"></i>
                                 </span>
-                                <input name="password" id="signup-password" type="password" autocomplete="new-password" required placeholder="Minimium 6 characters" class="w-full pl-9 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
+                                <input name="password" id="signup-password" type="password" autocomplete="new-password" required placeholder="Minimum 6 characters" class="w-full pl-9 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
                                 <span id="toggle-signup-password" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 cursor-pointer hover:text-gray-600">
                                     <i class="fa-regular fa-eye text-xs"></i>
                                 </span>
@@ -249,7 +247,6 @@
     </div>
 
     <script>
-        // Tab switching setup
         function switchTab(tab) {
             const loginForm = document.getElementById('form-container-login');
             const signupForm = document.getElementById('form-container-signup');
@@ -279,18 +276,24 @@
             }
         }
 
-        // Custom segment selection logic for Farmer/Driver role assignment
         function selectRole(role) {
             document.getElementById('user-role').value = role;
             const farmerBtn = document.getElementById('role-farmer');
             const driverBtn = document.getElementById('role-driver');
 
             if (role === 'farmer') {
-                farmerBtn.className = "flex items-center justify-center space-x-2 py-2.5 rounded-xl text-sm font-semibold border-2 border-emerald-700 bg-emerald-50 text-emerald-800 transition";
-                driverBtn.className = "flex items-center justify-center space-x-2 py-2.5 rounded-xl text-sm font-medium border-2 border-gray-200 bg-white text-gray-500 hover:border-gray-300 transition";
+                // Adjusting classes via classList safely instead of replacing completely
+                farmerBtn.classList.add('border-emerald-700', 'bg-emerald-50', 'text-emerald-800', 'font-semibold');
+                farmerBtn.classList.remove('border-gray-200', 'bg-white', 'text-gray-500', 'font-medium');
+                
+                driverBtn.classList.add('border-gray-200', 'bg-white', 'text-gray-500', 'font-medium');
+                driverBtn.classList.remove('border-emerald-700', 'bg-emerald-50', 'text-emerald-800', 'font-semibold');
             } else {
-                driverBtn.className = "flex items-center justify-center space-x-2 py-2.5 rounded-xl text-sm font-semibold border-2 border-emerald-700 bg-emerald-50 text-emerald-800 transition";
-                farmerBtn.className = "flex items-center justify-center space-x-2 py-2.5 rounded-xl text-sm font-medium border-2 border-gray-200 bg-white text-gray-500 hover:border-gray-300 transition";
+                driverBtn.classList.add('border-emerald-700', 'bg-emerald-50', 'text-emerald-800', 'font-semibold');
+                driverBtn.classList.remove('border-gray-200', 'bg-white', 'text-gray-500', 'font-medium');
+                
+                farmerBtn.classList.add('border-gray-200', 'bg-white', 'text-gray-500', 'font-medium');
+                farmerBtn.classList.remove('border-emerald-700', 'bg-emerald-50', 'text-emerald-800', 'font-semibold');
             }
         }
 
@@ -316,104 +319,90 @@
     </script>
 
     <script type="module">
-  // Importing existing initialized auth and db instances 
-  import { auth, db } from "../Backend/firebaseConfig.js";
+        import { auth, db } from "../Backend/firebaseConfig.js";
+        import { 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            signInWithPopup, 
+            GoogleAuthProvider,
+            updateProfile
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  import { 
-    createUserWithEmailAndPassword, 
-    signInWithEmailAndPassword, 
-    signInWithPopup, 
-    GoogleAuthProvider,
-    updateProfile
-  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-  import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        const googleProvider = new GoogleAuthProvider();
+        const DASHBOARD_URL = "Farmers/dashboard.html";
 
-  const googleProvider = new GoogleAuthProvider();
-  const DASHBOARD_URL = "Farmers/dashboard.html";
+        // SIGN UP FLOW
+        document.getElementById('signup-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('signup-name').value.trim();
+            const phone = document.getElementById('signup-phone').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const password = document.getElementById('signup-password').value;
+            const role = document.getElementById('user-role').value; 
 
-  // ==========================================
-  // SIGN UP FLOW
-  // ==========================================
-  document.getElementById('signup-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const name = document.getElementById('signup-name').value.trim();
-    const phone = document.getElementById('signup-phone').value.trim();
-    const email = document.getElementById('signup-email').value.trim();
-    const password = document.getElementById('signup-password').value;
-    const role = document.getElementById('user-role').value; 
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
 
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+                await updateProfile(user, { displayName: name });
 
-      // Update the Auth Profile standard Display Name attribute
-      await updateProfile(user, { displayName: name });
+                await setDoc(doc(db, "users", user.uid), {
+                    uid: user.uid,
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    role: role,
+                    createdAt: new Date().toISOString()
+                });
 
-      // Save additional application data (Role and Phone Number) inside Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        uid: user.uid,
-        name: name,
-        email: email,
-        phone: phone,
-        role: role,
-        createdAt: new Date().toISOString()
-      });
+                window.location.href = DASHBOARD_URL;
+            } catch (error) {
+                console.error("Signup error:", error);
+                alert(`Signup Failed: ${error.message}`);
+            }
+        });
 
-      window.location.href = DASHBOARD_URL;
+        // LOGIN FLOW
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
 
-    } catch (error) {
-      console.error("Signup error:", error);
-      alert(`Signup Failed: ${error.message}`);
-    }
-  });
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                window.location.href = DASHBOARD_URL;
+            } catch (error) {
+                console.error("Login error:", error);
+                alert(`Login Failed: ${error.message}`);
+            }
+        });
 
-  // ==========================================
-  // LOGIN FLOW
-  // ==========================================
-  document.getElementById('login-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
+        // GOOGLE OAUTH FLOW
+        const handleGoogleAuth = async () => {
+            try {
+                const result = await signInWithPopup(auth, googleProvider);
+                const user = result.user;
 
-    const email = document.getElementById('login-email').value.trim();
-    const password = document.getElementById('login-password').value;
+                await setDoc(doc(db, "users", user.uid), {
+                    uid: user.uid,
+                    name: user.displayName,
+                    email: user.email,
+                    phone: user.phoneNumber || "",
+                    role: "farmer", 
+                    updatedAt: new Date().toISOString()
+                }, { merge: true }); 
 
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      window.location.href = DASHBOARD_URL;
+                window.location.href = DASHBOARD_URL;
+            } catch (error) {
+                console.error("Google Auth error:", error);
+                alert(`OAuth Failed: ${error.message}`);
+            }
+        };
 
-    } catch (error) {
-      console.error("Login error:", error);
-      alert(`Login Failed: ${error.message}`);
-    }
-  });
-
-  // ==========================================
-  // GOOGLE OAUTH FLOW
-  // ==========================================
-  const handleGoogleAuth = async () => {
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-
-      // Provision/Merge a Firestore user document on social sign-in
-      await setDoc(doc(db, "users", user.uid), {
-        uid: user.uid,
-        name: user.displayName,
-        email: user.email,
-        phone: user.phoneNumber || "",
-        role: "farmer", // Default fallback role
-        updatedAt: new Date().toISOString()
-      }, { merge: true }); 
-
-      window.location.href = DASHBOARD_URL;
-    } catch (error) {
-      console.error("Google Auth error:", error);
-      alert(`OAuth Failed: ${error.message}`);
-    }
-  };
-
-  document.getElementById('google-login').addEventListener('click', handleGoogleAuth);
-  document.getElementById('google-signup').addEventListener('click', handleGoogleAuth);
-</script>
+        document.getElementById('google-login').addEventListener('click', handleGoogleAuth);
+        document.getElementById('google-signup').addEventListener('click', handleGoogleAuth);
+    </script>
 </body>
 </html>
