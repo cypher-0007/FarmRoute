@@ -317,7 +317,8 @@
     </script>
 
     <script type="module">
-        import { auth, db } from "../Backend/firebaseConfig.js";
+        // Relative path fix for production deployments
+        import { auth, db } from "../backend/firebaseConfig.js"; 
         import { 
             createUserWithEmailAndPassword, 
             signInWithEmailAndPassword, 
@@ -330,12 +331,20 @@
 
         const googleProvider = new GoogleAuthProvider();
 
-        const ROUTES = {
-            farmer: "Farmers/dashboard.html",
-            driver: "Drivers/dashboard.html"
+        // 1. DYNAMIC REDIRECT PATHS FOR REPO SUBFOLDERS
+        const getRedirectUrl = (role) => {
+            const isGitHubPages = window.location.hostname.includes("github.io");
+            const repoPath = isGitHubPages ? `/${window.location.pathname.split('/')[1]}` : "";
+            
+            // Lowercase matching folder structures strictly
+            if (role === "farmer") {
+                return `${window.location.origin}${repoPath}/Farmers/dashboard.html`;
+            } else if (role === "driver") {
+                return `${window.location.origin}${repoPath}/Drivers/dashboard.html`;
+            }
+            return null;
         };
 
-        // Reusable redirection router logic
         async function redirectUserByRole(uid) {
             try {
                 const userDocRef = doc(db, "users", uid);
@@ -344,9 +353,10 @@
                 if (userDoc.exists()) {
                     const userData = userDoc.data();
                     const role = userData.role;
+                    const targetUrl = getRedirectUrl(role);
 
-                    if (ROUTES[role]) {
-                        window.location.href = ROUTES[role];
+                    if (targetUrl) {
+                        window.location.href = targetUrl;
                     } else {
                         console.error("Unknown user role profile found:", role);
                         alert("Error: Configured system role is invalid.");
@@ -357,14 +367,13 @@
                 }
             } catch (error) {
                 console.error("Error reading database configuration setup:", error);
-                alert("Failed to retrieve your access credentials.");
+                alert("Failed to retrieve your access credentials configuration permissions.");
             }
         }
 
-        // Active Session Checker: Resolves immediate loops if user is already logged in
+        // Active Session Checker
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                console.log("Active session detected for UID:", user.uid);
                 redirectUserByRole(user.uid);
             }
         });
@@ -393,8 +402,6 @@
                     role: role,
                     createdAt: new Date().toISOString()
                 });
-                
-                // Redirection is handled by onAuthStateChanged natively upon success
             } catch (error) {
                 console.error("Signup error:", error);
                 alert(`Signup Failed: ${error.message}`);
@@ -409,7 +416,6 @@
 
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                // Redirection is handled by onAuthStateChanged natively upon success
             } catch (error) {
                 console.error("Login error:", error);
                 alert(`Login Failed: ${error.message}`);
@@ -438,8 +444,6 @@
                     role: role, 
                     updatedAt: new Date().toISOString()
                 }, { merge: true }); 
-
-                // Redirection is handled by onAuthStateChanged natively upon success
             } catch (error) {
                 console.error("Google Auth error:", error);
                 alert(`OAuth Failed: ${error.message}`);
