@@ -643,11 +643,11 @@
 
 
 <script type="module">
-    import { auth, db } from "../Backend/firebaseConfig.js";
+    import { auth, db } from "../backend/firebaseConfig.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const LOGIN_PAGE_URL = "Farmers/login.html";
+    const LOGIN_PAGE_URL = "../login.html";
 
     const nameEl = document.getElementById("user-display-name");
     const roleEl = document.getElementById("user-display-role");
