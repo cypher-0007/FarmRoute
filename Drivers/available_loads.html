@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmRoute - Available Loads</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50/50 text-gray-800">
+
+    <div class="flex h-screen overflow-hidden">
+        
+        <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col h-screen shrink-0">
+            <div class="px-6 py-2 items-center justify-between flex border-b border-green-900">
+                <img class="h-16" src="../assets/logo3.png" alt="FarmRoute Logo">
+                <button id="closeside-btn" class="hidden max-sm:flex text-2xl">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+
+            <nav class="flex-1 mt-6 overflow-y-auto">
+                <a href="dashboard.html" class="flex items-center gap-3 hover:bg-green-800 mx-4 px-4 py-3 rounded-lg mb-2 text-gray-300 hover:text-white">
+                    <i class="fa-solid fa-house"></i> Dashboard
+                </a>
+                <a href="available_loads.html" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg bg-green-700 text-white mb-2">
+                    <i class="fa-solid fa-box-open"></i> Available Loads
+                </a>
+                <a href="active_trips.html" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
+                    <i class="fa-solid fa-truck"></i> My Active Trips
+                </a>
+                <a href="#" class="flex items-center justify-between px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-regular fa-message"></i> Messages
+                    </div>
+                    <span class="bg-green-500 text-xs px-2 py-1 rounded-full text-white">3</span>
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
+                    <i class="fa-solid fa-wallet"></i> Payments
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
+                    <i class="fa-regular fa-user"></i> Profile
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-6">
+                    <i class="fa-solid fa-gear"></i> Settings
+                </a>
+                
+                <div class="px-4 mb-4">
+                    <button id="online-toggle-btn" class="flex items-center justify-center gap-2 w-full bg-emerald-100 hover:bg-emerald-200 text-emerald-900 font-semibold py-3 px-4 rounded-xl transition duration-200 shadow-sm text-sm cursor-pointer">
+                        <i class="fa-solid fa-circle text-xs text-emerald-500 animate-pulse"></i> Go Online
+                    </button>
+                </div>
+            </nav>
+
+            <div class="p-4 border-t border-green-900">
+                <button id="logout-btn" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-green-800 text-left text-gray-300 hover:text-white transition">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+            
+            <header class="bg-white h-20 px-4 sm:px-8 flex items-center justify-between border-b shrink-0 z-30">
+                <div class="flex items-center gap-4">
+                    <button id="side-btn" class="text-xl text-gray-600 md:hidden"><i class="fa-solid fa-bars"></i></button>
+                    <div>
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Available Loads</h1>
+                        <p class="text-xs sm:text-sm text-gray-500 hidden sm:block">Find and accept active haulage requests matching your target destinations.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 sm:gap-6">
+                    <div class="flex items-center gap-3 border-l pl-4 sm:pl-6">
+                        <img src="https://i.pravatar.cc/100?img=60" class="w-10 h-10 rounded-full object-cover">
+                        <div class="hidden sm:block text-left">
+                            <h4 id="user-display-name" class="font-semibold text-sm text-gray-900 leading-tight">Loading...</h4>
+                            <span id="user-display-role" class="text-xs text-emerald-600 font-medium capitalize">Logistics Driver</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+                <div class="max-w-7xl mx-auto space-y-6">
+                    
+                    <div class="bg-white p-4 rounded-2xl border flex flex-col sm:flex-row gap-4 justify-between items-center shadow-sm">
+                        <div class="relative w-full sm:w-80">
+                            <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-gray-400 text-sm"></i>
+                            <input type="text" id="search-input" placeholder="Search destination, origin or item..." class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+                        </div>
+                        <div class="flex gap-3 w-full sm:w-auto">
+                            <select id="sort-filter" class="w-full sm:w-48 px-4 py-2.5 bg-gray-50 border rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+                                <option value="highest">Highest Payout First</option>
+                                <option value="lowest">Lowest Payout First</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border p-4 sm:p-6 shadow-sm">
+                        <div id="loads-wrapper" class="divide-y divide-gray-100">
+                            <div class="text-center py-12 text-gray-500">
+                                <i class="fa-solid fa-spinner fa-spin text-2xl text-emerald-600 mb-2"></i>
+                                <p class="text-sm">Scanning active marketplace loads...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, db } from "../backend/firebaseConfig.js";
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { doc, getDoc, collection, query, where, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const LOGIN_PAGE_URL = "../login.html";
+
+        const nameEl = document.getElementById("user-display-name");
+        const roleEl = document.getElementById("user-display-role");
+        const loadsWrapper = document.getElementById("loads-wrapper");
+        const searchInput = document.getElementById("search-input");
+        const sortFilter = document.getElementById("sort-filter");
+
+        let cachedLoads = [];
+
+        const fallbackImages = {
+            tomatoes: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=200",
+            pepper: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=200",
+            yam: "https://images.unsplash.com/photo-1603048297172-c92544798d5a?w=200",
+            maize: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=200",
+            default: "https://images.unsplash.com/photo-1595855759920-86582396756a?w=200"
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = LOGIN_PAGE_URL;
+                return;
+            }
+
+            nameEl.innerText = user.displayName || "Logistics Driver";
+            roleEl.innerText = "Driver";
+
+            try {
+                const userDocSnap = await getDoc(doc(db, "users", user.uid));
+                if (userDocSnap.exists()) {
+                    const userData = userDocSnap.data();
+                    if (userData.name) nameEl.innerText = userData.name;
+                    if (userData.role) roleEl.innerText = userData.role;
+                }
+            } catch (err) {
+                console.error("Firestore driver profile profile payload failure:", err);
+            }
+
+            // Sync listings that have a status of "Searching" (available items for drivers to pickup)
+            const q = query(collection(db, "products"), where("status", "==", "Searching"));
+            onSnapshot(q, (snapshot) => {
+                cachedLoads = [];
+                snapshot.forEach((doc) => {
+                    cachedLoads.push({ id: doc.id, ...doc.data() });
+                });
+                renderLoads();
+            }, (error) => {
+                console.error("Load snapshot syncing failure: ", error);
+                loadsWrapper.innerHTML = `<div class="text-center py-6 text-red-500 text-sm">Failed to sync open marketplace records.</div>`;
+            });
+        });
+
+        function renderLoads() {
+            const searchQuery = searchInput.value.toLowerCase().trim();
+            const sortValue = sortFilter.value;
+
+            let filtered = cachedLoads.filter(l => {
+                const matchesCrop = (l.name || "").toLowerCase().includes(searchQuery);
+                const matchesOrigin = (l.routeFrom || l.location || "").toLowerCase().includes(searchQuery);
+                const matchesDest = (l.routeTo || "").toLowerCase().includes(searchQuery);
+                return matchesCrop || matchesOrigin || matchesDest;
+            });
+
+            // Sorting logic implementation
+            if (sortValue === "highest") {
+                filtered.sort((a, b) => Number(b.price || 0) - Number(a.price || 0));
+            } else if (sortValue === "lowest") {
+                filtered.sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
+            }
+
+            if (filtered.length === 0) {
+                loadsWrapper.innerHTML = `
+                    <div class="text-center py-16 text-gray-500">
+                        <i class="fa-solid fa-box-open text-5xl mb-4 block text-gray-300"></i>
+                        <p class="font-medium text-base">No active available loads found right now.</p>
+                        <p class="text-xs text-gray-400 mt-1">Check back soon for freshly listed routes.</p>
+                    </div>`;
+                return;
+            }
+
+            loadsWrapper.innerHTML = filtered.map(load => {
+                const name = load.name || "Unknown Produce";
+                const imgKey = name.toLowerCase().trim();
+
+                const imageSrc = (load.images && load.images.length > 0) 
+                    ? load.images[0]
+                    : (load.imageUrl || fallbackImages[imgKey] || fallbackImages.default);
+
+                const totalPayout = Number(load.price || 0);
+
+                return `
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between py-5 gap-6">
+                        
+                        <div class="flex items-center gap-4 min-w-[240px]">
+                            <img src="${imageSrc}" class="w-16 h-16 rounded-xl object-cover shrink-0 border" alt="${name}">
+                            <div class="min-w-0">
+                                <h3 class="font-semibold text-lg text-gray-900 truncate">${name}</h3>
+                                <div class="flex items-center gap-2 text-sm text-gray-500 font-medium mt-0.5">
+                                    <span class="bg-gray-100 px-2 py-0.5 rounded-md text-gray-700 text-xs">${load.quantity || 0} ${load.unit || 'Bags'}</span>
+                                    <span class="text-gray-300">•</span>
+                                    <span class="text-xs text-gray-400 font-normal">${load.category || 'Produce'}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- --- UPDATED CENTRAL OPERATIONAL ROUTING MAP SEGMENT --- -->
+                        <div class="flex items-center gap-8 flex-1 min-w-0">
+                            <div class="flex flex-col space-y-1">
+                                <span class="block text-xs font-bold uppercase text-gray-400 tracking-wider">Route Plan</span>
+                                
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-gray-800 text-sm">${load.routeFrom || 'N/A'}</span>
+                                    <i class="fa-solid fa-arrow-right text-xs text-gray-400"></i>
+                                    <span class="font-bold text-gray-800 text-sm">${load.routeTo || 'Lagos'}</span>
+                                </div>
+                                
+                                <div class="text-xs text-gray-500 space-y-0.5">
+                                    <div class="flex items-center gap-1.5">
+                                        <i class="fa-solid fa-circle-dot text-emerald-600 text-[10px]"></i>
+                                        <span class="truncate max-w-[240px] text-gray-600">
+                                            <span class="font-medium text-gray-400">Pick up:</span> ${load.pickupPoint || 'Hub Depot'}
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <i class="fa-solid fa-location-dot text-red-600 text-xs"></i>
+                                        <span class="truncate max-w-[240px] text-gray-600">
+                                            <span class="font-medium text-gray-400">Drop off:</span> ${load.dropoffPoint || 'Main Market Bay'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between lg:justify-end gap-6 w-full lg:w-auto pt-4 lg:pt-0 border-t lg:border-t-0 border-gray-100">
+                            <div class="text-left lg:text-right">
+                                <span class="block text-xs font-bold uppercase text-gray-400 tracking-wider mb-0.5">Estimated Payout</span>
+                                <h4 class="font-bold text-xl text-emerald-700 tracking-tight">
+                                    ₦${totalPayout.toLocaleString()}
+                                </h4>
+                                <span class="text-[10px] text-amber-700 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-md font-medium mt-1 inline-flex items-center gap-1 uppercase tracking-wider">
+                                    <i class="fa-regular fa-clock text-xs"></i> Open Offer
+                                </span>
+                            </div>
+
+                            <div>
+                                <button data-id="${load.id}" class="accept-load-btn bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition duration-200 shadow-sm whitespace-nowrap cursor-pointer">
+                                    Accept Load
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                `;
+            }).join("");
+
+            document.querySelectorAll(".accept-load-btn").forEach(button => {
+                button.addEventListener("click", (e) => {
+                    const loadId = e.target.getAttribute("data-id");
+                    handleAcceptLoad(loadId);
+                });
+            });
+        }
+
+        async function handleAcceptLoad(loadId) {
+            const currentUser = auth.currentUser;
+            
+            if (!currentUser) {
+                alert("You must be logged in to accept this load.");
+                return;
+            }
+
+            // Visual interface button state lock
+            const targetButton = document.querySelector(`button[data-id="${loadId}"]`);
+            if (targetButton) {
+                targetButton.disabled = true;
+                targetButton.classList.add("opacity-50", "cursor-not-allowed");
+                targetButton.innerText = "Processing...";
+            }
+
+            try {
+                const loadDocRef = doc(db, "products", loadId);
+
+                // Update document properties globally across Firestore channels
+                await updateDoc(loadDocRef, {
+                    status: "Matched",
+                    driverId: currentUser.uid
+                });
+
+                alert("Load accepted successfully! Moving to Active Trips...");
+                window.location.href = "active_trips.html";
+
+            } catch (error) {
+                console.error("Failed to accept load configuration assignment:", error);
+                alert("Could not claim this load. It may have been accepted by another driver.");
+                
+                // Reset button feedback on exception handling
+                if (targetButton) {
+                    targetButton.disabled = false;
+                    targetButton.classList.remove("opacity-50", "cursor-not-allowed");
+                    targetButton.innerText = "Accept Load";
+                }
+            }
+        }
+
+        searchInput.addEventListener("input", renderLoads);
+        sortFilter.addEventListener("change", renderLoads);
+
+        const sideBtn = document.getElementById("side-btn");
+        const closeSideBtn = document.getElementById("closeside-btn");
+        const sideBar = document.getElementById("side-bar");
+
+        if (sideBtn && sideBar) {
+            sideBtn.addEventListener("click", () => sideBar.classList.toggle("hidden"));
+        }
+        if (closeSideBtn && sideBar) {
+            closeSideBtn.addEventListener("click", () => sideBar.classList.add("hidden"));
+        }
+
+        document.getElementById("logout-btn")?.addEventListener("click", () => {
+            signOut(auth)
+                .then(() => { window.location.href = LOGIN_PAGE_URL; })
+                .catch((err) => console.error(err));
+        });
+    </script>
+</body>
+</html>
