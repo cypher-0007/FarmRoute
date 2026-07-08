@@ -2,230 +2,798 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
-
-    <title>Paystack Payment UI</title>
-
-    <!-- Tailwind -->
-
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Font Awesome -->
-
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
-
-    <!-- Paystack -->
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmRoute - Escrow Payments</title>
     <script src="https://js.paystack.co/v1/inline.js"></script>
-
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
+<body class="bg-gray-50 text-gray-800">
 
+<!-- LOADING SCREEN -->
+<div id="loading-screen" class="fixed inset-0 bg-white z-50 flex items-center justify-center font-semibold text-gray-600">
+    <div class="text-center">
+        <i class="fa-solid fa-circle-notch fa-spin text-3xl text-green-700 mb-2"></i>
+        <p>Verifying secure escrow data...</p>
+    </div>
+</div>
 
+<!-- 5-SECOND ESCROW WARNING POPUP MODAL -->
+<div id="warning-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"></div>
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative z-10 border border-gray-100 text-center space-y-4">
+        <div class="w-16 h-16 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mx-auto text-2xl">
+            <i class="fa-solid fa-triangle-exclamation animate-bounce"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900">Critical Escrow Authorization</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">
+            Please verify absolutely that your cargo has arrived in the agreed condition. 
+            <strong class="text-red-600">This payout mechanism is absolute and cannot be reversed</strong> once signed off.
+        </p>
+        <div class="bg-gray-50 rounded-xl py-3 text-sm font-bold text-gray-700 border">
+            Unlocking release action in: <span id="countdown-timer" class="text-amber-600 text-lg ml-1">5</span>s
+        </div>
+        <div class="flex gap-3 pt-2">
+            <button id="warning-cancel-btn" class="flex-1 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 py-3 rounded-xl font-semibold text-sm transition">
+                Abort
+            </button>
+            <button id="warning-confirm-btn" disabled class="flex-1 bg-gray-200 text-gray-400 py-3 rounded-xl font-semibold text-sm cursor-not-allowed transition">
+                Confirm Arrival
+            </button>
+        </div>
+    </div>
+</div>
 
-<body
-class="bg-gradient-to-br from-indigo-100 via-white to-purple-100 min-h-screen flex items-center justify-center px-6 py-10">
-
-    <!-- PAYMENT CARD -->
-
-    <div
-    class="w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden">
-
-        <!-- TOP -->
-
-        <div
-        class="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 text-white text-center">
-
-            <div
-            class="w-20 h-20 mx-auto rounded-full bg-white/20 flex items-center justify-center text-4xl mb-5">
-
-                <i class="fa-solid fa-credit-card"></i>
-
-            </div>
-
-            <h1
-            class="text-4xl font-bold">
-
-                Secure Payment
-
-            </h1>
-
-            <p
-            class="mt-3 text-indigo-100">
-
-                Fast & secure payments powered by Paystack
-
-            </p>
-
+<!-- SECURE TRANSACTION PIN VERIFICATION MODAL -->
+<div id="pin-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"></div>
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl relative z-10 border border-gray-100 text-center space-y-4">
+        <div class="w-12 h-12 bg-green-50 text-green-700 rounded-full flex items-center justify-center mx-auto text-xl">
+            <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div>
+            <h3 class="text-lg font-bold text-gray-900">Security Clearance Required</h3>
+            <p class="text-xs text-gray-400 mt-1">Enter your 6-digit transaction authorization code.</p>
+        </div>
+        
+        <!-- Passcode Entry Field Group -->
+        <div class="flex justify-center gap-2 py-2" id="pin-input-wrapper">
+            <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+            <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+            <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+            <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+            <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+            <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
         </div>
 
+        <p id="pin-error-msg" class="text-xs font-semibold text-red-500 hidden">Incorrect confirmation PIN. Verification denied.</p>
 
-        <!-- FORM -->
-
-        <form
-        id="paymentForm"
-        class="p-8 space-y-6">
-
-            <!-- NAME -->
-
-            <div>
-
-                <label
-                class="font-semibold text-gray-700">
-
-                    Full Name
-
-                </label>
-
-                <div class="relative mt-2">
-
-                    <span
-                    class="absolute left-4 top-4 text-gray-400">
-
-                        <i class="fa-solid fa-user"></i>
-
-                    </span>
-
-                    <input
-                    type="text"
-                    id="name"
-                    required
-                    placeholder="John Doe"
-                    class="w-full border border-gray-300 rounded-xl pl-12 pr-4 py-4 outline-none focus:ring-2 focus:ring-indigo-500">
-
-                </div>
-
-            </div>
-
-
-            <!-- EMAIL -->
-
-            <div>
-
-                <label
-                class="font-semibold text-gray-700">
-
-                    Email Address
-
-                </label>
-
-                <div class="relative mt-2">
-
-                    <span
-                    class="absolute left-4 top-4 text-gray-400">
-
-                        <i class="fa-solid fa-envelope"></i>
-
-                    </span>
-
-                    <input
-                    type="email"
-                    id="email"
-                    required
-                    placeholder="example@email.com"
-                    class="w-full border border-gray-300 rounded-xl pl-12 pr-4 py-4 outline-none focus:ring-2 focus:ring-indigo-500">
-
-                </div>
-
-            </div>
-
-
-            <!-- AMOUNT -->
-
-            <div>
-
-                <label
-                class="font-semibold text-gray-700">
-
-                    Amount (₦)
-
-                </label>
-
-                <div class="relative mt-2">
-
-                    <span
-                    class="absolute left-4 top-4 text-gray-400 font-bold">
-
-                        ₦
-
-                    </span>
-
-                    <input
-                    type="number"
-                    id="amount"
-                    required
-                    placeholder="5000"
-                    class="w-full border border-gray-300 rounded-xl pl-12 pr-4 py-4 outline-none focus:ring-2 focus:ring-indigo-500">
-
-                </div>
-
-            </div>
-
-
-            <!-- PAYMENT BUTTON -->
-
-            <button
-            type="submit"
-            id="payBtn"
-            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-bold text-lg transition duration-300 flex items-center justify-center gap-3">
-
-                <i class="fa-solid fa-lock"></i>
-
-                Pay Now
-
+        <div class="flex gap-3 pt-2">
+            <button id="pin-cancel-btn" class="flex-1 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 py-2.5 rounded-xl font-semibold text-xs transition">
+                Cancel
             </button>
-
-        </form>
-
+            <button id="pin-submit-btn" class="flex-1 bg-green-700 hover:bg-green-800 text-white py-2.5 rounded-xl font-semibold text-xs transition shadow-sm">
+                Authorize Release
+            </button>
+        </div>
     </div>
+</div>
 
-
-    <!-- SUCCESS MODAL -->
-
-    <div
-    id="successModal"
-    class="hidden fixed inset-0 bg-black/60 flex items-center justify-center px-6 z-50">
-
-        <div
-        class="bg-white rounded-3xl p-10 text-center max-w-md w-full">
-
-            <div
-            class="w-24 h-24 mx-auto rounded-full bg-green-100 flex items-center justify-center text-green-600 text-5xl mb-6">
-
-                <i class="fa-solid fa-check"></i>
-
+<div class="flex h-screen overflow-hidden">
+    <!-- SIDEBAR -->
+    <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col h-screen shrink-0 z-50 fixed md:static inset-y-0 left-0 max-md:hidden">
+        <div class="px-6 py-4 flex items-center justify-between border-b border-green-900/50">
+            <div class="flex items-center gap-2">
+                <img class="h-14 object-contain" src="../assets/logo3.png" alt="FarmRoute Logo">
             </div>
-
-            <h2
-            class="text-3xl font-bold mb-4">
-
-                Payment Successful
-
-            </h2>
-
-            <p
-            class="text-gray-600 mb-6">
-
-                Your payment was completed successfully.
-
-            </p>
-
-            <button
-            id="closeModal"
-            class="bg-indigo-600 text-white px-8 py-3 rounded-xl hover:bg-indigo-700">
-
-                Continue
-
+            <button id="closeside-btn" class="md:hidden text-2xl text-gray-300 hover:text-white p-2">
+                <i class="fa-solid fa-xmark"></i>
             </button>
-
         </div>
 
-    </div>
+        <nav class="flex-1 mt-5 overflow-y-auto px-4 space-y-1">
+            <a href="dashboard.html" class="flex items-center gap-3 hover:bg-green-900/50 hover:text-white text-gray-300 px-4 py-3 rounded-xl font-semibold transition shadow-sm">
+                <i class="fa-solid fa-house text-lg w-6 text-center"></i> Dashboard
+            </a>
+            <a href="listings.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 hover:bg-green-900/50 hover:text-white transition">
+                <i class="fa-solid fa-box-open text-lg w-6 text-center"></i> My Listings
+            </a>
+            <a href="messages.html" class="flex items-center justify-between px-4 py-3 rounded-xl font-medium text-gray-300 hover:bg-green-900/50 hover:text-white transition">
+                <div class="flex items-center gap-3">
+                    <i class="fa-regular fa-message text-lg w-6 text-center"></i> Messages
+                </div>
+                <span id="message-notification-badge" class="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-bold hidden">0</span>
+            </a>
+            <a href="payment.html" class="flex items-center bg-green-700 justify-between px-4 py-3 rounded-xl font-medium text-white transition">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-wallet text-lg w-6 text-center"></i> Payments
+                </div>
+                <span id="payments-badge" class="bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full font-bold hidden">0</span>
+            </a>
+            <a href="profile.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 hover:bg-green-900/50 hover:text-white transition">
+                <i class="fa-regular fa-user text-lg w-6 text-center"></i> Profile
+            </a>
+            <div class="pt-2">
+                <a href="add_produce.html" class="flex items-center gap-3 w-full text-gray-300 hover:bg-green-900/50 hover:text-white font-medium py-3 px-4 rounded-xl transition duration-200 text-sm">
+                    <i class="fa-solid fa-plus text-base w-6 text-center"></i> List New Produce
+                </a>
+            </div>
+        </nav>
 
+        <div class="p-4 border-t border-green-900/50">
+            <button id="logout-btn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-green-900/50 text-gray-300 hover:text-white font-medium transition text-left">
+                <i class="fa-solid fa-right-from-bracket w-6 text-center"></i> Logout
+            </button>
+        </div>
+    </aside>
 
+    <!-- MAIN VIEWPORT -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+        <header class="bg-white h-20 px-8 flex items-center justify-between border-b border-gray-100 shrink-0">
+            <div class="flex items-center gap-4">
+                <button id="side-btn" class="text-2xl text-gray-600 md:hidden p-2">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Payment History</h1>
+                    <p class="text-sm text-gray-500 hidden sm:block">View all secure payments and their current status.</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <button class="relative text-xl text-gray-500 hover:text-gray-800 transition">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="absolute -top-1.5 -right-1.5 bg-green-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">2</span>
+                </button>
+
+                <div class="flex items-center gap-3 border-l pl-6 border-gray-100">
+                    <img id="user-avatar" alt="Profile picture" class="w-10 h-10 rounded-full object-cover border border-gray-100 hidden">
+                    <div class="hidden sm:block">
+                        <h4 id="user-display-name" class="font-semibold text-sm text-gray-900">Loading...</h4>
+                        <p id="user-display-role" class="text-xs text-gray-400 capitalize">Farmer</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-xs text-gray-400 hidden sm:block"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTAINER -->
+        <div class="flex-1 overflow-y-auto p-8">
+            <div class="max-w-5xl mx-auto space-y-6">
+                
+                <div class="flex flex-col sm:flex-row items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                    <div class="relative w-full sm:flex-1">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <input type="text" id="payment-search" placeholder="Search by Order ID, Driver, or Location" 
+                            class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-green-600/20 focus:border-green-600 transition">
+                    </div>
+                    
+                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                        <button class="flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-600 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 transition w-full sm:w-auto">
+                            <i class="fa-solid fa-sliders text-gray-400"></i> Filter <i class="fa-solid fa-chevron-down text-xs text-gray-400 ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="payments-history-container" class="space-y-4">
+                    <p class="text-gray-400 py-12 text-center text-sm">Synchronizing ledger pipeline...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- SLIDE-OVER DETAIL DRAWER -->
+<div id="detail-drawer" class="fixed inset-0 z-50 hidden">
+    <div id="drawer-overlay" class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity"></div>
     
+    <div class="absolute inset-y-0 right-0 max-w-lg w-full bg-white shadow-2xl flex flex-col h-full transform transition-transform border-l border-gray-100">
+        <div class="px-6 py-5 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+            <div>
+                <span id="modal-order-id" class="text-xs font-bold text-green-700 bg-green-50 px-2.5 py-1 rounded-md tracking-wider">#FR-XXXXXX</span>
+                <h3 class="text-lg font-bold text-gray-900 mt-1">Transaction Parameters</h3>
+            </div>
+            <button id="close-drawer-btn" class="text-gray-400 hover:text-gray-600 text-xl p-2 transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
 
+        <div class="flex-1 overflow-y-auto p-6 space-y-6">
+            <div class="bg-gradient-to-br from-green-900 to-green-950 text-white rounded-2xl p-6 shadow-sm">
+                <p class="text-xs text-green-200/80 font-medium uppercase tracking-wider mb-1">Total Escrow Vault Capital</p>
+                <h2 id="modal-price" class="text-3xl font-black tracking-tight">₦0</h2>
+                <div class="mt-4 pt-4 border-t border-white/10 flex justify-between items-center text-xs text-green-100">
+                    <span class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-shield-halved text-green-400"></i> Secure Escrow Active
+                    </span>
+                    <span id="modal-status-badge" class="bg-white/20 px-2.5 py-0.5 rounded-full font-semibold">Loading</span>
+                </div>
+            </div>
 
+            <div class="space-y-3">
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Cargo Parameters</h4>
+                <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 flex items-center gap-3">
+                    <div id="modal-emoji" class="text-2xl bg-white w-12 h-12 rounded-xl flex items-center justify-center border shadow-xs">📦</div>
+                    <div>
+                        <h5 id="modal-crop-name" class="font-bold text-gray-800 text-sm">Produce Cargo</h5>
+                        <p id="modal-weight" class="text-xs text-gray-500 mt-0.5">0 kg total allocation</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Assigned Driver</h4>
+                <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 flex items-center gap-3">
+                    <img src="https://i.pravatar.cc/100?img=60" class="w-10 h-10 rounded-full object-cover border border-gray-100 shrink-0">
+                    <div class="min-w-0">
+                        <h4 id="modal-driver-name" class="font-semibold text-sm text-gray-800 truncate">Searching for Driver...</h4>
+                        <p class="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                            <i class="fa-solid fa-star text-amber-400 text-[10px]"></i> 4.8 Rating • Verified Transporter
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Logistics Dispatch Pipeline</h4>
+                <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 space-y-4 relative">
+                    <div class="absolute left-6 top-8 bottom-8 w-0.5 bg-gray-200 border-dashed"></div>
+                    
+                    <div class="flex gap-3 relative">
+                        <div class="w-5 h-5 rounded-full bg-green-100 border-2 border-green-600 flex items-center justify-center text-[8px] text-green-700 z-10 shrink-0 mt-0.5">
+                            <i class="fa-solid fa-circle"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400 font-medium">Pickup Point Origin</p>
+                            <p id="modal-origin" class="text-sm font-semibold text-gray-800 mt-0.5">Loading Origin Location...</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 relative">
+                        <div class="w-5 h-5 rounded-full bg-red-100 border-2 border-red-500 flex items-center justify-center text-[8px] text-red-600 z-10 shrink-0 mt-0.5">
+                            <i class="fa-solid fa-location-dot"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400 font-medium">Destination Delivery Hub</p>
+                            <p id="modal-destination" class="text-sm font-semibold text-gray-800 mt-0.5">Loading Destination Location...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-actions-wrapper" class="p-4 border-t border-gray-100 bg-gray-50 grid grid-cols-2 gap-3 shrink-0">
+            <button id="action-cancel-btn" class="w-full bg-white border border-gray-200 hover:border-red-200 text-red-600 hover:bg-red-50/50 py-3 px-4 rounded-xl font-bold text-sm transition duration-150">
+                Cancel Order
+            </button>
+            <button id="action-release-btn" class="w-full bg-green-700 hover:bg-green-800 text-white py-3 px-4 rounded-xl font-bold text-sm transition duration-150 shadow-sm">
+                Release Payment
+            </button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { auth, db } from "../backend/firebaseConfig.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { doc, getDoc, updateDoc, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const LOGIN_PAGE_URL = "../login.html";
+    const nameEl = document.getElementById("user-display-name");
+    const roleEl = document.getElementById("user-display-role");
+    const avatarEl = document.getElementById("user-avatar");
+    const messageBadgeEl = document.getElementById("message-notification-badge");
+    const loadingScreen = document.getElementById("loading-screen");
+    const paymentsContainer = document.getElementById("payments-history-container");
+    const paymentsBadge = document.getElementById("payments-badge");
+
+    // Drawer Modal Elements
+    const detailDrawer = document.getElementById("detail-drawer");
+    const drawerOverlay = document.getElementById("drawer-overlay");
+    const closeDrawerBtn = document.getElementById("close-drawer-btn");
+    
+    const modalOrderId = document.getElementById("modal-order-id");
+    const modalPrice = document.getElementById("modal-price");
+    const modalStatusBadge = document.getElementById("modal-status-badge");
+    const modalEmoji = document.getElementById("modal-emoji");
+    const modalCropName = document.getElementById("modal-crop-name");
+    const modalWeight = document.getElementById("modal-weight");
+    const modalDriverName = document.getElementById("modal-driver-name");
+    const modalOrigin = document.getElementById("modal-origin");
+    const modalDestination = document.getElementById("modal-destination");
+    const actionCancelBtn = document.getElementById("action-cancel-btn");
+    const actionReleaseBtn = document.getElementById("action-release-btn");
+
+    // Warning Modal Elements
+    const warningModal = document.getElementById("warning-modal");
+    const warningCancelBtn = document.getElementById("warning-cancel-btn");
+    const warningConfirmBtn = document.getElementById("warning-confirm-btn");
+    const countdownTimer = document.getElementById("countdown-timer");
+
+    // PIN Modal Elements
+    const pinModal = document.getElementById("pin-modal");
+    const pinCancelBtn = document.getElementById("pin-cancel-btn");
+    const pinSubmitBtn = document.getElementById("pin-submit-btn");
+    const pinErrorMsg = document.getElementById("pin-error-msg");
+    const pinInputs = document.querySelectorAll("#pin-input-wrapper input");
+
+    // Configuration Settings
+    const TRANSACTION_SECURE_PIN = "123456";
+    // Replace this string with your real Paystack Public Key from dashboard (pk_test_...)
+    const PAYSTACK_PUBLIC_KEY = "pk_test_a6310c3751a19e50cc40c5b9f9452ef7c00df571"; 
+
+    let targetedDocId = null;
+    let countdownInterval = null;
+
+    function hideLoading() {
+        if (loadingScreen) loadingScreen.classList.add("hidden");
+    }
+
+    function updateHeaderAvatar(profilePictureUrl) {
+        if (!avatarEl || !profilePictureUrl) return;
+        avatarEl.src = profilePictureUrl;
+        avatarEl.classList.remove("hidden");
+    }
+
+    function getMessageNotificationCount(snapshot, userId) {
+        let unreadTotal = 0;
+        let hasUnreadData = false;
+        snapshot.forEach((roomSnap) => {
+            const room = roomSnap.data();
+            if (room.unreadCounts || room.unreadBy || room.unread) hasUnreadData = true;
+            const countMap = room.unreadCounts || room.unreadBy || room.unread || {};
+            const count = Number(countMap[userId] || 0);
+            if (count > 0) unreadTotal += count;
+        });
+        return hasUnreadData ? unreadTotal : snapshot.size;
+    }
+
+    function updateMessageBadge(count) {
+        if (!messageBadgeEl) return;
+        if (count > 0) {
+            messageBadgeEl.textContent = count > 99 ? "99+" : String(count);
+            messageBadgeEl.classList.remove("hidden");
+        } else {
+            messageBadgeEl.classList.add("hidden");
+        }
+    }
+
+    function listenForMessageNotifications(userId) {
+        const chatsQuery = query(collection(db, "chats"), where("participants", "array-contains", userId));
+        onSnapshot(chatsQuery, (snapshot) => {
+            updateMessageBadge(getMessageNotificationCount(snapshot, userId));
+        }, (err) => {
+            console.error("Message notification sync failed:", err);
+            updateMessageBadge(0);
+        });
+    }
+
+    // PIN Input management: Auto-focus jumping utilities
+    pinInputs.forEach((input, index) => {
+        input.addEventListener("input", (e) => {
+            if (e.target.value.length >= 1 && index < pinInputs.length - 1) {
+                pinInputs[index + 1].focus();
+            }
+        });
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Backspace" && e.target.value.length === 0 && index > 0) {
+                pinInputs[index - 1].focus();
+            }
+        });
+    });
+
+    function clearPinInputs() {
+        pinInputs.forEach(input => input.value = "");
+        pinErrorMsg.classList.add("hidden");
+    }
+
+    function openModalDrawer(payload) {
+        targetedDocId = payload.id;
+        modalOrderId.innerText = `#FR-${payload.orderId}`;
+        modalPrice.innerText = `₦${payload.price}`;
+        modalStatusBadge.innerText = payload.currentStatus;
+        modalEmoji.innerText = payload.productEmoji;
+        modalCropName.innerText = payload.cropName;
+        modalWeight.innerText = `${payload.weight} ${payload.unit} total allocation`;
+        modalDriverName.innerText = payload.driverName;
+        modalOrigin.innerText = payload.routeFrom;
+        modalDestination.innerText = payload.routeTo;
+
+        modalStatusBadge.className = "bg-white/20 px-2.5 py-0.5 rounded-full font-semibold text-xs";
+
+        if (payload.currentStatus === "Delivered") {
+            actionReleaseBtn.disabled = true;
+            actionCancelBtn.disabled = true;
+            actionReleaseBtn.className = "w-full bg-gray-100 text-gray-400 py-3 px-4 rounded-xl font-bold text-sm cursor-not-allowed text-center col-span-2";
+            actionReleaseBtn.innerText = "Payment Complete";
+            actionCancelBtn.classList.add("hidden");
+        } else if (payload.currentStatus === "Awaiting Payment") {
+            actionCancelBtn.classList.remove("hidden");
+            actionCancelBtn.disabled = false;
+            actionReleaseBtn.disabled = false;
+            modalStatusBadge.classList.add("bg-amber-500", "text-white");
+            actionCancelBtn.className = "w-full bg-white border border-gray-200 text-gray-500 py-3 px-4 rounded-xl font-bold text-sm hover:bg-gray-50 transition";
+            actionReleaseBtn.className = "w-full bg-green-700 hover:bg-green-800 text-white py-3 px-4 rounded-xl font-bold text-sm transition shadow-md";
+            actionReleaseBtn.innerText = "Release Payment";
+        } else {
+            actionCancelBtn.classList.remove("hidden");
+            actionCancelBtn.disabled = false;
+            actionReleaseBtn.disabled = true; 
+            actionCancelBtn.className = "w-full bg-white border border-gray-200 text-red-600 py-3 px-4 rounded-xl font-bold text-sm hover:bg-red-50 transition";
+            actionReleaseBtn.className = "w-full bg-gray-200 text-gray-400 py-3 px-4 rounded-xl font-bold text-sm cursor-not-allowed text-center";
+            actionReleaseBtn.innerText = "Awaiting Delivery";
+        }
+
+        detailDrawer.classList.remove("hidden");
+    }
+
+    function closeModalDrawer() {
+        detailDrawer.classList.add("hidden");
+        targetedDocId = null;
+    }
+
+    closeDrawerBtn.addEventListener("click", closeModalDrawer);
+    drawerOverlay.addEventListener("click", closeModalDrawer);
+
+    // Initial Safe Status Updater Logic 
+    async function updateEscrowStatus(newStatus) {
+        if (!targetedDocId) return;
+        try {
+            const docRef = doc(db, "products", targetedDocId);
+            await updateDoc(docRef, { status: newStatus });
+            closeModalDrawer();
+        } catch (error) {
+            console.error("Escrow execution failure:", error);
+            alert("Error altering database entry status.");
+        }
+    }
+
+    // Trigger 5-Second Warning Pop-up Sequence
+    actionReleaseBtn.addEventListener("click", () => {
+        if (!targetedDocId) return;
+        
+        warningModal.classList.remove("hidden");
+        warningConfirmBtn.disabled = true;
+        warningConfirmBtn.className = "flex-1 bg-gray-200 text-gray-400 py-3 rounded-xl font-semibold text-sm cursor-not-allowed transition";
+        
+        let secondsLeft = 5;
+        countdownTimer.innerText = secondsLeft;
+
+        clearInterval(countdownInterval);
+        countdownInterval = setInterval(() => {
+            secondsLeft--;
+            countdownTimer.innerText = secondsLeft;
+            if (secondsLeft <= 0) {
+                clearInterval(countdownInterval);
+                warningConfirmBtn.disabled = false;
+                warningConfirmBtn.className = "flex-1 bg-green-700 hover:bg-green-800 text-white py-3 rounded-xl font-semibold text-sm transition shadow-sm";
+            }
+        }, 1000);
+    });
+
+    warningCancelBtn.addEventListener("click", () => {
+        clearInterval(countdownInterval);
+        warningModal.classList.add("hidden");
+    });
+
+    // Step-down directly to PIN collection wrapper from confirmation modal interface
+    warningConfirmBtn.addEventListener("click", () => {
+        warningModal.classList.add("hidden");
+        clearPinInputs();
+        pinModal.classList.remove("hidden");
+        setTimeout(() => pinInputs[0].focus(), 100);
+    });
+
+    pinCancelBtn.addEventListener("click", () => {
+        pinModal.classList.add("hidden");
+    });
+
+    // PIN Submission Hooking with Paystack Pipeline
+    pinSubmitBtn.addEventListener("click", () => {
+        let enteredPin = "";
+        pinInputs.forEach(input => enteredPin += input.value);
+
+        if (enteredPin === TRANSACTION_SECURE_PIN) {
+            pinModal.classList.add("hidden");
+            
+            // Resolve object fields out of cached storage array
+            const targetTrip = window.cachedPayments[targetedDocId];
+            const numericalAmount = parseFloat(targetTrip.price.replace(/,/g, ''));
+            const userEmailAddress = auth.currentUser.email || "escrow-billing@farmroute.com";
+            
+            // Forward execution processing straight to Paystack
+            initiatePaystackEscrowCharge(numericalAmount, userEmailAddress, targetedDocId);
+        } else {
+            pinErrorMsg.classList.remove("hidden");
+            pinInputs.forEach(input => {
+                input.value = "";
+                input.classList.add("border-red-500", "focus:ring-red-600");
+            });
+            pinInputs[0].focus();
+        }
+    });
+
+    // Paystack Inline SDK Execution Bridge Setup
+    function initiatePaystackEscrowCharge(amountInNaira, clientEmail, orderId) {
+        // Paystack tracks raw integer calculations as Kobo currency assets
+        const computeKoboValue = Math.round(amountInNaira * 100);
+        
+        // Grab the cached subaccount string for this transaction
+        const targetTrip = window.cachedPayments[orderId];
+        const driverSubaccountCode = targetTrip ? targetTrip.driverSubaccount : "";
+
+        const paystackConfig = {
+            key: PAYSTACK_PUBLIC_KEY,
+            email: clientEmail,
+            amount: computeKoboValue,
+            currency: "NGN",
+            ref: "FR-PAY-" + Date.now() + Math.floor(Math.random() * 1000), 
+            metadata: {
+                custom_fields: [
+                    {
+                        display_name: "Order ID Mapping",
+                        variable_name: "order_id",
+                        value: orderId
+                    }
+                ]
+            },
+            callback: function(transactionReceipt) {
+                console.log("Paystack capture authorized successfully. Ref:", transactionReceipt.reference);
+                finalizeDatabaseTransactionRecord(orderId, transactionReceipt.reference);
+            },
+            onClose: function() {
+                alert("Escrow confirmation aborted. Checkout gateway closed without balance clearing.");
+            }
+        };
+
+        // Inject the subaccount configuration if available
+        if (driverSubaccountCode) {
+            paystackConfig.subaccount = driverSubaccountCode;
+            paystackConfig.bearer = "account"; // Platform absorbs gateway fees
+            console.log(`Routing split allocation straight to: ${driverSubaccountCode}`);
+        }
+
+        const paymentHandler = PaystackPop.setup(paystackConfig);
+        paymentHandler.openIframe();
+    }
+
+    // Finalize product item status downstream in Firestore inside Callback loops safely
+    async function finalizeDatabaseTransactionRecord(targetId, trackingRef) {
+        try {
+            const documentPointer = doc(db, "products", targetId);
+            await updateDoc(documentPointer, {
+                status: "Delivered", // Sets to complete status on both screen listening loops
+                paymentGatewayRef: trackingRef,
+                isEscrowReleased: true,
+                fundsCapturedAt: new Date()
+            });
+            closeModalDrawer();
+            alert("Success! Transaction fully cleared and signed off on.");
+        } catch (databaseWriteError) {
+            console.error("Firestore balance lifecycle settlement mutation exception structural context error:", databaseWriteError);
+            alert("Payment recorded, but database updates failed. Please notify Support with reference ID.");
+        }
+    }
+
+    actionCancelBtn.addEventListener("click", () => {
+        if(confirm("Authorize immediate cancellation?")) {
+            updateEscrowStatus("Cancelled");
+        }
+    });
+
+onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        window.location.href = LOGIN_PAGE_URL;
+        return;
+    }
+
+    nameEl.innerText = user.displayName || "FarmRoute User";
+    hideLoading();
+    listenForMessageNotifications(user.uid);
+
+    try {
+        const userDocSnap = await getDoc(doc(db, "users", user.uid));
+        if (userDocSnap.exists()) {
+            const userData = userDocSnap.data();
+            if (userData.name) nameEl.innerText = userData.name;
+            if (userData.role) roleEl.innerText = userData.role;
+            updateHeaderAvatar(userData.profilePictureUrl);
+        }
+    } catch (err) {
+        console.error("Firestore profile fetch failed:", err);
+    }
+
+    const productsRef = collection(db, "products");
+    const paymentsQuery = query(productsRef, where("farmerId", "==", user.uid));
+
+    // Cache driver names so we only fetch each driver once
+    const driverCache = {};
+
+    onSnapshot(paymentsQuery, async (snapshot) => {
+        if (!paymentsContainer) return;
+
+        paymentsContainer.innerHTML = "";
+        let awaitingPaymentCount = 0;
+
+        if (snapshot.empty) {
+            paymentsContainer.innerHTML = `
+                <p class="text-gray-400 py-12 text-center text-sm">
+                    No recorded ledger items found.
+                </p>
+            `;
+            paymentsBadge.classList.add("hidden");
+            return;
+        }
+
+        window.cachedPayments = {};
+
+        for (const docSnap of snapshot.docs) {
+
+            const data = docSnap.data();
+            const id = docSnap.id;
+            const orderId = id.substring(0, 7).toUpperCase();
+
+            const cropName = data.name || "Produce Cargo";
+            const weight = data.quantity || data.weight || "0";
+            const unit = data.unit || "kg";
+            const routeFrom = data.routeFrom || data.location || "Farm Station";
+            const routeTo = data.routeTo || "Hub";
+            const price = data.price
+                ? Number(data.price).toLocaleString()
+                : "0";
+
+            let rawStatus = data.status || "Matched";
+
+            // -----------------------------
+            // Fetch Driver Name
+            // -----------------------------
+            let driverName = "Verified Transporter";
+
+            if (data.driverId) {
+
+                if (driverCache[data.driverId]) {
+
+                    driverName = driverCache[data.driverId];
+
+                } else {
+
+                    try {
+
+                        const driverRef = doc(db, "users", data.driverId);
+                        const driverSnap = await getDoc(driverRef);
+
+                        if (driverSnap.exists()) {
+
+                            const driverData = driverSnap.data();
+
+                            driverName =
+                                driverData.name ||
+                                driverData.fullName ||
+                                driverData.displayName ||
+                                "Verified Transporter";
+
+                            driverCache[data.driverId] = driverName;
+
+                        }
+
+                    } catch (err) {
+
+                        console.error("Error fetching driver:", err);
+
+                    }
+
+                }
+
+            }
+
+            const driverSubaccount = data.driverSubaccount || "";
+
+            let badgeStyle = "bg-gray-50 text-gray-700 border-gray-100";
+            let statusLabel = rawStatus;
+            let descriptionText = "Secure Escrow Locked";
+
+            if (
+                rawStatus === "Driver Delivered" ||
+                rawStatus === "Awaiting Payment"
+            ) {
+
+                rawStatus = "Awaiting Payment";
+                awaitingPaymentCount++;
+
+                badgeStyle =
+                    "bg-amber-50 text-amber-700 border-amber-200 animate-pulse";
+
+                statusLabel = "Awaiting Payment";
+                descriptionText = "Driver arrived at hub";
+
+            } else if (rawStatus === "Delivered") {
+
+                badgeStyle =
+                    "bg-green-50 text-green-700 border-green-100";
+
+                statusLabel = "Payment Complete";
+                descriptionText = "Released successfully";
+
+            } else if (
+                rawStatus === "Matched" ||
+                rawStatus === "In Transit"
+            ) {
+
+                badgeStyle =
+                    "bg-blue-50 text-blue-700 border-blue-100";
+
+                statusLabel = "Matched";
+                descriptionText = "Cargo en route";
+            }
+
+            const productEmoji = "📦";
+
+            window.cachedPayments[id] = {
+                id,
+                orderId,
+                cropName,
+                weight,
+                unit,
+                routeFrom,
+                routeTo,
+                driverName,
+                price,
+                currentStatus: rawStatus,
+                productEmoji,
+                driverSubaccount
+            };
+
+            const cardHtml = `
+                <div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm flex justify-between items-center">
+                    <div>
+                        <span class="${badgeStyle} text-xs font-bold px-2.5 py-1 rounded-full border">
+                            ${statusLabel}
+                        </span>
+
+                        <h3 class="font-bold text-gray-900 mt-2">
+                            #FR-${orderId} (${cropName})
+                        </h3>
+
+                        <p class="text-xs text-gray-400 mt-0.5">
+                            ${descriptionText} • Driver: ${driverName}
+                        </p>
+                    </div>
+
+                    <div class="text-right">
+                        <h2 class="text-xl font-black text-gray-900">
+                            ₦${price}
+                        </h2>
+
+                        <button
+                            onclick="openDrawerFromEvent('${id}')"
+                            class="mt-2 text-xs bg-gray-50 border border-gray-200 text-gray-700 px-3 py-1.5 rounded-xl font-bold hover:bg-gray-100 transition">
+
+                            View Details
+
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            paymentsContainer.insertAdjacentHTML("beforeend", cardHtml);
+        }
+
+        if (awaitingPaymentCount > 0) {
+            paymentsBadge.innerText = awaitingPaymentCount;
+            paymentsBadge.classList.remove("hidden");
+        } else {
+            paymentsBadge.classList.add("hidden");
+        }
+    });
+});
+
+    window.openDrawerFromEvent = function(id) {
+        if(window.cachedPayments && window.cachedPayments[id]) {
+            openModalDrawer(window.cachedPayments[id]);
+        }
+    };
+</script>
 </body>
 </html>
+
+
