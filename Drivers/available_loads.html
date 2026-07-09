@@ -15,11 +15,11 @@
 
     <div class="flex h-screen overflow-hidden">
         
-        <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col h-screen shrink-0">
+        <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col h-screen shrink-0 z-50 fixed md:static inset-y-0 left-0 max-md:hidden">
             <div class="px-6 py-2 items-center justify-between flex border-b border-green-900">
                 <img class="h-16" src="../assets/logo3.png" alt="FarmRoute Logo">
-                <button id="closeside-btn" class="hidden max-sm:flex text-2xl">
-                    <i class="fa-solid fa-bars"></i>
+                <button id="closeside-btn" class="md:hidden text-2xl text-gray-300 hover:text-white p-2">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
@@ -33,19 +33,19 @@
                 <a href="active_trips.html" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
                     <i class="fa-solid fa-truck"></i> My Active Trips
                 </a>
-                <a href="#" class="flex items-center justify-between px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
+                <a href="messages.html" class="flex items-center justify-between px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
                     <div class="flex items-center gap-3">
                         <i class="fa-regular fa-message"></i> Messages
                     </div>
                     <span class="bg-green-500 text-xs px-2 py-1 rounded-full text-white">3</span>
                 </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
+                <a href="payments.html" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
                     <i class="fa-solid fa-wallet"></i> Payments
                 </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
+                <a href="profile.html" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
                     <i class="fa-regular fa-user"></i> Profile
                 </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-6">
+                <a href="settings.html" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-6">
                     <i class="fa-solid fa-gear"></i> Settings
                 </a>
                 
@@ -117,7 +117,7 @@
     <script type="module">
         import { auth, db } from "../backend/firebaseConfig.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { doc, getDoc, collection, query, where, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { doc, getDoc, collection, query, where, onSnapshot, updateDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const LOGIN_PAGE_URL = "../login.html";
 
@@ -128,6 +128,8 @@
         const sortFilter = document.getElementById("sort-filter");
 
         let cachedLoads = [];
+        let currentDriverName = "Logistics Driver";
+        const selectedLoadId = new URLSearchParams(window.location.search).get("loadId");
 
         const fallbackImages = {
             tomatoes: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=200",
@@ -143,21 +145,25 @@
                 return;
             }
 
-            nameEl.innerText = user.displayName || "Logistics Driver";
+            currentDriverName = user.displayName || "Logistics Driver";
+            nameEl.innerText = currentDriverName;
             roleEl.innerText = "Driver";
 
             try {
                 const userDocSnap = await getDoc(doc(db, "users", user.uid));
                 if (userDocSnap.exists()) {
                     const userData = userDocSnap.data();
-                    if (userData.name) nameEl.innerText = userData.name;
+                    if (userData.name) {
+                        currentDriverName = userData.name;
+                        nameEl.innerText = userData.name;
+                    }
                     if (userData.role) roleEl.innerText = userData.role;
                 }
             } catch (err) {
                 console.error("Firestore driver profile profile payload failure:", err);
             }
 
-            // Sync listings that have a status of "Searching" (available items for drivers to pickup)
+            // Sync listings that have a status of "Searching"
             const q = query(collection(db, "products"), where("status", "==", "Searching"));
             onSnapshot(q, (snapshot) => {
                 cachedLoads = [];
@@ -182,11 +188,14 @@
                 return matchesCrop || matchesOrigin || matchesDest;
             });
 
-            // Sorting logic implementation
             if (sortValue === "highest") {
                 filtered.sort((a, b) => Number(b.price || 0) - Number(a.price || 0));
             } else if (sortValue === "lowest") {
                 filtered.sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
+            }
+
+            if (selectedLoadId) {
+                filtered.sort((a, b) => (b.id === selectedLoadId) - (a.id === selectedLoadId));
             }
 
             if (filtered.length === 0) {
@@ -208,10 +217,12 @@
                     : (load.imageUrl || fallbackImages[imgKey] || fallbackImages.default);
 
                 const totalPayout = Number(load.price || 0);
+                const selectedClass = load.id === selectedLoadId
+                    ? "bg-emerald-50/60 border border-emerald-200 rounded-2xl px-4"
+                    : "";
 
                 return `
-                    <div class="flex flex-col lg:flex-row lg:items-center justify-between py-5 gap-6">
-                        
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between py-5 gap-6 ${selectedClass}">
                         <div class="flex items-center gap-4 min-w-[240px]">
                             <img src="${imageSrc}" class="w-16 h-16 rounded-xl object-cover shrink-0 border" alt="${name}">
                             <div class="min-w-0">
@@ -224,17 +235,14 @@
                             </div>
                         </div>
 
-                        <!-- --- UPDATED CENTRAL OPERATIONAL ROUTING MAP SEGMENT --- -->
                         <div class="flex items-center gap-8 flex-1 min-w-0">
                             <div class="flex flex-col space-y-1">
                                 <span class="block text-xs font-bold uppercase text-gray-400 tracking-wider">Route Plan</span>
-                                
                                 <div class="flex items-center gap-2">
                                     <span class="font-bold text-gray-800 text-sm">${load.routeFrom || 'N/A'}</span>
                                     <i class="fa-solid fa-arrow-right text-xs text-gray-400"></i>
                                     <span class="font-bold text-gray-800 text-sm">${load.routeTo || 'Lagos'}</span>
                                 </div>
-                                
                                 <div class="text-xs text-gray-500 space-y-0.5">
                                     <div class="flex items-center gap-1.5">
                                         <i class="fa-solid fa-circle-dot text-emerald-600 text-[10px]"></i>
@@ -269,7 +277,6 @@
                                 </button>
                             </div>
                         </div>
-
                     </div>
                 `;
             }).join("");
@@ -282,6 +289,44 @@
             });
         }
 
+        // =======================================================
+        // AUTOMATION TASK: RETURN ROOM ID SO WE CAN DEEP LINK IT
+        // =======================================================
+        async function autoCreateChatRoom(listingId, farmerData, driverData) {
+            const roomId = `match_${listingId}`;
+            const chatRoomRef = doc(db, "chats", roomId);
+
+            const chatRoomPayload = {
+                participants: [farmerData.uid, driverData.uid],
+                farmerId: farmerData.uid,
+                farmerName: farmerData.name,
+                driverId: driverData.uid,
+                driverName: driverData.name,
+                listingId: listingId,
+                lastMessage: "System: Your delivery route is matched! Chat here to coordinate pickup timelines.",
+                lastMessageTime: serverTimestamp()
+            };
+
+            await setDoc(chatRoomRef, chatRoomPayload, { merge: true });
+            return roomId; // Returns room reference key context safely
+        }
+
+        async function getUserDisplayName(userId, fallbackName) {
+            if (!userId) return fallbackName || "FarmRoute User";
+
+            try {
+                const userDocSnap = await getDoc(doc(db, "users", userId));
+                if (userDocSnap.exists()) {
+                    const userData = userDocSnap.data();
+                    return userData.name || userData.fullName || userData.displayName || fallbackName || "FarmRoute User";
+                }
+            } catch (error) {
+                console.error("Unable to resolve user display name:", error);
+            }
+
+            return fallbackName || "FarmRoute User";
+        }
+
         async function handleAcceptLoad(loadId) {
             const currentUser = auth.currentUser;
             
@@ -290,7 +335,6 @@
                 return;
             }
 
-            // Visual interface button state lock
             const targetButton = document.querySelector(`button[data-id="${loadId}"]`);
             if (targetButton) {
                 targetButton.disabled = true;
@@ -300,21 +344,46 @@
 
             try {
                 const loadDocRef = doc(db, "products", loadId);
+                const loadDocSnap = await getDoc(loadDocRef);
 
-                // Update document properties globally across Firestore channels
+                if (!loadDocSnap.exists()) {
+                    throw new Error("Listing record not found on database query.");
+                }
+
+                const loadData = loadDocSnap.data();
+
+                const farmerId = loadData.userId || loadData.farmerId;
+                const farmerName = await getUserDisplayName(
+                    farmerId,
+                    loadData.ownerName || loadData.farmerName || loadData.farmerFullName || loadData.userName || "Farmer"
+                );
+
+                if (!farmerId) {
+                    throw new Error("Cannot trace listing back to an original owner ID profile record.");
+                }
+
+                // 1. Update listing document properties across Firestore channels
                 await updateDoc(loadDocRef, {
                     status: "Matched",
                     driverId: currentUser.uid
                 });
 
-                alert("Load accepted successfully! Moving to Active Trips...");
-                window.location.href = "active_trips.html";
+                // 2. Fire the asynchronous chat document creator step immediately and catch returned reference
+                const activeChatRoomId = await autoCreateChatRoom(
+                    loadId,
+                    { uid: farmerId, name: farmerName },
+                    { uid: currentUser.uid, name: currentDriverName }
+                );
+
+                alert("Load accepted successfully! Opening message session with your farmer...");
+
+                // 3. Append URL Query parameter to cleanly open this chat inside messages view
+                window.location.href = `messages.html?chatId=${activeChatRoomId}`;
 
             } catch (error) {
                 console.error("Failed to accept load configuration assignment:", error);
-                alert("Could not claim this load. It may have been accepted by another driver.");
+                alert("Could not claim this load. It may have been modified or accepted by another transport driver.");
                 
-                // Reset button feedback on exception handling
                 if (targetButton) {
                     targetButton.disabled = false;
                     targetButton.classList.remove("opacity-50", "cursor-not-allowed");
@@ -331,10 +400,10 @@
         const sideBar = document.getElementById("side-bar");
 
         if (sideBtn && sideBar) {
-            sideBtn.addEventListener("click", () => sideBar.classList.toggle("hidden"));
+            sideBtn.addEventListener("click", () => sideBar.classList.remove("max-md:hidden"));
         }
         if (closeSideBtn && sideBar) {
-            closeSideBtn.addEventListener("click", () => sideBar.classList.add("hidden"));
+            closeSideBtn.addEventListener("click", () => sideBar.classList.add("max-md:hidden"));
         }
 
         document.getElementById("logout-btn")?.addEventListener("click", () => {

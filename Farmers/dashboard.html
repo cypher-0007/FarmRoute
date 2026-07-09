@@ -6,6 +6,8 @@
     <title>FarmRoute Dashboard</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js"></script>
 
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
@@ -21,13 +23,13 @@
 </div>
 
 <div class="flex h-screen">
-    <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col h-screen">
+    <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col h-screen shrink-0 z-50 fixed md:static inset-y-0 left-0 max-md:hidden">
 
             <div class="px-6 py-2 items-center justify-between flex border-b border-green-900">
                 <img class="h-16" src="../assets/logo3.png" alt="FarmRoute Logo">
 
-                <button id="closeside-btn" class="hidden max-sm:flex text-2xl">
-                    <i class="fa-solid fa-bars"></i>
+                <button id="closeside-btn" class="md:hidden text-2xl text-gray-300 hover:text-white p-2">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
@@ -45,22 +47,14 @@
                     My Listings
                 </a>
 
-                <a href=""
-                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
-                    <i class="fa-solid fa-truck"></i>
-                    Orders
-                </a>
-
-                <a href="#"
+                <a href="messages.html"
                     class="flex items-center justify-between px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
                     <div class="flex items-center gap-3">
                         <i class="fa-regular fa-message"></i>
                         Messages
                     </div>
 
-                    <span class="bg-green-500 text-xs px-2 py-1 rounded-full">
-                        3
-                    </span>
+                    <span id="message-notification-badge" class="bg-green-500 text-xs px-2 py-1 rounded-full hidden">0</span>
                 </a>
                 <a href="payment.html"
                     class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
@@ -68,16 +62,10 @@
                     Payments
                 </a>
 
-                <a href="#"
+                <a href="profile.html"
                     class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
                     <i class="fa-regular fa-user"></i>
                     Profile
-                </a>
-
-                <a href="#"
-                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-6">
-                    <i class="fa-solid fa-gear"></i>
-                    Settings
                 </a>
 
                 <div class="px-4 mb-4">
@@ -104,7 +92,7 @@
         <header
             class="bg-white h-20 px-8 flex items-center justify-between border-b">
 
-            <button id="side-btn" class="text-2xl">
+            <button id="side-btn" class="text-2xl md:hidden">
                 <i class="fa-solid fa-bars"></i>
             </button>
 
@@ -113,10 +101,8 @@
                 <button class="relative text-xl">
                     <i class="fa-regular fa-message"></i>
 
-                    <span
-                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                        5
-                    </span>
+                    <span id="header-message-notification-badge"
+                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs min-w-5 h-5 px-1 rounded-full hidden items-center justify-center">0</span>
                 </button>
 
                 <button class="text-xl">
@@ -126,8 +112,9 @@
                 <div class="flex items-center gap-3">
 
                     <img
-                        src="https://i.pravatar.cc/50"
-                        class="w-10 h-10 rounded-full">
+                        id="user-avatar"
+                        alt="Profile picture"
+                        class="w-10 h-10 rounded-full object-cover hidden">
 
                     <div>
                         <h4 id="user-display-name" class="font-semibold">
@@ -240,39 +227,39 @@
                 </div>
 
                 <div class="space-y-6">
-                    <div class="bg-gradient-to-br from-gray-900 via-green-950 to-gray-900 rounded-2xl border border-green-800 p-6 text-white shadow-xl relative overflow-hidden group">
+                    <div id="shelf-life-card" class="bg-gradient-to-br from-gray-950 via-emerald-950 to-gray-950 rounded-2xl border border-emerald-800 p-6 text-white shadow-xl relative overflow-hidden group">
                         
                         <div class="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(34,197,94,0)_95%,rgba(34,197,94,0.15)_98%,rgba(34,197,94,0)_100%)] bg-[length:100%_24px] animate-[pulse_3s_infinite]"></div>
                         
                         <div class="flex justify-between items-start relative z-10">
                             <div>
                                 <span class="bg-green-500/20 text-green-400 text-xs font-mono px-2.5 py-1 rounded-full border border-green-500/30 uppercase tracking-widest">
-                                    <i class="fa-solid fa-microchip-ai mr-1 animate-pulse"></i> FarmVision Engine v1.0
+                                    <i class="fa-solid fa-camera mr-1 animate-pulse"></i> Free Vision Scan
                                 </span>
                                 <h2 class="text-xl font-bold mt-3 tracking-tight">
                                     AI Shelf-Life Diagnostics
                                 </h2>
                             </div>
-                            <div class="flex h-3 w-3 relative">
+                            <div id="diagnostics-pulse" class="flex h-3 w-3 relative">
                                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                                 <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
                             </div>
                         </div>
 
                         <div class="mt-6 bg-black/40 border border-green-900/60 rounded-xl p-4 flex items-center gap-4 relative">
-                            <div class="w-16 h-16 bg-red-950/50 border border-red-500/40 rounded-lg flex items-center justify-center text-3xl relative overflow-hidden shadow-inner shadow-red-500/10">
+                            <div id="diagnostics-image-frame" class="w-16 h-16 bg-red-950/50 border border-red-500/40 rounded-lg flex items-center justify-center text-3xl relative overflow-hidden shadow-inner shadow-red-500/10 shrink-0">
                                 <div class="absolute top-0 left-0 w-full h-0.5 bg-red-500 opacity-80 shadow-[0_0_8px_#ef4444] animate-[bounce_2s_infinite]"></div>
                                 🍅
                             </div>
 
-                            <div class="flex-1">
+                            <div class="flex-1 min-w-0">
                                 <div class="flex items-center gap-2">
-                                    <h3 class="text-lg font-bold tracking-wide">Tomatoes</h3>
-                                    <span class="text-[10px] bg-red-500/20 text-red-400 font-mono px-1.5 rounded border border-red-500/30">CRITICAL</span>
+                                    <h3 id="diagnostics-product-name" class="text-lg font-bold tracking-wide truncate">Scanning listings...</h3>
+                                    <span id="diagnostics-severity" class="text-[10px] bg-amber-500/20 text-amber-300 font-mono px-1.5 rounded border border-amber-500/30">ANALYZING</span>
                                 </div>
-                                <p class="text-xs text-gray-400 mt-0.5">Batch ID: <span class="font-mono text-green-400">#FR-9482</span></p>
+                                <p class="text-xs text-gray-400 mt-0.5">Batch ID: <span id="diagnostics-batch-id" class="font-mono text-green-400">#FR-PENDING</span></p>
                                 <div class="w-full bg-gray-800 h-1.5 rounded-full mt-2 overflow-hidden">
-                                    <div class="bg-gradient-to-r from-yellow-500 to-red-500 h-1.5 rounded-full" style="width: 88%"></div>
+                                    <div id="diagnostics-risk-bar" class="bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 h-1.5 rounded-full transition-all duration-500" style="width: 12%"></div>
                                 </div>
                             </div>
                         </div>
@@ -280,23 +267,36 @@
                         <div class="grid grid-cols-2 gap-3 mt-4">
                             <div class="bg-white/5 rounded-xl p-3 border border-white/5">
                                 <p class="text-xs text-gray-400">Estimated Shelf Life</p>
-                                <p class="text-xl font-bold text-red-400 mt-1">24 Hours</p>
+                                <p id="diagnostics-shelf-life" class="text-xl font-bold text-amber-300 mt-1">Analyzing</p>
                             </div>
                             <div class="bg-white/5 rounded-xl p-3 border border-white/5">
                                 <p class="text-xs text-gray-400">Routing Mode</p>
-                                <p class="text-sm font-bold text-amber-400 mt-1.5 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-bolt-lightning text-xs animate-bounce"></i> Priority Match
+                                <p id="diagnostics-routing-mode" class="text-sm font-bold text-amber-400 mt-1.5 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-circle-notch fa-spin text-xs"></i> Checking
                                 </p>
                             </div>
                         </div>
 
-                        <p class="text-xs text-gray-400/90 mt-5 leading-relaxed bg-green-950/30 p-3 rounded-lg border border-green-900/30 italic">
-                            💡 <strong>Smart Matching System:</strong> Uploaded snapshot imagery analyses crop cell decay metrics to prioritize driver logistics instantly.
+                        <p id="diagnostics-summary" class="text-xs text-gray-400/90 mt-5 leading-relaxed bg-green-950/30 p-3 rounded-lg border border-green-900/30 italic">
+                            Uploaded produce photos are checked with a free browser vision model and freshness signals, then ranked for priority shipping.
                         </p>
 
-                        <a href="#" class="text-green-400 hover:text-green-300 font-semibold text-sm mt-5 inline-flex items-center gap-2 transition relative z-10 group-hover:translate-x-1 duration-200">
-                            Configure Vision Criteria <i class="fa-solid fa-arrow-right text-xs"></i>
+                        <div class="mt-4 relative z-10">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="text-xs font-semibold uppercase tracking-widest text-gray-400">Priority queue</p>
+                                <span id="diagnostics-model-status" class="text-[10px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded-full">Loading vision API</span>
+                            </div>
+                            <div id="diagnostics-alert-list" class="space-y-2">
+                                <p class="text-xs text-gray-500 border border-white/5 rounded-lg p-3 bg-white/5">Waiting for farmer listings...</p>
+                            </div>
+                        </div>
+
+                        <a href="listings.html" class="text-green-400 hover:text-green-300 font-semibold text-sm mt-5 inline-flex items-center gap-2 transition relative z-10 group-hover:translate-x-1 duration-200">
+                            Review listings <i class="fa-solid fa-arrow-right text-xs"></i>
                         </a>
+                        <button id="run-diagnostics-btn" class="mt-3 relative z-10 text-xs font-semibold text-white/90 bg-white/10 hover:bg-white/15 border border-white/10 px-3 py-2 rounded-lg transition">
+                            Run fresh scan
+                        </button>
                     </div>
                 </div>
 
@@ -317,8 +317,23 @@
 
     const nameEl = document.getElementById("user-display-name");
     const roleEl = document.getElementById("user-display-role");
+    const avatarEl = document.getElementById("user-avatar");
+    const messageBadgeEl = document.getElementById("message-notification-badge");
+    const headerMessageBadgeEl = document.getElementById("header-message-notification-badge");
     const loadingScreen = document.getElementById("loading-screen");
     const recentContainer = document.getElementById("recent-shipments-container");
+    const diagnosticsProductName = document.getElementById("diagnostics-product-name");
+    const diagnosticsSeverity = document.getElementById("diagnostics-severity");
+    const diagnosticsBatchId = document.getElementById("diagnostics-batch-id");
+    const diagnosticsRiskBar = document.getElementById("diagnostics-risk-bar");
+    const diagnosticsShelfLife = document.getElementById("diagnostics-shelf-life");
+    const diagnosticsRoutingMode = document.getElementById("diagnostics-routing-mode");
+    const diagnosticsSummary = document.getElementById("diagnostics-summary");
+    const diagnosticsImageFrame = document.getElementById("diagnostics-image-frame");
+    const diagnosticsPulse = document.getElementById("diagnostics-pulse");
+    const runDiagnosticsBtn = document.getElementById("run-diagnostics-btn");
+    const diagnosticsAlertList = document.getElementById("diagnostics-alert-list");
+    const diagnosticsModelStatus = document.getElementById("diagnostics-model-status");
 
     // Metric DOM Elements
     const completedEl = document.getElementById("metric-completed");
@@ -330,6 +345,49 @@
         if (loadingScreen) loadingScreen.classList.add("hidden");
     }
 
+    function updateHeaderAvatar(profilePictureUrl) {
+        if (!avatarEl || !profilePictureUrl) return;
+        avatarEl.src = profilePictureUrl;
+        avatarEl.classList.remove("hidden");
+    }
+
+    function getMessageNotificationCount(snapshot, userId) {
+        let unreadTotal = 0;
+        let hasUnreadData = false;
+        snapshot.forEach((roomSnap) => {
+            const room = roomSnap.data();
+            if (room.unreadCounts || room.unreadBy || room.unread) hasUnreadData = true;
+            const countMap = room.unreadCounts || room.unreadBy || room.unread || {};
+            const count = Number(countMap[userId] || 0);
+            if (count > 0) unreadTotal += count;
+        });
+        return hasUnreadData ? unreadTotal : snapshot.size;
+    }
+
+    function updateMessageBadges(count) {
+        [messageBadgeEl, headerMessageBadgeEl].forEach((badge) => {
+            if (!badge) return;
+            if (count > 0) {
+                badge.textContent = count > 99 ? "99+" : String(count);
+                badge.classList.remove("hidden");
+                if (badge === headerMessageBadgeEl) badge.classList.add("flex");
+            } else {
+                badge.classList.add("hidden");
+                if (badge === headerMessageBadgeEl) badge.classList.remove("flex");
+            }
+        });
+    }
+
+    function listenForMessageNotifications(userId) {
+        const chatsQuery = query(collection(db, "chats"), where("participants", "array-contains", userId));
+        onSnapshot(chatsQuery, (snapshot) => {
+            updateMessageBadges(getMessageNotificationCount(snapshot, userId));
+        }, (err) => {
+            console.error("Message notification sync failed:", err);
+            updateMessageBadges(0);
+        });
+    }
+
     // Fallback dictionary for crop images
     const fallbackImages = {
         "tomatoes": "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=200",
@@ -338,6 +396,423 @@
         "maize": "https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=200",
         "corn": "https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=200"
     };
+
+    const shelfLifeProfiles = [
+        { label: "Tomatoes", keys: ["tomato", "tomatoes"], baseHours: 72, sensitivity: 1.3, range: "2-4 days" },
+        { label: "Fresh pepper", keys: ["pepper", "habanero", "chilli", "chili", "bell pepper"], baseHours: 96, sensitivity: 1.15, range: "3-5 days" },
+        { label: "Leafy vegetables", keys: ["leaf", "lettuce", "spinach", "ugu", "vegetable", "greens", "cabbage"], baseHours: 36, sensitivity: 1.55, range: "1-2 days" },
+        { label: "Okra", keys: ["okra"], baseHours: 48, sensitivity: 1.35, range: "2-3 days" },
+        { label: "Banana or plantain", keys: ["banana", "plantain"], baseHours: 120, sensitivity: 1.05, range: "4-7 days" },
+        { label: "Root crops", keys: ["yam", "potato", "sweet potato", "cassava", "cocoyam"], baseHours: 336, sensitivity: 0.7, range: "2-4 weeks" },
+        { label: "Maize or corn", keys: ["maize", "corn"], baseHours: 168, sensitivity: 0.85, range: "5-10 days" },
+        { label: "Onion or garlic", keys: ["onion", "garlic"], baseHours: 504, sensitivity: 0.55, range: "3-6 weeks" },
+        { label: "Cucumber", keys: ["cucumber"], baseHours: 120, sensitivity: 1.1, range: "4-6 days" },
+        { label: "Citrus fruit", keys: ["orange", "lemon", "lime", "citrus"], baseHours: 336, sensitivity: 0.75, range: "2-3 weeks" },
+        { label: "Pineapple", keys: ["pineapple"], baseHours: 120, sensitivity: 1.05, range: "4-6 days" },
+        { label: "Mango", keys: ["mango"], baseHours: 120, sensitivity: 1.1, range: "3-6 days" }
+    ];
+
+    let cachedDiagnosticsProducts = [];
+    let cachedVisionModel = null;
+    let visionModelPromise = null;
+    let diagnosticsRenderToken = 0;
+    const imageAnalysisCache = new Map();
+
+    function escapeHTML(text) {
+        const div = document.createElement("div");
+        div.textContent = text ?? "";
+        return div.innerHTML;
+    }
+
+    function escapeAttr(text) {
+        return String(text ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+    }
+
+    function getProductImage(data) {
+        let imageSrc = (data.images && data.images.length > 0) ? data.images[0] : data.imageUrl;
+        const cleanKey = (data.name || "").toLowerCase().trim();
+
+        if (!imageSrc) {
+            for (const key in fallbackImages) {
+                if (cleanKey.includes(key)) {
+                    imageSrc = fallbackImages[key];
+                    break;
+                }
+            }
+        }
+
+        return imageSrc || "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=200";
+    }
+
+    function getUploadedProductImage(data) {
+        return (data.images && data.images.length > 0) ? data.images[0] : (data.imageUrl || "");
+    }
+
+    function dateToMillis(value) {
+        if (!value) return Date.now();
+        if (typeof value.toDate === "function") return value.toDate().getTime();
+        if (value.seconds) return value.seconds * 1000;
+        const parsed = new Date(value).getTime();
+        return Number.isNaN(parsed) ? Date.now() : parsed;
+    }
+
+    function getShelfProfile(productName, category) {
+        const key = `${productName || ""} ${category || ""}`.toLowerCase();
+        return shelfLifeProfiles.find(profile => profile.keys.some(item => key.includes(item))) || {
+            label: "General fresh produce",
+            baseHours: 120,
+            sensitivity: 1,
+            range: "3-5 days"
+        };
+    }
+
+    function setModelStatus(text, tone = "emerald") {
+        if (!diagnosticsModelStatus) return;
+        const toneClasses = {
+            emerald: "text-emerald-300 bg-emerald-500/10 border-emerald-500/20",
+            amber: "text-amber-300 bg-amber-500/10 border-amber-500/20",
+            red: "text-red-300 bg-red-500/10 border-red-500/20"
+        };
+        diagnosticsModelStatus.textContent = text;
+        diagnosticsModelStatus.className = `text-[10px] border px-2 py-1 rounded-full ${toneClasses[tone] || toneClasses.emerald}`;
+    }
+
+    async function loadVisionModel() {
+        if (cachedVisionModel) return cachedVisionModel;
+        if (visionModelPromise) return visionModelPromise;
+        if (!window.mobilenet) {
+            setModelStatus("Vision fallback active", "amber");
+            return null;
+        }
+        visionModelPromise = (async () => {
+            try {
+                setModelStatus("Loading vision API", "amber");
+                cachedVisionModel = await window.mobilenet.load();
+                setModelStatus("Vision API ready", "emerald");
+                return cachedVisionModel;
+            } catch (error) {
+                console.warn("Vision model failed to load; using freshness fallback.", error);
+                setModelStatus("Vision fallback active", "amber");
+                return null;
+            }
+        })();
+
+        return visionModelPromise;
+    }
+
+    function loadImageElement(src) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.src = src;
+        });
+    }
+
+    function inspectFreshnessPixels(img) {
+        const canvas = document.createElement("canvas");
+        const size = 72;
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        ctx.drawImage(img, 0, 0, size, size);
+        const pixels = ctx.getImageData(0, 0, size, size).data;
+        let dark = 0;
+        let brown = 0;
+        let dull = 0;
+        let green = 0;
+        let red = 0;
+        let moldLike = 0;
+        let yellowing = 0;
+        const total = pixels.length / 4;
+
+        for (let i = 0; i < pixels.length; i += 4) {
+            const r = pixels[i];
+            const g = pixels[i + 1];
+            const b = pixels[i + 2];
+            const max = Math.max(r, g, b);
+            const min = Math.min(r, g, b);
+            const brightness = (r + g + b) / 3;
+            const saturation = max === 0 ? 0 : (max - min) / max;
+
+            if (brightness < 58) dark++;
+            if (r > 65 && g > 38 && b < 75 && r >= g * 0.9) brown++;
+            if (saturation < 0.18 && brightness < 170) dull++;
+            if (brightness > 165 && saturation < 0.12) moldLike++;
+            if (r > 115 && g > 95 && b < 80 && Math.abs(r - g) < 55) yellowing++;
+            if (g > r * 1.08 && g > b * 1.08 && brightness > 45) green++;
+            if (r > g * 1.12 && r > b * 1.12 && brightness > 55) red++;
+        }
+
+        const browningPct = Math.round((brown / total) * 100);
+        const darkPct = Math.round((dark / total) * 100);
+        const dullPct = Math.round((dull / total) * 100);
+        const moldPct = Math.round((moldLike / total) * 100);
+        const yellowPct = Math.round((yellowing / total) * 100);
+        const signs = [];
+
+        if (browningPct >= 18) signs.push("browning");
+        if (darkPct >= 16) signs.push("dark soft spots");
+        if (dullPct >= 30) signs.push("dull/dehydrated surface");
+        if (moldPct >= 10) signs.push("pale mold-like patches");
+        if (yellowPct >= 22) signs.push("yellowing");
+
+        const spoilageScore = Math.min(44, Math.round(
+            (brown / total) * 44 +
+            (dark / total) * 28 +
+            (dull / total) * 18 +
+            (moldLike / total) * 34 +
+            (yellowing / total) * 16
+        ));
+        const healthyColorScore = Math.min(12, Math.round(((green + red) / total) * 10));
+
+        return {
+            spoilageScore: Math.max(0, spoilageScore - healthyColorScore),
+            signs,
+            notes: signs.length > 0
+                ? `${signs.join(", ")} detected`
+                : `no strong spoilage signs detected (${browningPct}% browning, ${darkPct}% dark patches)`
+        };
+    }
+
+    async function analyzeProduceImage(imageSrc) {
+        if (!imageSrc) {
+            return {
+                imageRisk: 14,
+                imageLabel: "No produce photo",
+                imageNotes: "Upload a clear photo for stronger shelf-life diagnostics.",
+                imageSigns: ["photo required"]
+            };
+        }
+        if (imageAnalysisCache.has(imageSrc)) return imageAnalysisCache.get(imageSrc);
+
+        const analysisPromise = (async () => {
+            try {
+                const img = await loadImageElement(imageSrc);
+                const pixelScan = inspectFreshnessPixels(img);
+                const model = await loadVisionModel();
+                let imageLabel = "Produce image";
+                let modelConfidenceRisk = 0;
+
+                if (model) {
+                    const predictions = await model.classify(img, 3);
+                    const best = predictions[0];
+                    imageLabel = best ? `${best.className.split(",")[0]} ${Math.round(best.probability * 100)}%` : imageLabel;
+                    const produceMatch = predictions.some(item => /fruit|vegetable|tomato|pepper|corn|banana|plantain|potato|yam|cucumber|orange|lemon|apple|cabbage|broccoli|mushroom|pineapple|strawberry/i.test(item.className));
+                    modelConfidenceRisk = produceMatch ? -4 : 6;
+                }
+
+                return {
+                    imageRisk: Math.max(-4, Math.min(40, pixelScan.spoilageScore + modelConfidenceRisk)),
+                    imageLabel,
+                    imageNotes: pixelScan.notes,
+                    imageSigns: pixelScan.signs
+                };
+            } catch (error) {
+                console.warn("Image diagnostics failed for listing; using non-image estimate.", error);
+                setModelStatus("Image fallback active", "amber");
+                return {
+                    imageRisk: 10,
+                    imageLabel: "Photo unavailable",
+                    imageNotes: "Could not read this image in the browser.",
+                    imageSigns: ["photo unreadable"]
+                };
+            }
+        })();
+
+        imageAnalysisCache.set(imageSrc, analysisPromise);
+        return analysisPromise;
+    }
+
+    async function analyzeShelfLife(product) {
+        const data = product.data;
+        const profile = getShelfProfile(data.name, data.category);
+        const harvestMs = dateToMillis(data.harvestDate || data.createdAt);
+        const ageHours = Math.max(0, (Date.now() - harvestMs) / 36e5);
+        const status = data.status || "Searching";
+        const statusPressure = status === "Searching" ? 14 : status === "Matched" ? 8 : status === "In Transit" ? 18 : 0;
+        const routeText = `${data.routeFrom || data.location || ""} ${data.routeTo || ""}`.trim();
+        const routePressure = routeText.length > 35 ? 8 : 0;
+        const uploadedImageSrc = getUploadedProductImage(data);
+        const displayImageSrc = getProductImage(data);
+        const imageAnalysis = await analyzeProduceImage(uploadedImageSrc);
+        const imageShelfPenalty = Math.max(0, imageAnalysis.imageRisk);
+        const imageQualityBonus = Math.min(0, imageAnalysis.imageRisk);
+        const normalShelfHours = profile.baseHours;
+        const remainingHours = Math.max(0, Math.round(
+            normalShelfHours -
+            (ageHours * profile.sensitivity) -
+            statusPressure -
+            routePressure -
+            imageShelfPenalty -
+            imageQualityBonus
+        ));
+        const ageRiskScore = Math.round(100 - ((remainingHours / normalShelfHours) * 100));
+        const imageRiskScore = Math.max(0, Math.round(imageShelfPenalty * 1.8));
+        const riskScore = Math.min(100, Math.max(0, ageRiskScore + imageRiskScore));
+        const imageSigns = imageAnalysis.imageSigns || [];
+        const hasLowShelfImageSigns = imageSigns.some(sign => !["photo required", "photo unreadable"].includes(sign));
+
+        let severity = "STABLE";
+        if (riskScore >= 78 || remainingHours <= 24 || (remainingHours <= 48 && hasLowShelfImageSigns)) severity = "CRITICAL";
+        else if (riskScore >= 55 || remainingHours <= 48 || hasLowShelfImageSigns) severity = "URGENT";
+        else if (riskScore >= 32 || remainingHours <= 96 || imageSigns.length > 0) severity = "WATCH";
+
+        return {
+            ...product,
+            normalShelfHours,
+            normalShelfRange: profile.range,
+            profileLabel: profile.label,
+            remainingHours,
+            riskScore,
+            severity,
+            routeMode: severity === "CRITICAL" ? "Priority Match" : severity === "URGENT" ? "Fast Route" : severity === "WATCH" ? "Monitor Route" : "Standard",
+            imageSrc: displayImageSrc,
+            uploadedImageSrc,
+            imageLabel: imageAnalysis.imageLabel,
+            imageNotes: imageAnalysis.imageNotes,
+            imageSigns,
+            priorityReason: `${profile.label} normally lasts ${profile.range}; image scan ${imageAnalysis.imageNotes}.`,
+            insight: `${profile.label} normal shelf life: ${profile.range}. Harvest age ${Math.round(ageHours)}h, ${status.toLowerCase()} status, ${routeText ? "route data available" : "route pending"}, image scan: ${imageAnalysis.imageNotes}.`
+        };
+    }
+
+    function formatShelfLife(hours) {
+        if (hours <= 0) return "Expired risk";
+        if (hours < 48) return `${hours} Hours`;
+        return `${Math.round(hours / 24)} Days`;
+    }
+
+    function renderPriorityQueue(scoredProducts) {
+        if (!diagnosticsAlertList) return;
+        const priorityProducts = scoredProducts
+            .filter(item => ["CRITICAL", "URGENT", "WATCH"].includes(item.severity))
+            .slice(0, 3);
+
+        if (priorityProducts.length === 0) {
+            diagnosticsAlertList.innerHTML = `<p class="text-xs text-emerald-300 border border-emerald-500/10 rounded-lg p-3 bg-emerald-500/5">No produce needs priority shipping right now.</p>`;
+            return;
+        }
+
+        const borderClasses = {
+            CRITICAL: "border-red-500/30 bg-red-500/10",
+            URGENT: "border-amber-500/30 bg-amber-500/10",
+            WATCH: "border-yellow-500/20 bg-yellow-500/10"
+        };
+
+        diagnosticsAlertList.innerHTML = priorityProducts.map(item => {
+            const data = item.data;
+            return `
+                <div class="flex items-center gap-3 rounded-lg border ${borderClasses[item.severity]} p-2">
+                    <img src="${escapeAttr(item.imageSrc)}" alt="${escapeAttr(data.name || "Produce")}" class="w-10 h-10 rounded-lg object-cover border border-white/10 shrink-0">
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <p class="text-sm font-semibold truncate">${escapeHTML(data.name || "Produce Cargo")}</p>
+                            <span class="text-[10px] font-mono text-white/80">${item.severity}</span>
+                        </div>
+                        <p class="text-[11px] text-gray-400 truncate">${formatShelfLife(item.remainingHours)} left | normal: ${escapeHTML(item.normalShelfRange)} | ${escapeHTML(item.imageLabel)}</p>
+                        <p class="text-[11px] text-gray-500 truncate">${escapeHTML(item.priorityReason)}</p>
+                    </div>
+                </div>
+            `;
+        }).join("");
+    }
+
+    async function renderShelfLifeDiagnostics(products) {
+        const renderToken = ++diagnosticsRenderToken;
+        const activeProducts = products.filter(item => (item.data.status || "Searching") !== "Delivered");
+
+        if (activeProducts.length === 0) {
+            if (diagnosticsProductName) diagnosticsProductName.textContent = "No active produce";
+            if (diagnosticsSeverity) {
+                diagnosticsSeverity.textContent = "CLEAR";
+                diagnosticsSeverity.className = "text-[10px] bg-green-500/20 text-green-300 font-mono px-1.5 rounded border border-green-500/30";
+            }
+            if (diagnosticsBatchId) diagnosticsBatchId.textContent = "#FR-NONE";
+            if (diagnosticsRiskBar) diagnosticsRiskBar.style.width = "8%";
+            if (diagnosticsShelfLife) {
+                diagnosticsShelfLife.textContent = "No risk";
+                diagnosticsShelfLife.className = "text-xl font-bold text-green-300 mt-1";
+            }
+            if (diagnosticsRoutingMode) diagnosticsRoutingMode.innerHTML = `<i class="fa-solid fa-check text-xs"></i> Standby`;
+            if (diagnosticsSummary) diagnosticsSummary.textContent = "No active produce listings need shelf-life intervention right now.";
+            if (diagnosticsImageFrame) diagnosticsImageFrame.innerHTML = `<i class="fa-solid fa-seedling text-green-300"></i>`;
+            renderPriorityQueue([]);
+            return;
+        }
+
+        if (diagnosticsSummary) diagnosticsSummary.textContent = "Checking product names against normal shelf life, then scanning photos for low shelf-life signs...";
+        if (diagnosticsAlertList) diagnosticsAlertList.innerHTML = `<p class="text-xs text-gray-500 border border-white/5 rounded-lg p-3 bg-white/5">Analyzing listing images...</p>`;
+
+        const scoredProducts = (await Promise.all(activeProducts.map(analyzeShelfLife))).sort((a, b) => b.riskScore - a.riskScore);
+        if (renderToken !== diagnosticsRenderToken) return;
+
+        const highestRisk = scoredProducts[0];
+        const data = highestRisk.data;
+        const imageSrc = highestRisk.imageSrc || getProductImage(data);
+        const severityClasses = {
+            CRITICAL: "text-[10px] bg-red-500/20 text-red-400 font-mono px-1.5 rounded border border-red-500/30",
+            URGENT: "text-[10px] bg-amber-500/20 text-amber-300 font-mono px-1.5 rounded border border-amber-500/30",
+            WATCH: "text-[10px] bg-yellow-500/20 text-yellow-300 font-mono px-1.5 rounded border border-yellow-500/30",
+            STABLE: "text-[10px] bg-green-500/20 text-green-300 font-mono px-1.5 rounded border border-green-500/30"
+        };
+
+        if (diagnosticsProductName) diagnosticsProductName.textContent = data.name || "Produce Cargo";
+        if (diagnosticsSeverity) {
+            diagnosticsSeverity.textContent = highestRisk.severity;
+            diagnosticsSeverity.className = severityClasses[highestRisk.severity];
+        }
+        if (diagnosticsBatchId) diagnosticsBatchId.textContent = `#FR-${highestRisk.id.substring(0, 6).toUpperCase()}`;
+        if (diagnosticsRiskBar) diagnosticsRiskBar.style.width = `${Math.max(8, highestRisk.riskScore)}%`;
+        if (diagnosticsShelfLife) {
+            diagnosticsShelfLife.textContent = formatShelfLife(highestRisk.remainingHours);
+            diagnosticsShelfLife.className = `text-xl font-bold mt-1 ${highestRisk.severity === "CRITICAL" ? "text-red-400" : highestRisk.severity === "URGENT" ? "text-amber-300" : "text-green-300"}`;
+        }
+        if (diagnosticsRoutingMode) {
+            const icon = highestRisk.severity === "CRITICAL" ? "fa-bolt-lightning animate-bounce" : highestRisk.severity === "URGENT" ? "fa-route" : "fa-shield-halved";
+            diagnosticsRoutingMode.innerHTML = `<i class="fa-solid ${icon} text-xs"></i> ${highestRisk.routeMode}`;
+        }
+        if (diagnosticsSummary) {
+            diagnosticsSummary.textContent = `${highestRisk.insight} Recommended action: ${highestRisk.severity === "CRITICAL" ? "match a driver immediately" : highestRisk.severity === "URGENT" ? "prioritize dispatch today" : "keep monitoring"}.`;
+        }
+        if (diagnosticsImageFrame) {
+            diagnosticsImageFrame.innerHTML = `
+                <div class="absolute top-0 left-0 w-full h-0.5 bg-red-500 opacity-80 shadow-[0_0_8px_#ef4444] animate-[bounce_2s_infinite]"></div>
+                <img src="${escapeAttr(imageSrc)}" alt="${escapeAttr(data.name || "Produce")}" class="w-full h-full object-cover">
+            `;
+        }
+        if (diagnosticsPulse) {
+            const pulseClasses = {
+                CRITICAL: ["bg-red-400", "bg-red-500"],
+                URGENT: ["bg-amber-400", "bg-amber-500"],
+                WATCH: ["bg-yellow-400", "bg-yellow-500"],
+                STABLE: ["bg-green-400", "bg-green-500"]
+            }[highestRisk.severity] || ["bg-green-400", "bg-green-500"];
+            diagnosticsPulse.innerHTML = `
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full ${pulseClasses[0]} opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 ${pulseClasses[1]}"></span>
+            `;
+        }
+        renderPriorityQueue(scoredProducts);
+    }
+
+    runDiagnosticsBtn?.addEventListener("click", async () => {
+        if (diagnosticsSummary) diagnosticsSummary.textContent = "Running fresh shelf-life scan against your current listings...";
+        runDiagnosticsBtn.disabled = true;
+        runDiagnosticsBtn.classList.add("opacity-60", "cursor-wait");
+
+        window.setTimeout(async () => {
+            await renderShelfLifeDiagnostics(cachedDiagnosticsProducts);
+            runDiagnosticsBtn.disabled = false;
+            runDiagnosticsBtn.classList.remove("opacity-60", "cursor-wait");
+        }, 350);
+    });
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
@@ -348,6 +823,7 @@
         nameEl.innerText = user.displayName || "FarmRoute User";
         roleEl.innerText = "Farmer"; 
         hideLoading();
+        listenForMessageNotifications(user.uid);
 
         try {
             const userDocRef = doc(db, "users", user.uid);
@@ -357,6 +833,7 @@
                 const userData = userDocSnap.data();
                 if (userData.name) nameEl.innerText = userData.name;
                 if (userData.role) roleEl.innerText = userData.role;
+                updateHeaderAvatar(userData.profilePictureUrl);
             }
         } catch (err) {
             console.error("Firestore profile fetch failed:", err);
@@ -392,13 +869,17 @@
 
         onSnapshot(allFarmerProductsQuery, (snapshot) => {
             let activeCount = 0;
+            const diagnosticsProducts = [];
             snapshot.forEach((doc) => {
                 const data = doc.data();
+                diagnosticsProducts.push({ id: doc.id, data });
                 if (data.status !== "Delivered") {
                     activeCount++;
                 }
             });
             if (listingsEl) listingsEl.innerText = activeCount;
+            cachedDiagnosticsProducts = diagnosticsProducts;
+            renderShelfLifeDiagnostics(cachedDiagnosticsProducts);
         }, (err) => console.error("All products query failed:", err));
 
         onSnapshot(pendingQuery, (snapshot) => {
@@ -446,25 +927,7 @@
                 if (currentStatus === "In Transit") badgeClass = "bg-blue-100 text-blue-700";
                 if (currentStatus === "Searching") badgeClass = "bg-amber-100 text-amber-700";
 
-                const cleanKey = productName.toLowerCase().trim();
-
-                let imageSrc =
-                    (data.images && data.images.length > 0)
-                        ? data.images[0]
-                        : data.imageUrl;
-
-                if (!imageSrc) {
-                    for (const key in fallbackImages) {
-                        if (cleanKey.includes(key)) {
-                            imageSrc = fallbackImages[key];
-                            break;
-                        }
-                    }
-                }
-
-                if (!imageSrc) {
-                    imageSrc = "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=200";
-                }
+                const imageSrc = getProductImage(data);
 
                 // CHANGED: Converted parent container from raw Flexbox to standard 4-column Grid structure
                 const itemHtml = `
@@ -516,8 +979,8 @@
     const sideBtn = document.getElementById("side-btn");
     const closeSide = document.getElementById("closeside-btn");
     
-    sideBtn.addEventListener("click", () => sideBar.classList.toggle("hidden"))
-    closeSide.addEventListener("click", () => sideBar.classList.toggle("hidden"))
+    sideBtn.addEventListener("click", () => sideBar.classList.remove("max-md:hidden"))
+    closeSide.addEventListener("click", () => sideBar.classList.add("max-md:hidden"))
 </script>
 </body>
 </html>

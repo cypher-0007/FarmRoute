@@ -20,16 +20,14 @@
     </div>
 </div>
 
-<!-- Main body -->
 <div class="flex h-screen">
-    <!-- SIDE-NAV -->
-    <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col h-screen">
+    <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col h-screen shrink-0 z-50 fixed md:static inset-y-0 left-0 max-md:hidden">
 
             <div class="px-6 py-2 items-center justify-between flex border-b border-green-900">
                 <img class="h-16" src="../assets/logo3.png" alt="FarmRoute Logo">
 
-                <button id="closeside-btn" class="hidden max-sm:flex text-2xl">
-                    <i class="fa-solid fa-bars"></i>
+                <button id="closeside-btn" class="md:hidden text-2xl text-gray-300 hover:text-white p-2">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
@@ -53,7 +51,7 @@
                     My Active Trips
                 </a>
 
-                <a href="#"
+                <a href="messages.html"
                     class="flex items-center justify-between px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
                     <div class="flex items-center gap-3">
                         <i class="fa-regular fa-message"></i>
@@ -65,13 +63,13 @@
                     </span>
                 </a>
 
-                <a href="#"
+                <a href="payments.html"
                     class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
                     <i class="fa-solid fa-wallet"></i>
                     Payments
                 </a>
 
-                <a href="#"
+                <a href="profile.html"
                     class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
                     <i class="fa-regular fa-user"></i>
                     Profile
@@ -101,18 +99,23 @@
                 </button>
             </div>
 
-        </aside>
-    <!-- MAIN CONTENT -->
+    </aside>
     <main class="flex-1 overflow-y-auto">
 
         <header
-            class="bg-white h-20 px-8 flex items-center justify-between border-b">
+            class="bg-white h-20 px-4 sm:px-8 flex items-center justify-between border-b">
 
-            <button id="side-btn" class="text-2xl">
-                <i class="fa-solid fa-bars"></i>
-            </button>
+            <div class="flex items-center gap-4">
+                <button id="side-btn" class="text-2xl md:hidden text-gray-700 p-2">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="hidden sm:block">
+                    <h1 class="text-xl font-bold text-gray-900">Driver Dashboard</h1>
+                    <p class="text-xs text-gray-500">Live trips, nearby loads, and priority perishables.</p>
+                </div>
+            </div>
 
-            <div class="flex items-center gap-8">
+            <div class="ml-auto flex items-center gap-4 sm:gap-8">
 
                 <button class="relative text-xl">
                     <i class="fa-regular fa-message"></i>
@@ -130,8 +133,9 @@
                 <div class="flex items-center gap-3">
 
                     <img
-                        src="https://i.pravatar.cc/50"
-                        class="w-10 h-10 rounded-full">
+                        id="user-avatar"
+                        alt="Profile picture"
+                        class="w-10 h-10 rounded-full object-cover hidden">
 
                     <div>
                         <h4 id="user-display-name" class="font-semibold">
@@ -165,105 +169,50 @@
 
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
 
                 <div class="bg-white rounded-2xl border p-6 shadow-sm">
-
-                    <h3 class="text-gray-700 font-medium mb-6">
-                        Active Trips
-                    </h3>
-
+                    <h3 class="text-gray-700 font-medium mb-6">Active Trips</h3>
                     <div class="flex items-center justify-between">
-
-                        <h2 class="text-5xl font-bold">
-                            2
-                        </h2>
-
+                        <h2 id="metric-active-trips" class="text-5xl font-bold">0</h2>
                         <div class="w-14 h-14 rounded-xl bg-green-100 flex items-center justify-center">
                             <i class="fa-solid fa-truck-fast text-green-600 text-2xl"></i>
                         </div>
-
                     </div>
-
-                    <a href="active-trips.html"
-                        class="text-green-700 mt-6 block font-medium">
-                        View active trips
-                    </a>
-
+                    <a href="active_trips.html" class="text-green-700 mt-6 block font-medium">View active trips</a>
                 </div>
 
                 <div class="bg-white rounded-2xl border p-6 shadow-sm">
-
-                    <h3 class="text-gray-700 font-medium mb-6">
-                        Available Loads Nearby
-                    </h3>
-
+                    <h3 class="text-gray-700 font-medium mb-6">Available Loads Nearby</h3>
                     <div class="flex items-center justify-between">
-
-                        <h2 class="text-5xl font-bold">
-                            5
-                        </h2>
-
+                        <h2 id="metric-avail-loads" class="text-5xl font-bold">0</h2>
                         <div class="w-14 h-14 rounded-xl bg-yellow-100 flex items-center justify-center">
                             <i class="fa-solid fa-boxes-stacked text-yellow-500 text-2xl"></i>
                         </div>
-
                     </div>
-
-                    <a href="available-loads.html"
-                        class="text-green-700 mt-6 block font-medium">
-                        View load board
-                    </a>
-
+                    <a href="available_loads.html" class="text-green-700 mt-6 block font-medium">View load board</a>
                 </div>
 
                 <div class="bg-white rounded-2xl border p-6 shadow-sm">
-
-                    <h3 class="text-gray-700 font-medium mb-6">
-                        Earnings This Month
-                    </h3>
-
+                    <h3 class="text-gray-700 font-medium mb-6">Earnings This Month</h3>
                     <div class="flex items-center justify-between">
-
-                        <h2 class="text-4xl font-bold text-green-700">
-                            ₦612,000
-                        </h2>
-
+                        <h2 id="metric-monthly-earnings" class="text-4xl font-bold text-green-700">₦0</h2>
                         <div class="w-14 h-14 rounded-xl bg-green-100 flex items-center justify-center">
                             <i class="fa-solid fa-sack-dollar text-green-600 text-2xl"></i>
                         </div>
-
                     </div>
-
-                    <p class="text-gray-500 mt-6">
-                        Across 9 completed trips
-                    </p>
-
+                    <p id="metric-completed-count" class="text-gray-500 mt-6">Across 0 completed trips</p>
                 </div>
 
                 <div class="bg-white rounded-2xl border p-6 shadow-sm">
-
-                    <h3 class="text-gray-700 font-medium mb-6">
-                        Completed This Week
-                    </h3>
-
+                    <h3 class="text-gray-700 font-medium mb-6">Pending Payments</h3>
                     <div class="flex items-center justify-between">
-
-                        <h2 class="text-5xl font-bold">
-                            6
-                        </h2>
-
-                        <div class="w-14 h-14 rounded-xl bg-purple-100 flex items-center justify-center">
-                            <i class="fa-solid fa-circle-check text-purple-600 text-2xl"></i>
+                        <h2 id="metric-pending-escrow" class="text-4xl font-bold text-amber-600">₦0</h2>
+                        <div class="w-14 h-14 rounded-xl bg-amber-50 flex items-center justify-center">
+                            <i class="fa-solid fa-clock-rotate-left text-amber-600 text-2xl"></i>
                         </div>
-
                     </div>
-
-                    <a href="#"
-                        class="text-green-700 mt-6 block font-medium">
-                        View trip history
-                    </a>
-
+                    <p id="metric-escrow-count" class="text-gray-500 mt-6">0 payouts held in escrow</p>
                 </div>
 
             </div>
@@ -278,6 +227,11 @@
                         </h2>
                     </div>
 
+                    <div id="recent-trips-container" class="divide-y divide-gray-100">
+                        <p class="text-gray-500 py-8 text-center text-sm">Loading recent trips...</p>
+                    </div>
+
+                    <div class="hidden">
                     <div class="flex items-center justify-between py-5 border-b">
 
                         <div class="flex items-center gap-4">
@@ -466,9 +420,11 @@
 
                     </div>
 
+                    </div>
+
                     <div class="text-center mt-8">
 
-                        <a href="active-trips.html"
+                        <a href="active_trips.html"
                             class="inline-block border-2 border-green-600 text-green-600 px-8 py-3 rounded-xl hover:bg-green-600 hover:text-white transition">
                             View all trips
                         </a>
@@ -482,9 +438,14 @@
                     <div class="bg-white rounded-2xl border p-6">
 
                         <h2 class="text-2xl font-semibold mb-6">
-                            Load Demand Nearby
+                            Loads Nearby
                         </h2>
 
+                        <div id="nearby-loads-container" class="divide-y divide-gray-100">
+                            <p class="text-gray-500 py-6 text-center text-sm">Loading recently listed loads...</p>
+                        </div>
+
+                        <div class="hidden">
                         <div class="pb-5 border-b">
 
                             <div class="flex justify-between items-center">
@@ -551,7 +512,9 @@
 
                         </div>
 
-                        <a href="available-loads.html"
+                        </div>
+
+                        <a href="available_loads.html"
                             class="text-green-700 font-medium mt-4 inline-block">
                             View load board
                         </a>
@@ -564,6 +527,11 @@
                             Priority Pickup
                         </h2>
 
+                        <div id="priority-pickups-container" class="space-y-3">
+                            <p class="text-gray-500 py-6 text-center text-sm">Scanning priority matches nearby...</p>
+                        </div>
+
+                        <div class="hidden">
                         <div class="flex items-center gap-4">
 
                             <div class="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center">
@@ -600,9 +568,11 @@
 
                         </div>
 
-                        <a href="available-loads.html"
+                        </div>
+
+                        <a href="available_loads.html"
                             class="text-green-700 font-medium mt-6 inline-block">
-                            View load details
+                            View all priority loads
                         </a>
 
                     </div>
@@ -617,52 +587,459 @@
 
 </div>
 
-
 <script type="module">
     import { auth, db } from "../backend/firebaseConfig.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import {
+        doc,
+        getDoc,
+        collection,
+        query,
+        where,
+        onSnapshot
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const LOGIN_PAGE_URL = "/login.html";
 
     const nameEl = document.getElementById("user-display-name");
     const roleEl = document.getElementById("user-display-role");
+    const avatarEl = document.getElementById("user-avatar");
     const loadingScreen = document.getElementById("loading-screen");
 
-    // Clear loading states safely
+    // Dashboard metric elements
+    const activeTripsEl = document.getElementById("metric-active-trips");
+    const availLoadsEl = document.getElementById("metric-avail-loads");
+    const monthlyEarningsEl = document.getElementById("metric-monthly-earnings");
+    const completedCountEl = document.getElementById("metric-completed-count");
+    const escrowAmountEl = document.getElementById("metric-pending-escrow");
+    const escrowCountEl = document.getElementById("metric-escrow-count");
+    const recentTripsContainer = document.getElementById("recent-trips-container");
+    const nearbyLoadsContainer = document.getElementById("nearby-loads-container");
+    const priorityPickupsContainer = document.getElementById("priority-pickups-container");
+
+    const fallbackImages = {
+        tomatoes: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=200",
+        pepper: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=200",
+        yam: "https://images.unsplash.com/photo-1603048297172-c92544798d5a?w=200",
+        maize: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=200",
+        corn: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=200",
+        default: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=200"
+    };
+
+    const shelfLifeProfiles = [
+        { label: "Tomatoes", keys: ["tomato", "tomatoes"], baseHours: 72, sensitivity: 1.3 },
+        { label: "Fresh pepper", keys: ["pepper", "habanero", "chilli", "chili"], baseHours: 96, sensitivity: 1.15 },
+        { label: "Leafy vegetables", keys: ["leaf", "lettuce", "spinach", "ugu", "vegetable", "greens", "cabbage"], baseHours: 36, sensitivity: 1.55 },
+        { label: "Okra", keys: ["okra"], baseHours: 48, sensitivity: 1.35 },
+        { label: "Banana or plantain", keys: ["banana", "plantain"], baseHours: 120, sensitivity: 1.05 },
+        { label: "Mango", keys: ["mango"], baseHours: 120, sensitivity: 1.1 },
+        { label: "Cucumber", keys: ["cucumber"], baseHours: 120, sensitivity: 1.1 },
+        { label: "Maize or corn", keys: ["maize", "corn"], baseHours: 168, sensitivity: 0.85 },
+        { label: "Root crops", keys: ["yam", "potato", "cassava"], baseHours: 336, sensitivity: 0.7 },
+        { label: "General produce", keys: [], baseHours: 120, sensitivity: 1 }
+    ];
+
+    let driverAreaKeywords = [];
+
     function hideLoading() {
         if (loadingScreen) loadingScreen.classList.add("hidden");
     }
 
+    function escapeHTML(text) {
+        const div = document.createElement("div");
+        div.textContent = text ?? "";
+        return div.innerHTML;
+    }
+
+    function escapeAttr(text) {
+        return String(text ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+    }
+
+    function updateHeaderAvatar(profilePictureUrl) {
+        if (!avatarEl || !profilePictureUrl) return;
+        avatarEl.src = profilePictureUrl;
+        avatarEl.classList.remove("hidden");
+    }
+
+    function getDriverAreaKeywords(userData = {}) {
+        const fields = [
+            userData.location,
+            userData.city,
+            userData.state,
+            userData.address,
+            userData.baseLocation,
+            userData.currentLocation,
+            userData.routeFrom,
+            userData.operatingArea
+        ];
+
+        return fields
+            .filter(Boolean)
+            .flatMap(value => String(value).split(/[,\-]/))
+            .map(value => value.trim().toLowerCase())
+            .filter(value => value.length > 2);
+    }
+
+    function loadMatchesDriverArea(load) {
+        if (driverAreaKeywords.length === 0) return true;
+        const routeText = [
+            load.routeFrom,
+            load.location,
+            load.pickupPoint,
+            load.routeTo,
+            load.destination,
+            load.dropoffPoint
+        ].filter(Boolean).join(" ").toLowerCase();
+        return driverAreaKeywords.some(area => routeText.includes(area));
+    }
+
+    function getProductImage(data) {
+        const directImage = Array.isArray(data.images) && data.images.length > 0 ? data.images[0] : data.imageUrl;
+        if (directImage) return directImage;
+        const key = `${data.name || ""} ${data.category || ""}`.toLowerCase();
+        const fallbackKey = Object.keys(fallbackImages).find(item => key.includes(item));
+        return fallbackImages[fallbackKey] || fallbackImages.default;
+    }
+
+    function dateToMillis(value) {
+        if (!value) return Date.now();
+        if (typeof value.toDate === "function") return value.toDate().getTime();
+        if (value.seconds) return value.seconds * 1000;
+        const parsed = new Date(value).getTime();
+        return Number.isNaN(parsed) ? Date.now() : parsed;
+    }
+
+    function getShelfProfile(data) {
+        const key = `${data.name || ""} ${data.category || ""}`.toLowerCase();
+        return shelfLifeProfiles.find(profile => profile.keys.some(item => key.includes(item))) || shelfLifeProfiles[shelfLifeProfiles.length - 1];
+    }
+
+    function analyzePriorityLoad(load) {
+        const profile = getShelfProfile(load);
+        const ageHours = Math.max(0, (Date.now() - dateToMillis(load.harvestDate || load.createdAt)) / 36e5);
+        const hasImage = (Array.isArray(load.images) && load.images.length > 0) || Boolean(load.imageUrl);
+        const imagePressure = hasImage ? 0 : 10;
+        const routePressure = `${load.routeFrom || load.location || ""} ${load.routeTo || ""}`.length > 35 ? 6 : 0;
+        const remainingHours = Math.max(0, Math.round(profile.baseHours - (ageHours * profile.sensitivity) - imagePressure - routePressure));
+        const riskScore = Math.min(100, Math.max(0, Math.round(100 - ((remainingHours / profile.baseHours) * 100))));
+        let severity = "WATCH";
+        if (riskScore >= 78 || remainingHours <= 24) severity = "CRITICAL";
+        else if (riskScore >= 55 || remainingHours <= 48) severity = "URGENT";
+
+        return {
+            ...load,
+            profileLabel: profile.label,
+            remainingHours,
+            riskScore,
+            severity,
+            priorityReason: `${profile.label} freshness window is closing${hasImage ? "" : "; photo missing"}`
+        };
+    }
+
+    function formatMoney(value) {
+        return `₦${Number(value || 0).toLocaleString()}`;
+    }
+
+    function formatQuantity(data) {
+        return `${data.quantity || data.weight || 0} ${data.unit || "kg"}`;
+    }
+
+    function formatShelfLife(hours) {
+        if (hours <= 0) return "Expired risk";
+        if (hours < 48) return `${hours}h left`;
+        return `${Math.round(hours / 24)} days left`;
+    }
+
+    function availableLoadUrl(loadId) {
+        return `available_loads.html?loadId=${encodeURIComponent(loadId)}`;
+    }
+
+    function getStatusClass(status) {
+        if (status === "Delivered") return "bg-green-100 text-green-700";
+        if (status === "In Transit") return "bg-blue-100 text-blue-700";
+        if (status === "Driver Delivered") return "bg-amber-100 text-amber-700";
+        return "bg-purple-100 text-purple-700";
+    }
+
+    function renderRecentTrips(trips) {
+        if (!recentTripsContainer) return;
+        const recentTrips = trips
+            .sort((a, b) => dateToMillis(b.updatedAt || b.createdAt) - dateToMillis(a.updatedAt || a.createdAt))
+            .slice(0, 4);
+
+        if (recentTrips.length === 0) {
+            recentTripsContainer.innerHTML = `<p class="text-gray-500 py-8 text-center text-sm">No accepted trips yet. Pick one from Available Loads to get started.</p>`;
+            return;
+        }
+
+        recentTripsContainer.innerHTML = recentTrips.map(trip => {
+            const imageSrc = getProductImage(trip);
+            const routeFrom = trip.routeFrom || trip.location || "Pickup";
+            const routeTo = trip.routeTo || trip.destination || "Delivery";
+            const status = trip.status || "Matched";
+            return `
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 items-center py-5">
+                    <div class="flex items-center gap-4 min-w-0">
+                        <img src="${escapeAttr(imageSrc)}" alt="${escapeAttr(trip.name || "Produce")}" class="w-16 h-16 rounded-xl object-cover border shrink-0">
+                        <div class="min-w-0">
+                            <h3 class="font-semibold text-lg truncate">${escapeHTML(trip.name || "Produce Load")}</h3>
+                            <p class="text-gray-500 text-sm">${escapeHTML(formatQuantity(trip))}</p>
+                        </div>
+                    </div>
+                    <div class="min-w-0">
+                        <h4 class="font-medium truncate">${escapeHTML(routeFrom)} → ${escapeHTML(routeTo)}</h4>
+                        <p class="text-gray-500 text-sm truncate">${escapeHTML(trip.dropoffPoint || trip.pickupPoint || "Route assigned")}</p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-xl">${formatMoney(trip.totalValue || trip.price)}</h4>
+                        <p class="text-gray-500 text-sm">total payout</p>
+                    </div>
+                    <div class="lg:text-right">
+                        <span class="${getStatusClass(status)} px-4 py-2 rounded-lg text-sm font-semibold inline-block">${escapeHTML(status === "Driver Delivered" ? "Awaiting Payment" : status)}</span>
+                    </div>
+                </div>
+            `;
+        }).join("");
+    }
+
+    function renderNearbyLoads(loads) {
+        if (!nearbyLoadsContainer) return;
+        const nearbyLoads = loads
+            .filter(loadMatchesDriverArea)
+            .sort((a, b) => dateToMillis(b.createdAt) - dateToMillis(a.createdAt))
+            .slice(0, 4);
+
+        if (nearbyLoads.length === 0) {
+            nearbyLoadsContainer.innerHTML = `<p class="text-gray-500 py-6 text-center text-sm">No recently listed loads found in your area.</p>`;
+            return;
+        }
+
+        nearbyLoadsContainer.innerHTML = nearbyLoads.map(load => {
+            const routeFrom = load.routeFrom || load.location || "Pickup";
+            const routeTo = load.routeTo || load.destination || "Delivery";
+            return `
+                <div class="py-4 flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                        <h3 class="font-semibold text-base text-gray-900 truncate">${escapeHTML(load.name || "Produce Load")}</h3>
+                        <p class="text-gray-500 text-sm mt-1 truncate">${escapeHTML(routeFrom)} → ${escapeHTML(routeTo)}</p>
+                        <p class="text-xs text-gray-400 mt-1">${escapeHTML(formatQuantity(load))} listed recently</p>
+                    </div>
+                    <a href="${availableLoadUrl(load.id)}" class="shrink-0 text-xs font-semibold bg-green-700 hover:bg-green-800 text-white px-3 py-2 rounded-lg transition">Accept</a>
+                </div>
+            `;
+        }).join("");
+    }
+
+    function renderPriorityPickups(loads) {
+        if (!priorityPickupsContainer) return;
+        const priorityLoads = loads
+            .filter(loadMatchesDriverArea)
+            .map(analyzePriorityLoad)
+            .filter(load => load.severity === "CRITICAL" || load.severity === "URGENT")
+            .sort((a, b) => b.riskScore - a.riskScore)
+            .slice(0, 5);
+
+        if (priorityLoads.length === 0) {
+            priorityPickupsContainer.innerHTML = `<p class="text-gray-500 py-6 text-center text-sm">No urgent perishable pickups in your area right now.</p>`;
+            return;
+        }
+
+        const severityClass = {
+            CRITICAL: "bg-red-50 text-red-700 border-red-200",
+            URGENT: "bg-amber-50 text-amber-700 border-amber-200"
+        };
+
+        priorityPickupsContainer.innerHTML = priorityLoads.map(load => {
+            const imageSrc = getProductImage(load);
+            const routeFrom = load.routeFrom || load.location || "Pickup";
+            const routeTo = load.routeTo || load.destination || "Delivery";
+            return `
+                <div class="border ${load.severity === "CRITICAL" ? "border-red-100 bg-red-50/30" : "border-amber-100 bg-amber-50/30"} rounded-xl p-3">
+                    <div class="flex gap-3">
+                        <img src="${escapeAttr(imageSrc)}" alt="${escapeAttr(load.name || "Produce")}" class="w-14 h-14 rounded-xl object-cover border shrink-0">
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center justify-between gap-2">
+                                <h3 class="font-semibold text-gray-900 truncate">${escapeHTML(load.name || "Priority Load")}</h3>
+                                <span class="${severityClass[load.severity]} border text-[10px] font-bold px-2 py-1 rounded-full">${load.severity}</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1 truncate">${escapeHTML(routeFrom)} → ${escapeHTML(routeTo)}</p>
+                            <p class="text-xs text-gray-600 mt-1">${escapeHTML(formatShelfLife(load.remainingHours))} · ${escapeHTML(load.priorityReason)}</p>
+                        </div>
+                    </div>
+                    <a href="${availableLoadUrl(load.id)}" class="mt-3 inline-flex w-full justify-center bg-green-700 hover:bg-green-800 text-white text-sm font-semibold py-2 rounded-lg transition">Choose pickup</a>
+                </div>
+            `;
+        }).join("");
+    }
+
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
-            // No session active -> instantly redirect to login
             window.location.href = LOGIN_PAGE_URL;
             return;
         }
 
-        // 1. Immediate fallback: Use basic auth info so it stops showing "Loading..."
         nameEl.innerText = user.displayName || "FarmRoute Driver";
         roleEl.innerText = "Driver";
+        updateHeaderAvatar(user.photoURL);
         hideLoading();
 
-        // 2. Background fetch: Try loading extended profile data from Firestore
         try {
-            const userDocRef = doc(db, "users", user.uid);
-            const userDocSnap = await getDoc(userDocRef);
 
-            if (userDocSnap.exists()) {
-                const userData = userDocSnap.data();
-                if (userData.name) nameEl.innerText = userData.name;
-                if (userData.role) roleEl.innerText = userData.role;
+            // ================= USER PROFILE =================
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+
+                if (userData.name)
+                    nameEl.innerText = userData.name;
+
+                if (userData.role)
+                    roleEl.innerText = userData.role;
+
+                updateHeaderAvatar(userData.profilePictureUrl);
+                driverAreaKeywords = getDriverAreaKeywords(userData);
             }
+
+            // ================= RECENT TRIPS =================
+            const allDriverTripsQuery = query(
+                collection(db, "products"),
+                where("driverId", "==", user.uid)
+            );
+
+            onSnapshot(allDriverTripsQuery, (snapshot) => {
+                const trips = [];
+                let activeTrips = 0;
+                let completedTrips = 0;
+                let earnings = 0;
+
+                snapshot.forEach((tripDoc) => {
+                    const trip = { id: tripDoc.id, ...tripDoc.data() };
+                    trips.push(trip);
+                    if (["Matched", "In Transit", "Driver Delivered"].includes(trip.status)) activeTrips++;
+                    if (trip.status === "Delivered") {
+                        completedTrips++;
+                        earnings += Number(trip.totalValue || trip.price || 0);
+                    }
+                });
+
+                activeTripsEl.innerText = activeTrips;
+                monthlyEarningsEl.innerText = formatMoney(earnings);
+                completedCountEl.innerText = `Across ${completedTrips} completed trips`;
+                renderRecentTrips(trips);
+            }, (err) => {
+                console.error("Driver trips listener failed:", err);
+                renderRecentTrips([]);
+            });
+
+            /*
+            // ================= ACTIVE TRIPS =================
+            const activeTripsQuery = query(
+                collection(db, "products"),
+                where("driverId", "==", user.uid),
+                where("status", "in", [
+                    "Matched",
+                    "In Transit",
+                    "Driver Delivered"
+                ])
+            );
+
+            onSnapshot(activeTripsQuery, (snapshot) => {
+                activeTripsEl.innerText = snapshot.size;
+            });
+
+            // ================= COMPLETED TRIPS + EARNINGS =================
+            const completedTripsQuery = query(
+                collection(db, "products"),
+                where("driverId", "==", user.uid),
+                where("status", "==", "Delivered")
+            );
+
+            onSnapshot(completedTripsQuery, (snapshot) => {
+
+                let completedTrips = 0;
+                let earnings = 0;
+
+                snapshot.forEach((tripDoc) => {
+                    completedTrips++;
+                    earnings += Number(tripDoc.data().price || 0);
+                });
+
+                monthlyEarningsEl.innerText =
+                    `₦${earnings.toLocaleString()}`;
+
+                completedCountEl.innerText =
+                    `Across ${completedTrips} completed trips`;
+
+            });
+            */
+
+            // ================= AVAILABLE LOADS =================
+            // Uses the same status as available_loads.html
+            const availableLoadsQuery = query(
+                collection(db, "products"),
+                where("status", "==", "Searching")
+            );
+
+            onSnapshot(availableLoadsQuery, (snapshot) => {
+                const loads = [];
+                snapshot.forEach((loadDoc) => {
+                    loads.push({ id: loadDoc.id, ...loadDoc.data() });
+                });
+                const nearbyLoads = loads.filter(loadMatchesDriverArea);
+                availLoadsEl.innerText = nearbyLoads.length;
+                renderNearbyLoads(loads);
+                renderPriorityPickups(loads);
+            }, (err) => {
+                console.error("Available loads listener failed:", err);
+                availLoadsEl.innerText = "--";
+                renderNearbyLoads([]);
+                renderPriorityPickups([]);
+            });
+
+            // ================= ESCROW PAYMENTS =================
+            const escrowPaymentsQuery = query(
+                collection(db, "payments"),
+                where("driverId", "==", user.uid),
+                where("status", "==", "escrow")
+            );
+
+            onSnapshot(escrowPaymentsQuery, (snapshot) => {
+
+                let escrowAmount = 0;
+
+                snapshot.forEach((paymentDoc) => {
+                    escrowAmount += Number(paymentDoc.data().amount || 0);
+                });
+
+                escrowAmountEl.innerText =
+                    `₦${escrowAmount.toLocaleString()}`;
+
+                escrowCountEl.innerText =
+                    `${snapshot.size} ${snapshot.size === 1 ? "payout" : "payouts"} waiting for farmer confirmation`;
+
+            });
+
         } catch (err) {
-            console.error("Firestore profile fetch failed, using Auth defaults:", err);
+            console.error("Dashboard realtime metrics error:", err);
+
+            activeTripsEl.innerText = "--";
+            availLoadsEl.innerText = "--";
+            monthlyEarningsEl.innerText = "₦0";
+            completedCountEl.innerText = "Across 0 completed trips";
+            escrowAmountEl.innerText = "₦0";
+            escrowCountEl.innerText = "0 payouts waiting for farmer confirmation";
         }
     });
 
-    // Logout Action Handler
+    // ================= LOGOUT =================
     const logoutBtn = document.getElementById("logout-btn");
+
     if (logoutBtn) {
         logoutBtn.addEventListener("click", () => {
             signOut(auth)
@@ -682,10 +1059,10 @@
     const closeSide = document.getElementById("closeside-btn");
 
     // CLOSE & OPEN SIDE-BAR
-    sideBtn.addEventListener("click", () => sideBar.classList.toggle("hidden"))
-    closeSide.addEventListener("click", () => sideBar.classList.toggle("hidden"))
+    sideBtn.addEventListener("click", () => sideBar.classList.remove("max-md:hidden"))
+    closeSide.addEventListener("click", () => sideBar.classList.add("max-md:hidden"))
 
-    // ONLINE / OFFLINE TOGGLE (cosmetic — wire up to real driver-status field later)
+    // ONLINE / OFFLINE TOGGLE
     const goOnlineBtn = document.getElementById("go-online-btn");
     const onlineLabel = document.getElementById("online-label");
     let isOnline = false;

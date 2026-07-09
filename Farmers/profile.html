@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmRoute - Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-sans antialiased text-gray-800">
+
+    <div id="notification-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 hidden transition-opacity duration-300 opacity-0">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl transform scale-95 transition-transform duration-300 flex flex-col items-center text-center">
+            <div id="modal-icon-container" class="w-16 h-16 rounded-full flex items-center justify-center mb-4 text-2xl">
+                <i id="modal-icon" class="fa-solid"></i>
+            </div>
+            <h3 id="modal-title" class="text-xl font-bold text-gray-900 mb-2">Notification</h3>
+            <p id="modal-message" class="text-gray-500 text-sm mb-6 leading-relaxed">Message placeholder.</p>
+            <button id="modal-close-btn" class="w-full py-3 px-4 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-xl transition shadow-sm text-sm">
+                Dismiss
+            </button>
+        </div>
+    </div>
+
+    <div class="flex min-h-screen">
+        
+        <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col h-screen shrink-0 z-50 fixed md:static inset-y-0 left-0 max-md:hidden">
+            <div class="px-6 py-2 items-center justify-between flex border-b border-green-900">
+                <img class="h-16" src="../assets/logo3.png" alt="FarmRoute Logo">
+                <button id="closeside-btn" class="md:hidden text-2xl text-gray-300 hover:text-white p-2">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <nav class="flex-1 mt-6 overflow-y-auto">
+                <a href="dashboard.html" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
+                    <i class="fa-solid fa-house"></i>
+                    Dashboard
+                </a>
+
+                <a href="listings.html" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
+                    <i class="fa-solid fa-box-open"></i>
+                    My Listings
+                </a>
+
+                <a href="messages.html" class="flex items-center justify-between px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-regular fa-message"></i>
+                        Messages
+                    </div>
+                    <span id="message-notification-badge" class="bg-green-500 text-xs px-2 py-1 rounded-full hidden">0</span>
+                </a>
+
+                <a href="payment.html" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
+                    <i class="fa-solid fa-wallet"></i>
+                    Payments
+                </a>
+
+                <a href="profile.html" class="flex items-center gap-3 bg-green-700 mx-4 px-4 py-3 rounded-lg mb-2">
+                    <i class="fa-regular fa-user"></i>
+                    Profile
+                </a>
+
+                <div class="px-4 mb-4">
+                    <a href="add_produce.html" class="flex items-center gap-2 w-full hover:bg-green-800 font-semibold py-3 px-4 rounded-xl transition duration-200 shadow-sm text-sm">
+                        <i class="fa-solid fa-plus text-base"></i>
+                        List New Produce
+                    </a>
+                </div>
+            </nav>
+
+            <div class="p-4 border-t border-green-900">
+                <button id="logout-btn" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-green-800 text-left text-gray-300 hover:text-white transition">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 min-h-screen overflow-y-auto p-6 lg:p-10 max-w-5xl mx-auto w-full">
+            
+            <div class="mb-8 flex items-start gap-4">
+                <button id="side-btn" class="text-xl text-gray-700 md:hidden p-2 -ml-2">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-1">Profile</h1>
+                    <p class="text-gray-500 text-sm">Manage your personal information and preferences.</p>
+                </div>
+            </div>
+
+            <form id="profile-form" class="bg-white rounded-2xl border border-gray-100 p-6 md:p-10 shadow-sm space-y-8">
+                
+                <div class="flex flex-col items-center justify-center text-center">
+                    <label class="group cursor-pointer flex flex-col items-center">
+                        <div id="pfp-container" class="w-32 h-32 rounded-full border-2 border-dashed border-green-500 bg-green-50/50 flex items-center justify-center overflow-hidden transition group-hover:bg-green-50 group-hover:border-green-600 mb-3">
+                            <i id="pfp-icon" class="fa-solid fa-user-astronaut text-3xl text-green-600"></i>
+                            <!-- Profile picture loaded from Firestore users/{uid}.profilePictureUrl -->
+                            <img id="pfp-preview" class="w-full h-full object-cover hidden" alt="Profile Picture">
+                        </div>
+                        <span class="text-green-700 font-medium text-sm group-hover:underline">Add Profile Picture</span>
+                        <span class="text-gray-400 text-xs mt-1">JPG, PNG or WebP. Max size 2MB.</span>
+                        <input type="file" id="pfp-input" class="hidden" accept="image/*">
+                    </label>
+                </div>
+
+                <div>
+                    <h2 class="text-lg font-bold text-gray-900 mb-4">Personal Information</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-semibold text-gray-700">Full Name</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
+                                    <i class="fa-regular fa-user"></i>
+                                </span>
+                                <input type="text" id="profile-fullname" placeholder="Enter your full name" class="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600 placeholder-gray-400 transition">
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-semibold text-gray-700">Email Address</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
+                                    <i class="fa-regular fa-envelope"></i>
+                                </span>
+                                <input type="email" id="profile-email" placeholder="Enter your email" class="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600 placeholder-gray-400 transition">
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-semibold text-gray-700">Phone Number</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
+                                    <i class="fa-solid fa-phone"></i>
+                                </span>
+                                <input type="tel" id="profile-phone" placeholder="Enter your phone number" class="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600 placeholder-gray-400 transition">
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-semibold text-gray-700">Date of Birth</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400 pointer-events-none">
+                                    <i class="fa-regular fa-calendar"></i>
+                                </span>
+                                <input type="date" id="profile-dob" class="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600 text-gray-500 transition">
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-semibold text-gray-700">Gender</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400 pointer-events-none">
+                                    <i class="fa-regular fa-user"></i>
+                                </span>
+                                <select id="profile-gender" class="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600 text-gray-500 appearance-none transition">
+                                    <option value="" disabled selected>Select your gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                                <span class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 pointer-events-none">
+                                    <i class="fa-solid fa-chevron-down text-xs"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-semibold text-gray-700">Role</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400 pointer-events-none">
+                                    <i class="fa-solid fa-users"></i>
+                                </span>
+                                <select id="profile-role" disabled class="w-full pl-11 pr-10 py-3 bg-gray-100 border border-gray-200 rounded-xl text-sm text-gray-500 appearance-none cursor-not-allowed transition">
+                                    <option value="" disabled selected>Select your role</option>
+                                    <option value="Farmer">Farmer</option>
+                                    <option value="Driver">Driver</option>
+                                </select>
+                                <span class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 pointer-events-none">
+                                    <i class="fa-solid fa-lock text-xs"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <h2 class="text-lg font-bold text-gray-900 mb-4">Account</h2>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-gray-700">Password</label>
+                        <div class="flex items-center justify-between border border-gray-200 rounded-xl p-2 pl-4 bg-white focus-within:border-green-600 focus-within:ring-1 focus-within:ring-green-600 transition">
+                            <div class="flex items-center gap-3 text-sm text-gray-500 flex-1">
+                                <i class="fa-solid fa-lock text-gray-400"></i>
+                                <input type="password" value="•••••••••••••••••" disabled class="bg-transparent border-none outline-none w-full tracking-widest text-gray-400 select-none">
+                            </div>
+                            <button type="button" class="text-xs font-medium text-gray-700 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition whitespace-nowrap">
+                                Change Password
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <h2 class="text-lg font-bold text-gray-900 mb-4">Preferences</h2>
+                    <button type="button" class="w-full flex items-center justify-between border border-gray-100 rounded-xl p-4 bg-white hover:bg-gray-50/50 border border-gray-200 transition text-left">
+                        <div class="flex items-start gap-4">
+                            <span class="p-2.5 bg-gray-50 rounded-xl text-gray-500 mt-0.5">
+                                <i class="fa-regular fa-bell text-lg"></i>
+                            </span>
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-900">Push Notifications</h3>
+                                <p class="text-xs text-gray-400 mt-0.5">Manage your push notification preferences</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-400 text-xs pr-2"></i>
+                    </button>
+                </div>
+
+                <div class="pt-4">
+                    <button type="submit" id="save-changes-btn" class="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-medium py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition shadow-sm">
+                        <i class="fa-regular fa-floppy-disk"></i>
+                        Save Changes
+                    </button>
+                </div>
+
+            </form>
+        </main>
+
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Verified active project configurations
+        const firebaseConfig = {
+            apiKey: "AIzaSyDIbnRsXJNEOrWAGQos1iuZSXlCHwVoB_k",
+            authDomain: "farmroute-49758.firebaseapp.com",
+            projectId: "farmroute-49758",
+            storageBucket: "farmroute-49758.firebasestorage.app",
+            messagingSenderId: "1067367723341",
+            appId: "1:1067367723341:web:854daaa610d0bc87b80704",
+        };
+
+        // Initialize App Instances
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // DOM Element Cache
+        const pfpInput = document.getElementById('pfp-input');
+        const pfpPreview = document.getElementById('pfp-preview');
+        const pfpIcon = document.getElementById('pfp-icon');
+
+        const fullNameInput = document.getElementById('profile-fullname');
+        const emailInput = document.getElementById('profile-email');
+        const phoneInput = document.getElementById('profile-phone');
+        const dobInput = document.getElementById('profile-dob');
+        const genderInput = document.getElementById('profile-gender');
+        const roleInput = document.getElementById('profile-role');
+        
+        const profileForm = document.getElementById('profile-form');
+        const saveBtn = document.getElementById('save-changes-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const messageBadgeEl = document.getElementById('message-notification-badge');
+
+        // Modal Elements Cache
+        const notificationModal = document.getElementById('notification-modal');
+        const modalIconContainer = document.getElementById('modal-icon-container');
+        const modalIcon = document.getElementById('modal-icon');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+
+        let currentUser = null;
+        let base64ImageString = null;
+
+        // Custom Modal Alert Presentation Handler
+        function showModalAlert(type, title, message) {
+            // Clear prior status classes
+            modalIconContainer.className = "w-16 h-16 rounded-full flex items-center justify-center mb-4 text-2xl ";
+            
+            if (type === 'success') {
+                modalIconContainer.classList.add('bg-green-100', 'text-green-600');
+                modalIcon.className = "fa-solid fa-circle-check";
+                modalCloseBtn.className = "w-full py-3 px-4 bg-emerald-800 hover:bg-emerald-900 text-white font-medium rounded-xl transition shadow-sm text-sm";
+            } else {
+                modalIconContainer.classList.add('bg-red-100', 'text-red-600');
+                modalIcon.className = "fa-solid fa-circle-xmark";
+                modalCloseBtn.className = "w-full py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition shadow-sm text-sm";
+            }
+
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+
+            // Trigger structural flex and animations transitions
+            notificationModal.classList.remove('hidden');
+            setTimeout(() => {
+                notificationModal.classList.remove('opacity-0');
+                notificationModal.querySelector('div').classList.remove('scale-95');
+            }, 10);
+        }
+
+        // Hide Modal Presentation
+        function hideModalAlert() {
+            notificationModal.classList.add('opacity-0');
+            notificationModal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => {
+                notificationModal.classList.add('hidden');
+            }, 300);
+        }
+
+        modalCloseBtn.addEventListener('click', hideModalAlert);
+
+        // Toggle visibility between placeholder icon and the image markup
+        function updatePfpUI(srcString) {
+            pfpPreview.src = srcString;
+            pfpPreview.classList.remove('hidden');
+            pfpIcon.classList.add('hidden');
+        }
+
+        function getMessageNotificationCount(snapshot, userId) {
+            let unreadTotal = 0;
+            let hasUnreadData = false;
+            snapshot.forEach((roomSnap) => {
+                const room = roomSnap.data();
+                if (room.unreadCounts || room.unreadBy || room.unread) hasUnreadData = true;
+                const countMap = room.unreadCounts || room.unreadBy || room.unread || {};
+                const count = Number(countMap[userId] || 0);
+                if (count > 0) unreadTotal += count;
+            });
+            return hasUnreadData ? unreadTotal : snapshot.size;
+        }
+
+        function updateMessageBadge(count) {
+            if (!messageBadgeEl) return;
+            if (count > 0) {
+                messageBadgeEl.textContent = count > 99 ? "99+" : String(count);
+                messageBadgeEl.classList.remove('hidden');
+            } else {
+                messageBadgeEl.classList.add('hidden');
+            }
+        }
+
+        function listenForMessageNotifications(userId) {
+            const chatsQuery = query(collection(db, "chats"), where("participants", "array-contains", userId));
+            onSnapshot(chatsQuery, (snapshot) => {
+                updateMessageBadge(getMessageNotificationCount(snapshot, userId));
+            }, (err) => {
+                console.error("Message notification sync failed:", err);
+                updateMessageBadge(0);
+            });
+        }
+
+        // 1. Observe Authentication State & Auto-Populate Inputs
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                emailInput.value = user.email || "";
+                listenForMessageNotifications(user.uid);
+
+                try {
+                    const userDocRef = doc(db, "users", user.uid);
+                    const userDocSnap = await getDoc(userDocRef);
+
+                    if (userDocSnap.exists()) {
+                        const userData = userDocSnap.data();
+
+                        fullNameInput.value = userData.name || "";
+                        if (userData.email) emailInput.value = userData.email;
+                        phoneInput.value = userData.phone || "";
+                        dobInput.value = userData.dob || "";
+                        genderInput.value = userData.gender || "";
+                        
+                        if (userData.role) {
+                            const normalizedRole = userData.role.charAt(0).toUpperCase() + userData.role.slice(1).toLowerCase();
+                            roleInput.value = normalizedRole;
+                        }
+
+                        if (userData.profilePictureUrl) {
+                            // Support both stored {base64} data URLs and remote URLs
+                            updatePfpUI(userData.profilePictureUrl);
+                        } else {
+                            // Ensure we show something even if userData doesn't contain the field yet
+                            // (keeps icon visible)
+                            pfpPreview.classList.add('hidden');
+                            pfpIcon.classList.remove('hidden');
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error retrieving user profile documents:", error);
+                }
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        // 2. Handle File Attachment Selection & Convert to Base64 String
+        pfpInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 2 * 1024 * 1024) {
+                    showModalAlert('error', 'File Too Large', 'Image boundaries exceeded! Your file must be smaller than 2MB.');
+                    pfpInput.value = ""; 
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    base64ImageString = reader.result;
+                    updatePfpUI(base64ImageString);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 3. Process Profile Changes Form Save Cycle
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUser) return;
+
+            const originalText = saveBtn.innerHTML;
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Saving changes...`;
+
+            try {
+                const userProfilePayload = {
+                    name: fullNameInput.value.trim(),
+                    email: emailInput.value.trim(),
+                    phone: phoneInput.value.trim(),
+                    dob: dobInput.value,
+                    gender: genderInput.value,
+                    updatedAt: new Date()
+                };
+
+                if (base64ImageString) {
+                    userProfilePayload.profilePictureUrl = base64ImageString;
+                }
+
+                const userDocRef = doc(db, "users", currentUser.uid);
+                await setDoc(userDocRef, userProfilePayload, { merge: true });
+
+                showModalAlert('success', 'Changes Saved', 'Your profile adjustments have been synchronized and updated successfully.');
+            } catch (error) {
+                console.error("Error syncing profile modifications to database:", error);
+                showModalAlert('error', 'Update Failed', error.message);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalText;
+            }
+        });
+
+        // 4. Hook Sidebar Logout Trigger Component
+        document.getElementById("side-btn")?.addEventListener("click", () => {
+            document.getElementById("side-bar")?.classList.remove("max-md:hidden");
+        });
+
+        document.getElementById("closeside-btn")?.addEventListener("click", () => {
+            document.getElementById("side-bar")?.classList.add("max-md:hidden");
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                window.location.href = "login.html";
+            } catch (error) {
+                console.error("Logout execution error:", error);
+            }
+        });
+    </script>
+</body>
+</html>

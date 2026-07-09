@@ -98,28 +98,21 @@
             <a href="listings.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 hover:bg-green-900/50 hover:text-white transition">
                 <i class="fa-solid fa-box-open text-lg w-6 text-center"></i> My Listings
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 hover:bg-green-900/50 hover:text-white transition">
-                <i class="fa-solid fa-truck text-lg w-6 text-center"></i> Orders
-            </a>
-            <a href="#" class="flex items-center justify-between px-4 py-3 rounded-xl font-medium text-gray-300 hover:bg-green-900/50 hover:text-white transition">
+            <a href="messages.html" class="flex items-center justify-between px-4 py-3 rounded-xl font-medium text-gray-300 hover:bg-green-900/50 hover:text-white transition">
                 <div class="flex items-center gap-3">
                     <i class="fa-regular fa-message text-lg w-6 text-center"></i> Messages
                 </div>
-                <span class="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">3</span>
+                <span id="message-notification-badge" class="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-bold hidden">0</span>
             </a>
-            <a href="payments.html" class="flex items-center bg-green-700 justify-between px-4 py-3 rounded-xl font-medium text-white transition">
+            <a href="payment.html" class="flex items-center bg-green-700 justify-between px-4 py-3 rounded-xl font-medium text-white transition">
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-wallet text-lg w-6 text-center"></i> Payments
                 </div>
                 <span id="payments-badge" class="bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full font-bold hidden">0</span>
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 hover:bg-green-900/50 hover:text-white transition">
+            <a href="profile.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 hover:bg-green-900/50 hover:text-white transition">
                 <i class="fa-regular fa-user text-lg w-6 text-center"></i> Profile
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 hover:bg-green-900/50 hover:text-white transition mb-6">
-                <i class="fa-solid fa-gear text-lg w-6 text-center"></i> Settings
-            </a>
-
             <div class="pt-2">
                 <a href="add_produce.html" class="flex items-center gap-3 w-full text-gray-300 hover:bg-green-900/50 hover:text-white font-medium py-3 px-4 rounded-xl transition duration-200 text-sm">
                     <i class="fa-solid fa-plus text-base w-6 text-center"></i> List New Produce
@@ -154,7 +147,7 @@
                 </button>
 
                 <div class="flex items-center gap-3 border-l pl-6 border-gray-100">
-                    <img id="user-avatar" src="https://i.pravatar.cc/100?img=11" class="w-10 h-10 rounded-full object-cover border border-gray-100">
+                    <img id="user-avatar" alt="Profile picture" class="w-10 h-10 rounded-full object-cover border border-gray-100 hidden">
                     <div class="hidden sm:block">
                         <h4 id="user-display-name" class="font-semibold text-sm text-gray-900">Loading...</h4>
                         <p id="user-display-role" class="text-xs text-gray-400 capitalize">Farmer</p>
@@ -288,6 +281,8 @@
     const LOGIN_PAGE_URL = "../login.html";
     const nameEl = document.getElementById("user-display-name");
     const roleEl = document.getElementById("user-display-role");
+    const avatarEl = document.getElementById("user-avatar");
+    const messageBadgeEl = document.getElementById("message-notification-badge");
     const loadingScreen = document.getElementById("loading-screen");
     const paymentsContainer = document.getElementById("payments-history-container");
     const paymentsBadge = document.getElementById("payments-badge");
@@ -332,6 +327,45 @@
 
     function hideLoading() {
         if (loadingScreen) loadingScreen.classList.add("hidden");
+    }
+
+    function updateHeaderAvatar(profilePictureUrl) {
+        if (!avatarEl || !profilePictureUrl) return;
+        avatarEl.src = profilePictureUrl;
+        avatarEl.classList.remove("hidden");
+    }
+
+    function getMessageNotificationCount(snapshot, userId) {
+        let unreadTotal = 0;
+        let hasUnreadData = false;
+        snapshot.forEach((roomSnap) => {
+            const room = roomSnap.data();
+            if (room.unreadCounts || room.unreadBy || room.unread) hasUnreadData = true;
+            const countMap = room.unreadCounts || room.unreadBy || room.unread || {};
+            const count = Number(countMap[userId] || 0);
+            if (count > 0) unreadTotal += count;
+        });
+        return hasUnreadData ? unreadTotal : snapshot.size;
+    }
+
+    function updateMessageBadge(count) {
+        if (!messageBadgeEl) return;
+        if (count > 0) {
+            messageBadgeEl.textContent = count > 99 ? "99+" : String(count);
+            messageBadgeEl.classList.remove("hidden");
+        } else {
+            messageBadgeEl.classList.add("hidden");
+        }
+    }
+
+    function listenForMessageNotifications(userId) {
+        const chatsQuery = query(collection(db, "chats"), where("participants", "array-contains", userId));
+        onSnapshot(chatsQuery, (snapshot) => {
+            updateMessageBadge(getMessageNotificationCount(snapshot, userId));
+        }, (err) => {
+            console.error("Message notification sync failed:", err);
+            updateMessageBadge(0);
+        });
     }
 
     // PIN Input management: Auto-focus jumping utilities
@@ -547,107 +581,225 @@
         }
     });
 
-    onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-            window.location.href = LOGIN_PAGE_URL;
+onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        window.location.href = LOGIN_PAGE_URL;
+        return;
+    }
+
+    nameEl.innerText = user.displayName || "FarmRoute User";
+    hideLoading();
+    listenForMessageNotifications(user.uid);
+
+    try {
+        const userDocSnap = await getDoc(doc(db, "users", user.uid));
+        if (userDocSnap.exists()) {
+            const userData = userDocSnap.data();
+            if (userData.name) nameEl.innerText = userData.name;
+            if (userData.role) roleEl.innerText = userData.role;
+            updateHeaderAvatar(userData.profilePictureUrl);
+        }
+    } catch (err) {
+        console.error("Firestore profile fetch failed:", err);
+    }
+
+    const productsRef = collection(db, "products");
+    const paymentsQuery = query(productsRef, where("farmerId", "==", user.uid));
+
+    // Cache driver names so we only fetch each driver once
+    const driverCache = {};
+
+    onSnapshot(paymentsQuery, async (snapshot) => {
+        if (!paymentsContainer) return;
+
+        paymentsContainer.innerHTML = "";
+        let awaitingPaymentCount = 0;
+
+        if (snapshot.empty) {
+            paymentsContainer.innerHTML = `
+                <p class="text-gray-400 py-12 text-center text-sm">
+                    No recorded ledger items found.
+                </p>
+            `;
+            paymentsBadge.classList.add("hidden");
             return;
         }
 
-        nameEl.innerText = user.displayName || "FarmRoute User";
-        hideLoading();
+        window.cachedPayments = {};
 
-        const productsRef = collection(db, "products");
-        const paymentsQuery = query(productsRef, where("farmerId", "==", user.uid));
+        for (const docSnap of snapshot.docs) {
 
-        onSnapshot(paymentsQuery, (snapshot) => {
-            if (!paymentsContainer) return;
-            paymentsContainer.innerHTML = "";
-            let awaitingPaymentCount = 0;
+            const data = docSnap.data();
+            const id = docSnap.id;
+            const orderId = id.substring(0, 7).toUpperCase();
 
-            if (snapshot.empty) {
-                paymentsContainer.innerHTML = `<p class="text-gray-400 py-12 text-center text-sm">No recorded ledger items found.</p>`;
-                paymentsBadge.classList.add("hidden");
-                return;
-            }
+            const cropName = data.name || "Produce Cargo";
+            const weight = data.quantity || data.weight || "0";
+            const unit = data.unit || "kg";
+            const routeFrom = data.routeFrom || data.location || "Farm Station";
+            const routeTo = data.routeTo || "Hub";
+            const price = data.price
+                ? Number(data.price).toLocaleString()
+                : "0";
 
-            window.cachedPayments = {};
+            let rawStatus = data.status || "Matched";
 
-            snapshot.forEach((docSnap) => {
-                const data = docSnap.data();
-                const id = docSnap.id;
-                const orderId = id.substring(0, 7).toUpperCase();
-                const cropName = data.name || "Produce Cargo";
-                const weight = data.quantity || data.weight || "0";
-                const unit = data.unit || "kg";
-                const routeFrom = data.routeFrom || data.location || "Farm Station";
-                const routeTo = data.routeTo || "Hub";
-                const price = data.price ? Number(data.price).toLocaleString() : "0";
-                let rawStatus = data.status || "Matched";
-                
-                let driverName = data.driverName || "Verified Transporter";
-                
-                // Read your new field safely from the document snapshot
-                const driverSubaccount = data.driverSubaccount || ""; 
+            // -----------------------------
+            // Fetch Driver Name
+            // -----------------------------
+            let driverName = "Verified Transporter";
 
-                let badgeStyle = "bg-gray-50 text-gray-700 border-gray-100";
-                let statusLabel = rawStatus;
-                let descriptionText = "Secure Escrow Locked";
+            if (data.driverId) {
 
-                // Map "Driver Delivered" status straight into UI context layouts as Awaiting Payment
-                if (rawStatus === "Driver Delivered" || rawStatus === "Awaiting Payment") {
-                    rawStatus = "Awaiting Payment"; 
-                    awaitingPaymentCount++;
-                    badgeStyle = "bg-amber-50 text-amber-700 border-amber-200 animate-pulse";
-                    statusLabel = "Awaiting Payment";
-                    descriptionText = "Driver arrived at hub";
-                } else if (rawStatus === "Delivered") {
-                    badgeStyle = "bg-green-50 text-green-700 border-green-100";
-                    statusLabel = "Payment Complete";
-                    descriptionText = "Released successfully";
-                } else if (rawStatus === "Matched" || rawStatus === "In Transit") {
-                    badgeStyle = "bg-blue-50 text-blue-700 border-blue-100";
-                    statusLabel = "Matched";
-                    descriptionText = "Cargo en route";
+                if (driverCache[data.driverId]) {
+
+                    driverName = driverCache[data.driverId];
+
+                } else {
+
+                    try {
+
+                        const driverRef = doc(db, "users", data.driverId);
+                        const driverSnap = await getDoc(driverRef);
+
+                        if (driverSnap.exists()) {
+
+                            const driverData = driverSnap.data();
+
+                            driverName =
+                                driverData.name ||
+                                driverData.fullName ||
+                                driverData.displayName ||
+                                "Verified Transporter";
+
+                            driverCache[data.driverId] = driverName;
+
+                        }
+
+                    } catch (err) {
+
+                        console.error("Error fetching driver:", err);
+
+                    }
+
                 }
 
-                let productEmoji = "📦";
-                
-                // Saved with the subaccount reference added into the local data lookup cache
-                window.cachedPayments[id] = { 
-                    id, orderId, cropName, weight, unit, routeFrom, routeTo, driverName, price, currentStatus: rawStatus, productEmoji, driverSubaccount 
-                };
-
-                const cardHtml = `
-                    <div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm flex justify-between items-center">
-                        <div>
-                            <span class="${badgeStyle} text-xs font-bold px-2.5 py-1 rounded-full border">${statusLabel}</span>
-                            <h3 class="font-bold text-gray-900 mt-2">#FR-${orderId} (${cropName})</h3>
-                            <p class="text-xs text-gray-400 mt-0.5">${descriptionText} • Driver: ${driverName}</p>
-                        </div>
-                        <div class="text-right">
-                            <h2 class="text-xl font-black text-gray-900">₦${price}</h2>
-                            <button onclick="openDrawerFromEvent('${id}')" class="mt-2 text-xs bg-gray-50 border border-gray-200 text-gray-700 px-3 py-1.5 rounded-xl font-bold hover:bg-gray-100 transition">
-                                View Details
-                            </button>
-                        </div>
-                    </div>`;
-                paymentsContainer.insertAdjacentHTML("beforeend", cardHtml);
-            });
-
-            if (awaitingPaymentCount > 0) {
-                paymentsBadge.innerText = awaitingPaymentCount;
-                paymentsBadge.classList.remove("hidden");
-            } else {
-                paymentsBadge.classList.add("hidden");
             }
-        });
+
+            const driverSubaccount = data.driverSubaccount || "";
+
+            let badgeStyle = "bg-gray-50 text-gray-700 border-gray-100";
+            let statusLabel = rawStatus;
+            let descriptionText = "Secure Escrow Locked";
+
+            if (
+                rawStatus === "Driver Delivered" ||
+                rawStatus === "Awaiting Payment"
+            ) {
+
+                rawStatus = "Awaiting Payment";
+                awaitingPaymentCount++;
+
+                badgeStyle =
+                    "bg-amber-50 text-amber-700 border-amber-200 animate-pulse";
+
+                statusLabel = "Awaiting Payment";
+                descriptionText = "Driver arrived at hub";
+
+            } else if (rawStatus === "Delivered") {
+
+                badgeStyle =
+                    "bg-green-50 text-green-700 border-green-100";
+
+                statusLabel = "Payment Complete";
+                descriptionText = "Released successfully";
+
+            } else if (
+                rawStatus === "Matched" ||
+                rawStatus === "In Transit"
+            ) {
+
+                badgeStyle =
+                    "bg-blue-50 text-blue-700 border-blue-100";
+
+                statusLabel = "Matched";
+                descriptionText = "Cargo en route";
+            }
+
+            const productEmoji = "📦";
+
+            window.cachedPayments[id] = {
+                id,
+                orderId,
+                cropName,
+                weight,
+                unit,
+                routeFrom,
+                routeTo,
+                driverName,
+                price,
+                currentStatus: rawStatus,
+                productEmoji,
+                driverSubaccount
+            };
+
+            const cardHtml = `
+                <div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm flex justify-between items-center">
+                    <div>
+                        <span class="${badgeStyle} text-xs font-bold px-2.5 py-1 rounded-full border">
+                            ${statusLabel}
+                        </span>
+
+                        <h3 class="font-bold text-gray-900 mt-2">
+                            #FR-${orderId} (${cropName})
+                        </h3>
+
+                        <p class="text-xs text-gray-400 mt-0.5">
+                            ${descriptionText} • Driver: ${driverName}
+                        </p>
+                    </div>
+
+                    <div class="text-right">
+                        <h2 class="text-xl font-black text-gray-900">
+                            ₦${price}
+                        </h2>
+
+                        <button
+                            onclick="openDrawerFromEvent('${id}')"
+                            class="mt-2 text-xs bg-gray-50 border border-gray-200 text-gray-700 px-3 py-1.5 rounded-xl font-bold hover:bg-gray-100 transition">
+
+                            View Details
+
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            paymentsContainer.insertAdjacentHTML("beforeend", cardHtml);
+        }
+
+        if (awaitingPaymentCount > 0) {
+            paymentsBadge.innerText = awaitingPaymentCount;
+            paymentsBadge.classList.remove("hidden");
+        } else {
+            paymentsBadge.classList.add("hidden");
+        }
     });
+});
 
     window.openDrawerFromEvent = function(id) {
         if(window.cachedPayments && window.cachedPayments[id]) {
             openModalDrawer(window.cachedPayments[id]);
         }
     };
+
+    document.getElementById("side-btn")?.addEventListener("click", () => {
+        document.getElementById("side-bar")?.classList.remove("max-md:hidden");
+    });
+
+    document.getElementById("closeside-btn")?.addEventListener("click", () => {
+        document.getElementById("side-bar")?.classList.add("max-md:hidden");
+    });
 </script>
 </body>
 </html>

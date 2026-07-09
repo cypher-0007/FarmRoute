@@ -15,11 +15,11 @@
 
     <div class="flex h-screen overflow-hidden">
         
-        <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col h-screen shrink-0">
+        <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col h-screen shrink-0 z-50 fixed md:static inset-y-0 left-0 max-md:hidden">
             <div class="px-6 py-2 items-center justify-between flex border-b border-green-900">
                 <img class="h-16" src="../assets/logo3.png" alt="FarmRoute Logo">
-                <button id="closeside-btn" class="hidden max-sm:flex text-2xl">
-                    <i class="fa-solid fa-bars"></i>
+                <button id="closeside-btn" class="md:hidden text-2xl text-gray-300 hover:text-white p-2">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
@@ -33,19 +33,19 @@
                 <a href="active_trips.html" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg bg-green-700 text-white mb-2">
                     <i class="fa-solid fa-truck"></i> My Active Trips
                 </a>
-                <a href="#" class="flex items-center justify-between px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
+                <a href="messages.html" class="flex items-center justify-between px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
                     <div class="flex items-center gap-3">
                         <i class="fa-regular fa-message"></i> Messages
                     </div>
                     <span class="bg-green-500 text-xs px-2 py-1 rounded-full text-white">3</span>
                 </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
+                <a href="payments.html" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
                     <i class="fa-solid fa-wallet"></i> Payments
                 </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
+                <a href="profile.html" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
                     <i class="fa-regular fa-user"></i> Profile
                 </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-6">
+                <a href="settings.html" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-6">
                     <i class="fa-solid fa-gear"></i> Settings
                 </a>
                 
@@ -339,10 +339,10 @@
     const sideBar = document.getElementById("side-bar");
 
     if (sideBtn && sideBar) {
-        sideBtn.addEventListener("click", () => sideBar.classList.toggle("hidden"));
+        sideBtn.addEventListener("click", () => sideBar.classList.remove("max-md:hidden"));
     }
     if (closeSideBtn && sideBar) {
-        closeSideBtn.addEventListener("click", () => sideBar.classList.add("hidden"));
+        closeSideBtn.addEventListener("click", () => sideBar.classList.add("max-md:hidden"));
     }
 
     document.getElementById("logout-btn")?.addEventListener("click", () => {

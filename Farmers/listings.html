@@ -15,11 +15,11 @@
 
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar Navigation -->
-        <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col h-screen shrink-0">
+        <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col h-screen shrink-0 z-50 fixed md:static inset-y-0 left-0 max-md:hidden">
             <div class="px-6 py-2 items-center justify-between flex border-b border-green-900">
                 <img class="h-16" src="../assets/logo3.png" alt="FarmRoute Logo">
-                <button id="closeside-btn" class="hidden max-sm:flex text-2xl">
-                    <i class="fa-solid fa-bars"></i>
+                <button id="closeside-btn" class="md:hidden text-2xl text-gray-300 hover:text-white p-2">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
@@ -30,24 +30,18 @@
                 <a href="listings.html" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg bg-green-700 text-white mb-2">
                     <i class="fa-solid fa-box-open"></i> My Listings
                 </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
-                    <i class="fa-solid fa-truck"></i> Orders
-                </a>
-                <a href="#" class="flex items-center justify-between px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
+                <a href="messages.html" class="flex items-center justify-between px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
                     <div class="flex items-center gap-3">
                         <i class="fa-regular fa-message"></i> Messages
                     </div>
-                    <span class="bg-green-500 text-xs px-2 py-1 rounded-full text-white">3</span>
+                    <span id="message-notification-badge" class="bg-green-500 text-xs px-2 py-1 rounded-full text-white hidden">0</span>
                 </a>
  
                 <a href="payment.html" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
                     <i class="fa-solid fa-wallet"></i> Payments
                 </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
+                <a href="profile.html" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
                     <i class="fa-regular fa-user"></i> Profile
-                </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-6">
-                    <i class="fa-solid fa-gear"></i> Settings
                 </a>
                 <div class="px-4 mb-4">
                     <a href="add_produce.html" class="flex items-center justify-center gap-2 w-full bg-emerald-100 hover:bg-emerald-200 text-emerald-900 font-semibold py-3 px-4 rounded-xl transition duration-200 shadow-sm text-sm">
@@ -75,7 +69,7 @@
                 </div>
                 <div class="flex items-center gap-4 sm:gap-6">
                     <div class="flex items-center gap-3 border-l pl-4 sm:pl-6">
-                        <img src="https://i.pravatar.cc/100?img=12" class="w-10 h-10 rounded-full object-cover">
+                        <img id="user-avatar" alt="Profile picture" class="w-10 h-10 rounded-full object-cover hidden">
                         <div class="hidden sm:block text-left">
                             <h4 id="user-display-name" class="font-semibold text-sm text-gray-900 leading-tight">Loading...</h4>
                             <span id="user-display-role" class="text-xs text-emerald-600 font-medium capitalize">Farmer</span>
@@ -128,6 +122,8 @@
 
         const nameEl = document.getElementById("user-display-name");
         const roleEl = document.getElementById("user-display-role");
+        const avatarEl = document.getElementById("user-avatar");
+        const messageBadgeEl = document.getElementById("message-notification-badge");
         const listingsWrapper = document.getElementById("listings-wrapper");
         const searchInput = document.getElementById("search-input");
         const statusFilter = document.getElementById("status-filter");
@@ -149,6 +145,45 @@
             "Searching": "bg-purple-50 text-purple-700 border-purple-200"
         };
 
+        function updateHeaderAvatar(profilePictureUrl) {
+            if (!avatarEl || !profilePictureUrl) return;
+            avatarEl.src = profilePictureUrl;
+            avatarEl.classList.remove("hidden");
+        }
+
+        function getMessageNotificationCount(snapshot, userId) {
+            let unreadTotal = 0;
+            let hasUnreadData = false;
+            snapshot.forEach((roomSnap) => {
+                const room = roomSnap.data();
+                if (room.unreadCounts || room.unreadBy || room.unread) hasUnreadData = true;
+                const countMap = room.unreadCounts || room.unreadBy || room.unread || {};
+                const count = Number(countMap[userId] || 0);
+                if (count > 0) unreadTotal += count;
+            });
+            return hasUnreadData ? unreadTotal : snapshot.size;
+        }
+
+        function updateMessageBadge(count) {
+            if (!messageBadgeEl) return;
+            if (count > 0) {
+                messageBadgeEl.textContent = count > 99 ? "99+" : String(count);
+                messageBadgeEl.classList.remove("hidden");
+            } else {
+                messageBadgeEl.classList.add("hidden");
+            }
+        }
+
+        function listenForMessageNotifications(userId) {
+            const chatsQuery = query(collection(db, "chats"), where("participants", "array-contains", userId));
+            onSnapshot(chatsQuery, (snapshot) => {
+                updateMessageBadge(getMessageNotificationCount(snapshot, userId));
+            }, (err) => {
+                console.error("Message notification sync failed:", err);
+                updateMessageBadge(0);
+            });
+        }
+
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 window.location.href = LOGIN_PAGE_URL;
@@ -157,6 +192,7 @@
 
             nameEl.innerText = user.displayName || "FarmRoute User";
             roleEl.innerText = "Farmer";
+            listenForMessageNotifications(user.uid);
 
             try {
                 const userDocSnap = await getDoc(doc(db, "users", user.uid));
@@ -164,6 +200,7 @@
                     const userData = userDocSnap.data();
                     if (userData.name) nameEl.innerText = userData.name;
                     if (userData.role) roleEl.innerText = userData.role;
+                    updateHeaderAvatar(userData.profilePictureUrl);
                 }
             } catch (err) {
                 console.error("Firestore user profile payload retrieval failed:", err);
@@ -325,10 +362,10 @@
         const sideBar = document.getElementById("side-bar");
 
         if (sideBtn && sideBar) {
-            sideBtn.addEventListener("click", () => sideBar.classList.toggle("hidden"));
+            sideBtn.addEventListener("click", () => sideBar.classList.remove("max-md:hidden"));
         }
         if (closeSideBtn && sideBar) {
-            closeSideBtn.addEventListener("click", () => sideBar.classList.add("hidden"));
+            closeSideBtn.addEventListener("click", () => sideBar.classList.add("max-md:hidden"));
         }
 
         // Account signout action routine
