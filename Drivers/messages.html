@@ -12,66 +12,66 @@
     <div class="flex min-h-screen">
         
         <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col h-screen shrink-0 z-50 fixed md:static inset-y-0 left-0 max-md:hidden">
-
-            <div class="px-6 py-2 items-center justify-between flex border-b border-green-900">
-                <img class="h-16" src="../assets/logo3.png" alt="FarmRoute Logo">
-
+            <div class="px-6 py-4 flex items-center justify-between border-b border-green-900/50">
+                <div class="flex items-center gap-2">
+                    <img class="h-14 object-contain" src="../assets/logo3.png" alt="FarmRoute Logo">
+                </div>
                 <button id="closeside-btn" class="md:hidden text-2xl text-gray-300 hover:text-white p-2">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
-            <nav class="flex-1 mt-6 overflow-y-auto">
+            <nav class="flex-1 mt-5 overflow-y-auto px-4 space-y-1">
 
                 <a href="dashboard.html"
-                    class="flex items-center gap-3 hover:bg-green-800 mx-4 px-4 py-3 rounded-lg mb-2">
-                    <i class="fa-solid fa-house"></i>
+                    class="flex items-center gap-3 hover:bg-green-900/50 hover:text-white text-gray-300 px-4 py-3 rounded-xl font-medium transition">
+                    <i class="fa-solid fa-house text-lg w-6 text-center"></i>
                     Dashboard
                 </a>
 
                 <a href="available_loads.html"
-                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
-                    <i class="fa-solid fa-boxes-stacked"></i>
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 hover:bg-green-900/50 hover:text-white transition">
+                    <i class="fa-solid fa-boxes-stacked text-lg w-6 text-center"></i>
                     Available Loads
                 </a>
 
                 <a href="active_trips.html"
-                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
-                    <i class="fa-solid fa-truck-fast"></i>
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 hover:bg-green-900/50 hover:text-white transition">
+                    <i class="fa-solid fa-truck-fast text-lg w-6 text-center"></i>
                     My Active Trips
                 </a>
 
                 <a href="messages.html"
-                    class="flex items-center justify-between px-4 py-3 mx-4 rounded-lg bg-green-700 mb-2">
+                    class="flex items-center justify-between px-4 py-3 rounded-xl font-semibold bg-green-700 text-white transition">
                     <div class="flex items-center gap-3">
-                        <i class="fa-regular fa-message"></i>
+                        <i class="fa-regular fa-message text-lg w-6 text-center"></i>
                         Messages
                     </div>
 
-                    <span class="bg-green-500 text-xs px-2 py-1 rounded-full">
+                    <span class="bg-emerald-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
                         3
                     </span>
                 </a>
 
                 <a href="payments.html"
-                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
-                    <i class="fa-solid fa-wallet"></i>
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 hover:bg-green-900/50 hover:text-white transition">
+                    <i class="fa-solid fa-wallet text-lg w-6 text-center"></i>
                     Payments
                 </a>
 
                 <a href="profile.html"
-                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
-                    <i class="fa-regular fa-user"></i>
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 hover:bg-green-900/50 hover:text-white transition">
+                    <i class="fa-regular fa-user text-lg w-6 text-center"></i>
                     Profile
                 </a>
 
-                <a href="#"
-                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-6">
-                    <i class="fa-solid fa-gear"></i>
-                    Settings
+                <a href="route_planner.html"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 hover:bg-green-900/50 hover:text-white transition">
+                    <i class="fa-solid fa-route text-lg w-6 text-center"></i>
+                    Route Profile
                 </a>
 
-                <div class="px-4 mb-4">
+                <div class="pt-2">
                     <button id="go-online-btn"
                         class="flex items-center justify-center gap-2 w-full bg-green-600 hover:bg-green-500 font-semibold py-3 px-4 rounded-xl transition duration-200 shadow-sm text-sm">
                         <i class="fa-solid fa-circle text-xs" id="online-dot"></i>
@@ -81,39 +81,39 @@
 
             </nav>
 
-            <div class="p-4 border-t border-green-900">
+            <div class="p-4 border-t border-green-900/50">
                 <button id="logout-btn"
-                    class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-green-800 text-left text-gray-300 hover:text-white transition">
-                    <i class="fa-solid fa-right-from-bracket"></i>
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-green-900/50 text-gray-300 hover:text-white font-medium transition text-left">
+                    <i class="fa-solid fa-right-from-bracket w-6 text-center"></i>
                     Logout
                 </button>
             </div>
 
     </aside>
 
-        <main class="flex-1 min-h-screen flex flex-col relative md:static">
+        <main class="flex-1 min-h-screen flex flex-col relative md:static min-w-0">
             
             <header class="h-20 bg-white px-4 sm:px-8 flex items-center justify-between sticky top-0 z-10">
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3 sm:gap-4 min-w-0">
                     <button id="side-btn" class="text-xl text-slate-700 md:hidden p-2">
                         <i class="fa-solid fa-bars"></i>
                     </button>
-                    <div>
-                        <h2 class="text-2xl font-bold text-slate-900">Messages</h2>
+                    <div class="min-w-0">
+                        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 truncate">Messages</h2>
                         <p class="text-sm text-slate-500 hidden sm:block">Chat with drivers, farmers and partners.</p>
                     </div>
                 </div>
                 
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 sm:gap-4 shrink-0">
                     <button class="relative p-2 text-slate-700 hover:text-slate-900 transition">
                         <i class="fa-regular fa-bell text-xl"></i>
                         <span class="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full"></span>
                     </button>
-                    <div class="flex items-center gap-3 pl-4">
+                    <div class="flex items-center gap-3 sm:pl-4">
                         <div id="user-avatar-placeholder" class="w-10 h-10 bg-[#e8f5e9] text-emerald-800 font-bold rounded-full flex items-center justify-center text-sm overflow-hidden">
                             FN
                         </div>
-                        <div class="flex items-center gap-1 cursor-pointer">
+                        <div class="hidden sm:flex items-center gap-1 cursor-pointer">
                             <h4 id="user-display-name" class="text-sm font-semibold text-slate-800 leading-tight">Farmer Ndlovu</h4>
                             <i class="fa-solid fa-chevron-down text-xs text-slate-500"></i>
                         </div>
@@ -121,9 +121,9 @@
                 </div>
             </header>
 
-            <div class="flex-1 p-6 grid grid-cols-12 gap-6 h-[calc(100vh-5rem)]">
+            <div class="flex-1 p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 min-h-0 h-[calc(100dvh-5rem)] overflow-hidden">
                 
-                <div class="col-span-4 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col overflow-hidden">
+                <div id="chat-list-panel" class="lg:col-span-4 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col overflow-hidden min-h-0 h-full">
                     <div class="p-4 flex items-center gap-2">
                         <div class="relative flex-1">
                             <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
@@ -145,7 +145,7 @@
                     </div>
                 </div>
 
-                <div id="empty-chat-state" class="col-span-8 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center p-8">
+                <div id="empty-chat-state" class="hidden lg:col-span-8 bg-white rounded-2xl border border-slate-100 shadow-sm lg:flex flex-col items-center justify-center p-8">
                     <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 mb-4 text-2xl shadow-sm">
                         <i class="fa-regular fa-comments"></i>
                     </div>
@@ -153,10 +153,10 @@
                     <p class="text-xs text-slate-400 mt-1 max-w-xs text-center leading-relaxed">Select a live conversation from your active listings on the panel to begin secure logistics management communication.</p>
                 </div>
 
-                <div id="active-chat-state" class="col-span-8 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col overflow-hidden hidden">
+                <div id="active-chat-state" class="lg:col-span-8 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col overflow-hidden hidden min-h-0 h-full">
                     <div id="chat-window-header" class="p-4 border-b border-slate-100 flex items-center justify-between bg-white z-10"></div>
 
-                    <div id="message-bubbles-container" class="flex-1 bg-white p-6 overflow-y-auto space-y-6"></div>
+                    <div id="message-bubbles-container" class="flex-1 bg-white p-4 sm:p-6 overflow-y-auto space-y-6"></div>
 
                     <div class="p-4 border-t border-slate-100 bg-white flex items-center gap-3">
                         <button class="text-slate-400 hover:text-slate-600 transition text-lg px-1">
@@ -186,6 +186,7 @@
         import { collection, query, where, orderBy, addDoc, updateDoc, serverTimestamp, doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const chatThreadsContainer = document.getElementById("chat-threads-container");
+        const chatListPanel = document.getElementById("chat-list-panel");
         const chatWindowHeader = document.getElementById("chat-window-header");
         const messageBubblesContainer = document.getElementById("message-bubbles-container");
         const messageInput = document.getElementById("message-input");
@@ -208,6 +209,35 @@
         let currentUserProfile = {};
         const userProfileCache = new Map();
         const activeRooms = new Map();
+
+        function isMobileMessagesLayout() {
+            return window.matchMedia("(max-width: 1023px)").matches;
+        }
+
+        function syncResponsiveMessagingLayout() {
+            if (!chatListPanel || !activeChatState) return;
+
+            if (isMobileMessagesLayout()) {
+                chatListPanel.classList.toggle("hidden", Boolean(activeChatId));
+                activeChatState.classList.toggle("hidden", !activeChatId);
+                emptyChatState?.classList.add("hidden");
+                emptyChatState?.classList.remove("lg:flex");
+            } else {
+                chatListPanel.classList.remove("hidden");
+                activeChatState.classList.toggle("hidden", !activeChatId);
+                emptyChatState?.classList.toggle("hidden", Boolean(activeChatId));
+                emptyChatState?.classList.toggle("lg:flex", !activeChatId);
+            }
+        }
+
+        function showThreadListOnMobile() {
+            if (!isMobileMessagesLayout()) return;
+            chatListPanel?.classList.remove("hidden");
+            activeChatState?.classList.add("hidden");
+            messageInput?.blur();
+        }
+
+        window.addEventListener("resize", syncResponsiveMessagingLayout);
 
         function getInitials(name) {
             return (name || "FR").trim().substring(0, 2).toUpperCase();
@@ -317,6 +347,11 @@
             
             switchActiveChat(roomId);
             messageInput?.focus();
+        });
+
+        chatWindowHeader?.addEventListener("click", (e) => {
+            const backButton = e.target.closest("[data-action='back-to-threads']");
+            if (backButton) showThreadListOnMobile();
         });
 
         document.getElementById("closeside-btn")?.addEventListener("click", () => {
@@ -435,6 +470,7 @@
 
             emptyChatState?.classList.add("hidden");
             activeChatState?.classList.remove("hidden");
+            syncResponsiveMessagingLayout();
 
             document.querySelectorAll('#chat-threads-container > div').forEach(el => el.classList.remove('bg-[#f4fbf7]', 'border', 'border-emerald-100/50'));
             const dynamicActiveRow = document.querySelector(`[data-room-id="${roomId}"]`);
@@ -442,17 +478,20 @@
 
             if (chatWindowHeader) {
                 chatWindowHeader.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <div class="relative">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <button data-action="back-to-threads" class="lg:hidden w-9 h-9 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-700 shrink-0 transition" aria-label="Back to conversations">
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </button>
+                        <div class="relative shrink-0">
                             ${avatarMarkup(room.recipientAvatar, recipientName, "w-10 h-10", "text-xs")}
                             <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full"></span>
                         </div>
-                        <div>
-                            <h3 class="font-bold text-slate-900 text-sm">${escapeHTML(recipientName)}</h3>
+                        <div class="min-w-0">
+                            <h3 class="font-bold text-slate-900 text-sm truncate">${escapeHTML(recipientName)}</h3>
                             <p class="text-xs text-emerald-600 font-medium">● Online</p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-4 text-slate-600 text-lg">
+                    <div class="flex items-center gap-3 sm:gap-4 text-slate-600 text-lg shrink-0">
                         <button class="hover:text-slate-900 transition"><i class="fa-solid fa-phone"></i></button>
                         <button class="hover:text-slate-900 transition"><i class="fa-solid fa-video"></i></button>
                         <button class="hover:text-slate-900 transition"><i class="fa-solid fa-circle-info"></i></button>

@@ -57,27 +57,27 @@
             </div>
         </aside>
 
-        <main class="flex-1 min-h-screen flex flex-col relative md:static">
+        <main class="flex-1 min-h-screen flex flex-col relative md:static min-w-0">
             
             <header class="h-20 bg-white px-4 sm:px-8 flex items-center justify-between sticky top-0 z-10">
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3 sm:gap-4 min-w-0">
                     <button id="side-btn" class="text-xl text-slate-700 md:hidden p-2">
                         <i class="fa-solid fa-bars"></i>
                     </button>
-                    <div>
-                        <h2 class="text-2xl font-bold text-slate-900">Messages</h2>
+                    <div class="min-w-0">
+                        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 truncate">Messages</h2>
                         <p class="text-sm text-slate-500 hidden sm:block">Chat with drivers, farmers and partners.</p>
                     </div>
                 </div>
                 
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 sm:gap-4 shrink-0">
                     <button class="relative p-2 text-slate-700 hover:text-slate-900 transition">
                         <i class="fa-regular fa-bell text-xl"></i>
                         <span class="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full"></span>
                     </button>
-                    <div class="flex items-center gap-3 pl-4">
+                    <div class="flex items-center gap-3 sm:pl-4">
                         <img id="user-avatar" alt="Profile picture" class="w-10 h-10 rounded-full object-cover hidden">
-                        <div class="flex items-center gap-1 cursor-pointer">
+                        <div class="hidden sm:flex items-center gap-1 cursor-pointer">
                             <h4 id="user-display-name" class="text-sm font-semibold text-slate-800 leading-tight">Farmer Ndlovu</h4>
                             <i class="fa-solid fa-chevron-down text-xs text-slate-500"></i>
                         </div>
@@ -85,9 +85,9 @@
                 </div>
             </header>
 
-            <div class="flex-1 p-6 grid grid-cols-12 gap-6 h-[calc(100vh-5rem)]">
+            <div class="flex-1 p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 min-h-0 h-[calc(100dvh-5rem)] overflow-hidden">
                 
-                <div class="col-span-4 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col overflow-hidden">
+                <div id="chat-list-panel" class="lg:col-span-4 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col overflow-hidden min-h-0 h-full">
                     <div class="p-4 flex items-center gap-2">
                         <div class="relative flex-1">
                             <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
@@ -109,7 +109,7 @@
                     </div>
                 </div>
 
-                <div id="empty-chat-state" class="col-span-8 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center p-8">
+                <div id="empty-chat-state" class="hidden lg:col-span-8 bg-white rounded-2xl border border-slate-100 shadow-sm lg:flex flex-col items-center justify-center p-8">
                     <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 mb-4 text-2xl shadow-sm">
                         <i class="fa-regular fa-comments"></i>
                     </div>
@@ -117,10 +117,10 @@
                     <p class="text-xs text-slate-400 mt-1 max-w-xs text-center leading-relaxed">Select a live conversation from your active listings on the panel to begin secure logistics management communication.</p>
                 </div>
 
-                <div id="active-chat-state" class="col-span-8 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col overflow-hidden hidden">
+                <div id="active-chat-state" class="lg:col-span-8 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col overflow-hidden hidden min-h-0 h-full">
                     <div id="chat-window-header" class="p-4 border-b border-slate-100 flex items-center justify-between bg-white z-10"></div>
 
-                    <div id="message-bubbles-container" class="flex-1 bg-white p-6 overflow-y-auto space-y-6"></div>
+                    <div id="message-bubbles-container" class="flex-1 bg-white p-4 sm:p-6 overflow-y-auto space-y-6"></div>
 
                     <div class="p-4 border-t border-slate-100 bg-white flex items-center gap-3">
                         <button class="text-slate-400 hover:text-slate-600 transition text-lg px-1">
@@ -166,6 +166,7 @@
         import { collection, query, where, orderBy, addDoc, updateDoc, serverTimestamp, doc, getDoc, getDocs, onSnapshot, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const chatThreadsContainer = document.getElementById("chat-threads-container");
+        const chatListPanel = document.getElementById("chat-list-panel");
         const chatWindowHeader = document.getElementById("chat-window-header");
         const messageBubblesContainer = document.getElementById("message-bubbles-container");
         const messageInput = document.getElementById("message-input");
@@ -194,6 +195,35 @@
         let currentUserProfile = {};
         const userProfileCache = new Map();
         const activeRooms = new Map();
+
+        function isMobileMessagesLayout() {
+            return window.matchMedia("(max-width: 1023px)").matches;
+        }
+
+        function syncResponsiveMessagingLayout() {
+            if (!chatListPanel || !activeChatState) return;
+
+            if (isMobileMessagesLayout()) {
+                chatListPanel.classList.toggle("hidden", Boolean(activeChatId));
+                activeChatState.classList.toggle("hidden", !activeChatId);
+                emptyChatState?.classList.add("hidden");
+                emptyChatState?.classList.remove("lg:flex");
+            } else {
+                chatListPanel.classList.remove("hidden");
+                activeChatState.classList.toggle("hidden", !activeChatId);
+                emptyChatState?.classList.toggle("hidden", Boolean(activeChatId));
+                emptyChatState?.classList.toggle("lg:flex", !activeChatId);
+            }
+        }
+
+        function showThreadListOnMobile() {
+            if (!isMobileMessagesLayout()) return;
+            chatListPanel?.classList.remove("hidden");
+            activeChatState?.classList.add("hidden");
+            messageInput?.blur();
+        }
+
+        window.addEventListener("resize", syncResponsiveMessagingLayout);
 
         function updateHeaderAvatar(profilePictureUrl) {
             if (!avatarEl || !profilePictureUrl) return;
@@ -300,6 +330,12 @@
         });
 
         chatWindowHeader?.addEventListener("click", (e) => {
+            const backButton = e.target.closest("[data-action='back-to-threads']");
+            if (backButton) {
+                showThreadListOnMobile();
+                return;
+            }
+
             const infoButton = e.target.closest("[data-action='show-listing-info']");
             if (!infoButton || !activeChatId) return;
             openListingInfo(activeChatId);
@@ -421,6 +457,7 @@
 
             emptyChatState?.classList.add("hidden");
             activeChatState?.classList.remove("hidden");
+            syncResponsiveMessagingLayout();
 
             document.querySelectorAll('#chat-threads-container > div').forEach(el => el.classList.remove('bg-[#f4fbf7]', 'border', 'border-emerald-100/50'));
             const dynamicActiveRow = document.querySelector(`[data-room-id="${roomId}"]`);
@@ -428,17 +465,20 @@
 
             if (chatWindowHeader) {
                 chatWindowHeader.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <div class="relative">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <button data-action="back-to-threads" class="lg:hidden w-9 h-9 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-700 shrink-0 transition" aria-label="Back to conversations">
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </button>
+                        <div class="relative shrink-0">
                             ${avatarMarkup(room.recipientAvatar, recipientName, "w-10 h-10", "text-xs")}
                             <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full"></span>
                         </div>
-                        <div>
-                            <h3 class="font-bold text-slate-900 text-sm">${escapeHTML(recipientName)}</h3>
+                        <div class="min-w-0">
+                            <h3 class="font-bold text-slate-900 text-sm truncate">${escapeHTML(recipientName)}</h3>
                             <p class="text-xs text-emerald-600 font-medium">● Online</p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-4 text-slate-600 text-lg">
+                    <div class="flex items-center gap-3 sm:gap-4 text-slate-600 text-lg shrink-0">
                         <button class="hover:text-slate-900 transition"><i class="fa-solid fa-phone"></i></button>
                         <button class="hover:text-slate-900 transition"><i class="fa-solid fa-video"></i></button>
                         <button data-action="show-listing-info" class="hover:text-slate-900 transition" title="Listing details"><i class="fa-solid fa-circle-info"></i></button>

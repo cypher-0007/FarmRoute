@@ -3,477 +3,644 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FarmRoute Dashboard</title>
-
+    <title>FarmRoute - Route Profile</title>
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
 </head>
+<body class="bg-gray-50 text-gray-800">
 
-<body class="bg-gray-100">
+<div id="loading-screen" class="fixed inset-0 bg-white z-[60] flex items-center justify-center font-semibold text-gray-600">
+    <div class="text-center">
+        <i class="fa-solid fa-circle-notch fa-spin text-3xl text-green-700 mb-2"></i>
+        <p>Loading route profile...</p>
+    </div>
+</div>
 
 <div class="flex h-screen overflow-hidden">
+    <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col h-screen shrink-0 z-50 fixed md:static inset-y-0 left-0 max-md:hidden">
+        <div class="px-6 py-2 items-center justify-between flex border-b border-green-900">
+            <img class="h-16" src="../assets/logo3.png" alt="FarmRoute Logo">
+            <button id="closeside-btn" class="md:hidden text-2xl text-gray-300 hover:text-white p-2">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
 
-    <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col justify-between flex-shrink-0 z-50 fixed md:static inset-y-0 left-0 max-md:hidden">
-        <div>
-            <div class="px-6 py-2 border-b border-green-900 flex items-center justify-between">
-                <img class="h-16" src="../assets/logo3.png" alt="FarmRoute Logo">
-                <button id="closeside-btn" class="md:hidden text-2xl text-gray-300 hover:text-white p-2">
-                    <i class="fa-solid fa-xmark"></i>
+        <nav class="flex-1 mt-6 overflow-y-auto">
+            <a href="dashboard.html" class="flex items-center gap-3 hover:bg-green-800 mx-4 px-4 py-3 rounded-lg mb-2 text-gray-300 hover:text-white">
+                <i class="fa-solid fa-house"></i> Dashboard
+            </a>
+            <a href="available_loads.html" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
+                <i class="fa-solid fa-box-open"></i> Available Loads
+            </a>
+            <a href="active_trips.html" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
+                <i class="fa-solid fa-truck"></i> My Active Trips
+            </a>
+            <a href="messages.html" class="flex items-center justify-between px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
+                <div class="flex items-center gap-3">
+                    <i class="fa-regular fa-message"></i> Messages
+                </div>
+                <span class="bg-green-500 text-xs px-2 py-1 rounded-full text-white">3</span>
+            </a>
+            <a href="payments.html" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
+                <i class="fa-solid fa-wallet"></i> Payments
+            </a>
+            <a href="profile.html" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
+                <i class="fa-regular fa-user"></i> Profile
+            </a>
+            <a href="route_planner.html" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg bg-green-700 text-white mb-6">
+                <i class="fa-solid fa-route"></i> Route Profile
+            </a>
+
+            <div class="px-4 mb-4">
+                <button id="go-online-btn" class="flex items-center justify-center gap-2 w-full bg-green-600 hover:bg-green-500 font-semibold py-3 px-4 rounded-xl transition duration-200 shadow-sm text-sm">
+                    <i class="fa-solid fa-circle text-xs" id="online-dot"></i>
+                    <span id="online-label">Go Online</span>
                 </button>
             </div>
+        </nav>
 
-            <nav class="flex-1 mt-6">
-
-                <a href="#"
-                    class="flex items-center gap-3 bg-green-700 mx-4 px-4 py-3 rounded-lg mb-2">
-                    <i class="fa-solid fa-house"></i>
-                    Dashboard
-                </a>
-
-                <a href="#"
-                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800">
-                    <i class="fa-solid fa-truck"></i>
-                    My Shipments
-                </a>
-
-                <a href="#"
-                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800">
-                    <i class="fa-solid fa-location-dot"></i>
-                    Find Transport
-                </a>
-
-                <a href="#"
-                    class="flex items-center justify-between px-4 py-3 mx-4 rounded-lg hover:bg-green-800">
-                    <div class="flex items-center gap-3">
-                        <i class="fa-regular fa-message"></i>
-                        Messages
-                    </div>
-
-                    <span class="bg-green-500 text-xs px-2 py-1 rounded-full">
-                        3
-                    </span>
-                </a>
-
-                <a href="#"
-                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800">
-                    <i class="fa-solid fa-chart-line"></i>
-                    Market Prices
-                </a>
-
-                <a href="#"
-                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800">
-                    <i class="fa-solid fa-wallet"></i>
-                    Payments
-                </a>
-
-                <a href="#"
-                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800">
-                    <i class="fa-regular fa-user"></i>
-                    Profile
-                </a>
-
-                <a href="#"
-                    class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800">
-                    <i class="fa-solid fa-gear"></i>
-                    Settings
-                </a>
-
-            </nav>
+        <div class="p-4 border-t border-green-900">
+            <button id="logout-btn" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-green-800 text-left text-gray-300 hover:text-white transition">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
         </div>
-
-        <div class="p-4">
-            <a href="#"
-                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-green-800">
-                <i class="fa-solid fa-right-from-bracket"></i>
-                Logout
-            </a>
-        </div>
-
     </aside>
 
-    <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
-        
-        <header class="bg-white border-b border-gray-200 px-4 sm:px-8 py-4 flex items-center justify-between flex-shrink-0">
-            <div class="flex items-center gap-4">
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <header class="bg-white h-20 px-4 sm:px-8 flex items-center justify-between border-b shrink-0">
+            <div class="flex items-center gap-4 min-w-0">
                 <button id="side-btn" class="text-xl text-gray-700 md:hidden p-2">
                     <i class="fa-solid fa-bars"></i>
                 </button>
-                <div>
-                    <h1 class="text-xl font-bold text-gray-900">Route Planner</h1>
-                    <p class="text-xs text-gray-500 mt-0.5 hidden sm:block">Plan efficient routes to connect farms with buyers.</p>
+                <div class="min-w-0">
+                    <h1 class="text-xl sm:text-2xl font-bold text-gray-900 truncate">Route Profile</h1>
+                    <p class="text-xs sm:text-sm text-gray-500 hidden sm:block">Set your truck capacity, usual lanes, and cargo preferences.</p>
                 </div>
             </div>
-            
-            <div class="flex items-center gap-4">
-                <button class="relative w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50">
-                    <i class="fa-regular fa-bell"></i>
-                    <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-emerald-600 rounded-full"></span>
-                </button>
-                
-                <div class="flex items-center gap-3 pl-2 border-l border-gray-200">
-                    <div class="w-10 h-10 rounded-full bg-amber-100 overflow-hidden flex items-center justify-center border border-amber-200">
-                        <i class="fa-solid fa-user-tie text-amber-800 text-lg"></i>
-                    </div>
-                    <div class="text-left hidden sm:block">
-                        <div class="flex items-center gap-1.5">
-                            <span class="text-sm font-semibold text-gray-900">John Farmer</span>
-                            <i class="fa-solid fa-chevron-down text-[10px] text-gray-400"></i>
-                        </div>
-                        <span class="text-[11px] text-emerald-600 font-medium flex items-center gap-1">
-                            <i class="fa-solid fa-circle-check text-[10px]"></i> Verified Farmer
-                        </span>
-                    </div>
+
+            <div class="flex items-center gap-3 shrink-0">
+                <img id="user-avatar" alt="Profile picture" class="w-10 h-10 rounded-full object-cover hidden">
+                <div class="hidden sm:block">
+                    <h4 id="user-display-name" class="font-semibold text-sm leading-tight">Loading...</h4>
+                    <p class="text-xs text-emerald-600 font-medium">Logistics Driver</p>
                 </div>
             </div>
         </header>
 
-        <div class="flex-1 grid grid-cols-1 xl:grid-cols-12 overflow-hidden">
-            
-            <div class="xl:col-span-5 border-r border-gray-200 bg-white p-6 overflow-y-auto flex flex-col justify-between">
-                
-                <div>
-                    <div class="flex items-center justify-between border-b border-gray-100 pb-4 mb-6">
-                        <div id="step-indicator-1" class="flex flex-col items-center flex-1">
-                            <span class="step-num w-7 h-7 rounded-full bg-emerald-700 text-white text-xs font-bold flex items-center justify-center">1</span>
-                            <span class="step-text text-xs font-semibold text-emerald-700 mt-1">Route Details</span>
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+            <div class="max-w-7xl mx-auto space-y-6">
+                <section class="bg-white rounded-2xl border shadow-sm p-5 sm:p-6">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+                        <div>
+                            <p class="text-xs font-bold text-emerald-700 uppercase tracking-wider">Driver Matching Inputs</p>
+                            <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">Help FarmRoute rank better orders for you</h2>
                         </div>
-                        <div class="h-[2px] bg-gray-200 flex-1 -mt-4"></div>
-                        <div id="step-indicator-2" class="flex flex-col items-center flex-1">
-                            <span class="step-num w-7 h-7 rounded-full bg-gray-100 text-gray-400 text-xs font-bold flex items-center justify-center border border-gray-200">2</span>
-                            <span class="step-text text-xs font-medium text-gray-400 mt-1">Stops</span>
-                        </div>
-                        <div class="h-[2px] bg-gray-200 flex-1 -mt-4"></div>
-                        <div id="step-indicator-3" class="flex flex-col items-center flex-1">
-                            <span class="step-num w-7 h-7 rounded-full bg-gray-100 text-gray-400 text-xs font-bold flex items-center justify-center border border-gray-200">3</span>
-                            <span class="step-text text-xs font-medium text-gray-400 mt-1">Review</span>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="bg-gray-50 border rounded-xl px-4 py-3 text-center">
+                                <p id="capacity-preview" class="text-lg font-bold text-gray-900">0 kg</p>
+                                <p class="text-[11px] text-gray-500">Capacity</p>
+                            </div>
+                            <div class="bg-gray-50 border rounded-xl px-4 py-3 text-center">
+                                <p id="routes-preview" class="text-lg font-bold text-gray-900">0</p>
+                                <p class="text-[11px] text-gray-500">Routes</p>
+                            </div>
+                            <div class="bg-gray-50 border rounded-xl px-4 py-3 text-center">
+                                <p id="match-preview" class="text-lg font-bold text-emerald-700">0%</p>
+                                <p class="text-[11px] text-gray-500">Complete</p>
+                            </div>
                         </div>
                     </div>
+                </section>
 
-                    <div id="panel-step-1" class="space-y-4 tab-panel">
+                <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                    <form id="route-profile-form" class="xl:col-span-2 bg-white rounded-2xl border shadow-sm p-5 sm:p-6 space-y-6">
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Route Name</label>
-                            <input type="text" placeholder="e.g., Ibadan to Oyo Markets" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-700 transition placeholder:text-gray-300">
+                            <h3 class="text-lg font-bold text-gray-900">Vehicle Details</h3>
+                            <p class="text-sm text-gray-500 mt-1">These values can later be used to hide loads that are too heavy or unsuitable.</p>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Vehicle Type</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <label class="block md:col-span-2">
+                                <span class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Vehicle Name or Model</span>
+                                <div class="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3">
+                                    <div class="relative">
+                                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-gray-400 text-sm"></i>
+                                        <input id="vehicle-model" list="vehicle-model-options" type="text" placeholder="e.g. Toyota Hilux, Suzuki Carry, Isuzu NQR" class="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-700">
+                                        <datalist id="vehicle-model-options"></datalist>
+                                    </div>
+                                    <button id="lookup-capacity-btn" type="button" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-100 px-5 py-3 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-wand-magic-sparkles"></i> Estimate Capacity
+                                    </button>
+                                </div>
+                                <p id="capacity-source" class="text-xs text-gray-500 mt-2">Type a common vehicle model and FarmRoute will suggest an estimated carrying limit. Drivers can still edit it.</p>
+                            </label>
+                            <label class="block">
+                                <span class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Vehicle Type</span>
+                                <select id="vehicle-type" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-700">
+                                    <option value="">Select vehicle type</option>
+                                    <option>Motorcycle/Tricycle</option>
+                                    <option>Mini Van</option>
+                                    <option>Pickup Truck</option>
+                                    <option>Medium Truck</option>
+                                    <option>Heavy Duty Truck</option>
+                                    <option>Refrigerated Truck</option>
+                                </select>
+                            </label>
+                            <label class="block">
+                                <span class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Maximum Capacity</span>
                                 <div class="relative">
-                                    <select class="w-full border border-gray-200 rounded-xl pl-4 pr-10 py-3 text-sm appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-700">
-                                        <option>Medium Truck</option>
-                                        <option>Heavy Duty Truck</option>
-                                        <option>Mini Van</option>
+                                    <input id="capacity-kg" type="number" min="1" placeholder="e.g. 2500" class="w-full border border-gray-200 rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-700">
+                                    <span class="absolute right-4 top-3.5 text-xs font-semibold text-gray-400">kg</span>
+                                </div>
+                            </label>
+                            <label class="block">
+                                <span class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Base Location</span>
+                                <input id="base-location" type="text" placeholder="e.g. Ibadan, Oyo" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-700">
+                            </label>
+                            <label class="block">
+                                <span class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Operating Radius</span>
+                                <div class="relative">
+                                    <input id="operating-radius" type="number" min="1" placeholder="e.g. 120" class="w-full border border-gray-200 rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-700">
+                                    <span class="absolute right-4 top-3.5 text-xs font-semibold text-gray-400">km</span>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="border-t pt-6">
+                            <h3 class="text-lg font-bold text-gray-900">Usual Routes</h3>
+                            <p class="text-sm text-gray-500 mt-1">Add regular pickup and delivery lanes. The AI can use these as route matching signals.</p>
+
+                            <div class="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-3 mt-4">
+                                <input id="route-from" type="text" placeholder="From e.g. Ibadan" class="border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-700">
+                                <input id="route-to" type="text" placeholder="To e.g. Lagos" class="border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-700">
+                                <button id="add-route-btn" type="button" class="bg-gray-900 hover:bg-gray-800 text-white px-5 py-3 rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-plus"></i> Add
+                                </button>
+                            </div>
+
+                            <div id="routes-list" class="mt-4 flex flex-wrap gap-2"></div>
+                        </div>
+
+                        <div class="border-t pt-6">
+                            <h3 class="text-lg font-bold text-gray-900">Load Preferences</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                <label class="block">
+                                    <span class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Preferred Cargo</span>
+                                    <select id="cargo-type" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-700">
+                                        <option value="">Any farm produce</option>
+                                        <option>Fresh vegetables</option>
+                                        <option>Grains and cereals</option>
+                                        <option>Root crops</option>
+                                        <option>Fruits</option>
+                                        <option>Livestock feed</option>
+                                        <option>Cold-chain produce</option>
                                     </select>
-                                    <i class="fa-solid fa-chevron-down absolute right-4 top-4 text-gray-400 text-xs pointer-events-none"></i>
+                                </label>
+                                <label class="block">
+                                    <span class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Minimum Payout</span>
+                                    <div class="relative">
+                                        <input id="minimum-payout" type="number" min="0" placeholder="e.g. 50000" class="w-full border border-gray-200 rounded-xl pl-12 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-700">
+                                        <span class="absolute left-4 top-3.5 text-xs font-semibold text-gray-400">NGN</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <label class="flex items-center gap-3 bg-gray-50 border rounded-xl p-3 text-sm font-medium">
+                                    <input id="accept-shared-loads" type="checkbox" class="w-4 h-4 accent-emerald-700">
+                                    Shared loads
+                                </label>
+                                <label class="flex items-center gap-3 bg-gray-50 border rounded-xl p-3 text-sm font-medium">
+                                    <input id="has-cooling" type="checkbox" class="w-4 h-4 accent-emerald-700">
+                                    Cooling available
+                                </label>
+                                <label class="flex items-center gap-3 bg-gray-50 border rounded-xl p-3 text-sm font-medium">
+                                    <input id="available-now" type="checkbox" class="w-4 h-4 accent-emerald-700">
+                                    Available now
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                            <button id="save-profile-btn" type="submit" class="bg-emerald-800 hover:bg-emerald-900 text-white font-semibold py-3 px-5 rounded-xl transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-floppy-disk"></i> Save Route Profile
+                            </button>
+                            <a href="available_loads.html" class="border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold py-3 px-5 rounded-xl transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-box-open"></i> View Loads
+                            </a>
+                        </div>
+
+                        <p id="save-status" class="text-sm font-medium hidden"></p>
+                    </form>
+
+                    <aside class="space-y-6">
+                        <div class="bg-white rounded-2xl border shadow-sm p-5 sm:p-6">
+                            <h3 class="text-lg font-bold text-gray-900">Matching Signals</h3>
+                            <div class="mt-4 space-y-3">
+                                <div class="flex items-start gap-3">
+                                    <span class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0"><i class="fa-solid fa-weight-hanging"></i></span>
+                                    <div>
+                                        <p class="font-semibold text-sm">Capacity filter</p>
+                                        <p class="text-xs text-gray-500">Orders above your vehicle limit can be deprioritized.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <span class="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center shrink-0"><i class="fa-solid fa-route"></i></span>
+                                    <div>
+                                        <p class="font-semibold text-sm">Route fit</p>
+                                        <p class="text-xs text-gray-500">Pickup and dropoff locations can match your usual corridors.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <span class="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0"><i class="fa-solid fa-snowflake"></i></span>
+                                    <div>
+                                        <p class="font-semibold text-sm">Cargo handling</p>
+                                        <p class="text-xs text-gray-500">Cooling and cargo type help rank perishable jobs.</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Loading Capacity</label>
-                                <div class="relative">
-                                    <input type="number" value="2000" class="w-full border border-gray-200 rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-700">
-                                    <span class="absolute right-4 top-3.5 text-xs font-medium text-gray-400">kg</span>
-                                </div>
-                            </div>
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Start Location</label>
-                            <div class="relative">
-                                <i class="fa-solid fa-location-crosshairs absolute left-4 top-3.5 text-gray-400 text-sm"></i>
-                                <input type="text" value="Ibadan, Oyo State" class="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-700">
+                        <div class="bg-white rounded-2xl border shadow-sm p-5 sm:p-6">
+                            <div class="flex items-center justify-between gap-3">
+                                <h3 class="text-lg font-bold text-gray-900">Possible Matches</h3>
+                                <span id="suggested-count" class="text-xs font-bold bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full">0</span>
+                            </div>
+                            <div id="suggested-loads" class="mt-4 space-y-3">
+                                <p class="text-sm text-gray-500 py-4 text-center">Save your route profile to start shaping matches.</p>
                             </div>
                         </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">End Location (Optional)</label>
-                            <div class="relative">
-                                <i class="fa-solid fa-map-pin absolute left-4 top-3.5 text-gray-300 text-sm"></i>
-                                <input type="text" placeholder="Add destination" class="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-700 placeholder:text-gray-300">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Departure Date</label>
-                                <input type="date" value="2026-06-30" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-700">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Departure Time (Optional)</label>
-                                <input type="time" value="08:00" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-700">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Route Preferences</label>
-                            <div class="grid grid-cols-3 gap-2">
-                                <button class="border-2 border-emerald-600 bg-emerald-50/40 rounded-xl p-3 text-center flex flex-col items-center justify-center group">
-                                    <i class="fa-regular fa-clock text-emerald-700 text-lg mb-1"></i>
-                                    <span class="text-xs font-bold text-emerald-950">Fastest Route</span>
-                                    <span class="text-[10px] text-emerald-600 mt-0.5">Save time</span>
-                                </button>
-                                <button class="border border-gray-200 hover:border-gray-300 rounded-xl p-3 text-center flex flex-col items-center justify-center transition">
-                                    <i class="fa-solid fa-route text-gray-400 text-md mb-1"></i>
-                                    <span class="text-xs font-semibold text-gray-700">Shortest Dist.</span>
-                                    <span class="text-[10px] text-gray-400 mt-0.5">Save distance</span>
-                                </button>
-                                <button class="border border-gray-200 hover:border-gray-300 rounded-xl p-3 text-center flex flex-col items-center justify-center transition">
-                                    <i class="fa-solid fa-leaf text-gray-400 text-md mb-1"></i>
-                                    <span class="text-xs font-semibold text-gray-700">Fuel Efficient</span>
-                                    <span class="text-[10px] text-gray-400 mt-0.5">Save fuel</span>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <button onclick="goToStep(2)" class="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-medium py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 mt-4 transition text-sm">
-                            Next: Add Stops <i class="fa-solid fa-arrow-right text-xs"></i>
-                        </button>
-                    </div>
-
-                    <div id="panel-step-2" class="space-y-4 tab-panel hidden">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Configure Delivery & Pickup Stops</label>
-                            <p class="text-xs text-gray-500 mb-4">Add your marketplace milestones, farm hubs, or custom stop points along your main route corridor.</p>
-                        </div>
-
-                        <div class="space-y-3">
-                            <div class="flex items-center gap-2 bg-gray-50 p-3 rounded-xl border border-gray-200/60">
-                                <span class="w-5 h-5 bg-emerald-700 text-white rounded-full text-[10px] flex items-center justify-center font-bold">1</span>
-                                <div class="flex-1 text-sm font-medium text-gray-800">Akinyele Market Hub</div>
-                                <span class="text-xs text-gray-400 font-medium">Pickup</span>
-                                <button class="text-gray-400 hover:text-rose-600 p-1"><i class="fa-regular fa-trash-can"></i></button>
-                            </div>
-                            <div class="flex items-center gap-2 bg-gray-50 p-3 rounded-xl border border-gray-200/60">
-                                <span class="w-5 h-5 bg-emerald-700 text-white rounded-full text-[10px] flex items-center justify-center font-bold">2</span>
-                                <div class="flex-1 text-sm font-medium text-gray-800">Oyo Town Center Market</div>
-                                <span class="text-xs text-gray-400 font-medium">Dropoff</span>
-                                <button class="text-gray-400 hover:text-rose-600 p-1"><i class="fa-regular fa-trash-can"></i></button>
-                            </div>
-                            <div class="flex items-center gap-2 bg-gray-50 p-3 rounded-xl border border-gray-200/60">
-                                <span class="w-5 h-5 bg-emerald-700 text-white rounded-full text-[10px] flex items-center justify-center font-bold">3</span>
-                                <div class="flex-1 text-sm font-medium text-gray-800">Saki Produce Terminal</div>
-                                <span class="text-xs text-emerald-600 font-semibold">Milestone</span>
-                                <button class="text-gray-400 hover:text-rose-600 p-1"><i class="fa-regular fa-trash-can"></i></button>
-                            </div>
-                        </div>
-
-                        <div class="pt-2">
-                            <div class="relative">
-                                <i class="fa-solid fa-plus absolute left-4 top-3.5 text-gray-400 text-sm"></i>
-                                <input type="text" placeholder="Enter next market location or stop address..." class="w-full border border-gray-200 rounded-xl pl-10 pr-24 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-700 transition">
-                                <button class="absolute right-2 top-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-xs px-3 py-1.5 rounded-lg transition">Add Stop</button>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3 pt-4">
-                            <button onclick="goToStep(1)" class="border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium py-3 px-4 rounded-xl text-sm flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-arrow-left text-xs"></i> Back
-                            </button>
-                            <button onclick="goToStep(3)" class="bg-emerald-800 hover:bg-emerald-900 text-white font-medium py-3 px-4 rounded-xl text-sm flex items-center justify-center gap-2">
-                                Review Route <i class="fa-solid fa-arrow-right text-xs"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div id="panel-step-3" class="space-y-4 tab-panel hidden">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Confirm Logistics Manifest</label>
-                            <p class="text-xs text-gray-500">Please verify the route variables below before dispatching details to your associated driver fleet network.</p>
-                        </div>
-
-                        <div class="border border-gray-100 rounded-2xl p-4 bg-gray-50/50 space-y-3.5 text-sm">
-                            <div class="flex items-start justify-between">
-                                <span class="text-gray-400 font-medium text-xs">ROUTE CORRIDOR</span>
-                                <div class="text-right font-bold text-gray-900">Ibadan <i class="fa-solid fa-arrow-right text-[10px] text-gray-400 mx-1"></i> Abeokuta</div>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-400 font-medium text-xs">FLEET ALLOCATION</span>
-                                <span class="font-semibold text-gray-800">Medium Truck (2000kg max)</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-400 font-medium text-xs">DEPARTURE WINDOW</span>
-                                <span class="font-semibold text-gray-800">June 30, 2026 @ 08:00 WAT</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-400 font-medium text-xs">TOTAL CALCULATED STOPS</span>
-                                <span class="font-bold text-emerald-700">3 Intermediate Drops</span>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Driver Dispatch Guidelines</label>
-                            <textarea placeholder="e.g. Ensure drop-offs at Saki Market occur prior to mid-day closures..." rows="3" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-700 resize-none transition"></textarea>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3 pt-2">
-                            <button onclick="goToStep(2)" class="border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium py-3 px-4 rounded-xl text-sm flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-arrow-left text-xs"></i> Back
-                            </button>
-                            <button onclick="alert('Route successfully dispatched!')" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-md shadow-emerald-700/10">
-                                <i class="fa-solid fa-paper-plane text-xs"></i> Confirm & Dispatch
-                            </button>
-                        </div>
-                    </div>
-
-                </div>
-
+                    </aside>
+                </section>
             </div>
-
-            <div class="xl:col-span-4 bg-gray-100 relative min-h-[350px] xl:min-h-0 flex flex-col justify-between p-4">
-                <div class="absolute inset-0 bg-slate-200 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:16px_16px] opacity-70"></div>
-                
-                <div class="relative z-10 flex justify-between items-start pointer-events-none">
-                    <button class="pointer-events-auto w-9 h-9 bg-white rounded-lg shadow-sm border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50">
-                        <i class="fa-solid fa-arrow-left text-sm"></i>
-                    </button>
-                </div>
-
-                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <svg class="w-full h-full absolute" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M 220 90 L 210 160 L 260 220 L 210 320 L 190 400" fill="none" stroke="#047857" stroke-width="4" stroke-linejoin="round"/>
-                    </svg>
-                    
-                    <div class="absolute top-[20%] left-[50%] flex flex-col items-center">
-                        <div class="w-7 h-7 bg-emerald-800 text-white rounded-full flex items-center justify-center text-xs font-bold border-2 border-white shadow-md">I</div>
-                        <span class="bg-white/90 text-[10px] font-bold px-1.5 py-0.5 rounded shadow mt-1">Ibadan</span>
-                    </div>
-                    <div class="absolute top-[40%] left-[62%] flex flex-col items-center">
-                        <div class="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-[10px] font-bold border-2 border-white shadow-sm">3</div>
-                        <span class="bg-white/90 text-[10px] font-bold px-1.5 py-0.5 rounded shadow mt-1">Oyo</span>
-                    </div>
-                    <div class="absolute bottom-[15%] left-[45%] flex flex-col items-center">
-                        <div class="w-7 h-7 bg-rose-500 text-white rounded-full flex items-center justify-center text-xs border-2 border-white shadow-md">
-                            <i class="fa-solid fa-location-dot"></i>
-                        </div>
-                        <span class="bg-white/90 text-[10px] font-bold px-1.5 py-0.5 rounded shadow mt-1">Abeokuta</span>
-                    </div>
-                </div>
-
-                <div class="relative z-10 flex flex-col gap-1 items-end self-end ml-auto pointer-events-auto">
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col">
-                        <button class="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 border-b border-gray-100 font-bold text-md">+</button>
-                        <button class="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 font-bold text-md">-</button>
-                    </div>
-                    <button class="w-9 h-9 bg-white rounded-lg shadow-sm border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 mt-1">
-                        <i class="fa-solid fa-location-arrow text-xs"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div class="xl:col-span-3 bg-white p-6 overflow-y-auto space-y-6">
-                
-                <div>
-                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Route Summary</h3>
-                    <div class="border border-gray-100 rounded-2xl p-4 bg-gray-50/50 space-y-3">
-                        <div class="flex justify-between items-center text-sm">
-                            <span class="text-gray-500 flex items-center gap-2"><i class="fa-solid fa-arrow-route-highway text-gray-400 text-xs"></i> Total Distance</span>
-                            <span class="font-bold text-gray-900">156 km</span>
-                        </div>
-                        <div class="flex justify-between items-center text-sm">
-                            <span class="text-gray-500 flex items-center gap-2"><i class="fa-regular fa-clock text-gray-400 text-xs"></i> Estimated Time</span>
-                            <span class="font-bold text-gray-900">2h 45m</span>
-                        </div>
-                        <div class="flex justify-between items-center text-sm">
-                            <span class="text-gray-500 flex items-center gap-2"><i class="fa-solid fa-code-branch text-gray-400 text-xs"></i> Stops</span>
-                            <span class="font-bold text-gray-900">3</span>
-                        </div>
-                        <div class="h-[1px] bg-gray-200/60 my-1"></div>
-                        <div class="flex justify-between items-center text-sm pt-1">
-                            <span class="text-gray-500 flex items-center gap-2"><i class="fa-solid fa-money-bill-wave text-emerald-600 text-xs"></i> Est. Fuel Cost</span>
-                            <span class="font-bold text-emerald-700">₦8,500 - ₦10,200</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Stops (3)</h3>
-                        <button class="text-xs font-bold text-emerald-700 hover:underline">Edit</button>
-                    </div>
-                    
-                    <div class="relative pl-6 space-y-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-[2px] before:bg-gray-100">
-                        
-                        <div class="relative">
-                            <div class="absolute -left-[21px] top-1 w-3.5 h-3.5 rounded-full bg-emerald-600 ring-4 ring-white z-10"></div>
-                            <div class="text-sm">
-                                <h4 class="font-bold text-gray-900">Ibadan, Oyo State</h4>
-                                <p class="text-[11px] text-emerald-600 font-semibold mt-0.5">Start Point</p>
-                            </div>
-                        </div>
-
-                        <div class="relative">
-                            <div class="absolute -left-[24px] top-0.5 w-5 h-5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold flex items-center justify-center ring-4 ring-white border border-emerald-200 z-10">1</div>
-                            <div class="text-sm">
-                                <h4 class="font-bold text-gray-900">Akinyele Market</h4>
-                                <p class="text-[11px] text-gray-400 mt-0.5">Oyo State • <span class="text-gray-500 font-medium">Est. Time: 45m</span></p>
-                            </div>
-                        </div>
-
-                        <div class="relative">
-                            <div class="absolute -left-[24px] top-0.5 w-5 h-5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold flex items-center justify-center ring-4 ring-white border border-emerald-200 z-10">2</div>
-                            <div class="text-sm">
-                                <h4 class="font-bold text-gray-900">Oyo Town Market</h4>
-                                <p class="text-[11px] text-gray-400 mt-0.5">Oyo State • <span class="text-gray-500 font-medium">Est. Time: 30m</span></p>
-                            </div>
-                        </div>
-
-                        <div class="relative">
-                            <div class="absolute -left-[24px] top-0.5 w-5 h-5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold flex items-center justify-center ring-4 ring-white border border-emerald-200 z-10">3</div>
-                            <div class="text-sm">
-                                <h4 class="font-bold text-gray-900">Saki Market</h4>
-                                <p class="text-[11px] text-gray-400 mt-0.5">Oyo State • <span class="text-gray-500 font-medium">Est. Time: 40m</span></p>
-                            </div>
-                        </div>
-
-                        <div class="relative">
-                            <div class="absolute -left-[21px] top-1 w-3.5 h-3.5 rounded-full bg-rose-500 ring-4 ring-white z-10"></div>
-                            <div class="text-sm">
-                                <h4 class="font-bold text-gray-900">Abeokuta Market</h4>
-                                <p class="text-[11px] text-rose-500 font-semibold mt-0.5">End Point</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
+        </main>
     </div>
-
 </div>
 
-<script>
-    function goToStep(stepNumber) {
-        // 1. Hide all active tab panels
-        document.querySelectorAll('.tab-panel').forEach(panel => {
-            panel.classList.add('hidden');
+<script type="module">
+    import { auth, db } from "../backend/firebaseConfig.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const LOGIN_PAGE_URL = "../login.html";
+    const loadingScreen = document.getElementById("loading-screen");
+    const form = document.getElementById("route-profile-form");
+    const saveStatus = document.getElementById("save-status");
+    const nameEl = document.getElementById("user-display-name");
+    const avatarEl = document.getElementById("user-avatar");
+    const routesList = document.getElementById("routes-list");
+    const routeFromInput = document.getElementById("route-from");
+    const routeToInput = document.getElementById("route-to");
+    const vehicleModelOptions = document.getElementById("vehicle-model-options");
+    const capacitySource = document.getElementById("capacity-source");
+    const capacityPreview = document.getElementById("capacity-preview");
+    const routesPreview = document.getElementById("routes-preview");
+    const matchPreview = document.getElementById("match-preview");
+    const suggestedLoads = document.getElementById("suggested-loads");
+    const suggestedCount = document.getElementById("suggested-count");
+
+    const fields = {
+        vehicleModel: document.getElementById("vehicle-model"),
+        vehicleType: document.getElementById("vehicle-type"),
+        capacityKg: document.getElementById("capacity-kg"),
+        baseLocation: document.getElementById("base-location"),
+        operatingRadiusKm: document.getElementById("operating-radius"),
+        cargoType: document.getElementById("cargo-type"),
+        minimumPayout: document.getElementById("minimum-payout"),
+        acceptSharedLoads: document.getElementById("accept-shared-loads"),
+        hasCooling: document.getElementById("has-cooling"),
+        availableNow: document.getElementById("available-now")
+    };
+
+    let currentUser = null;
+    let usualRoutes = [];
+
+    const vehicleCapacityCatalog = [
+        { model: "Bajaj RE / Keke Napep", type: "Motorcycle/Tricycle", capacityKg: 350 },
+        { model: "Piaggio Ape", type: "Motorcycle/Tricycle", capacityKg: 500 },
+        { model: "Suzuki Carry", type: "Mini Van", capacityKg: 750 },
+        { model: "Daihatsu Hijet", type: "Mini Van", capacityKg: 600 },
+        { model: "Toyota Hiace", type: "Mini Van", capacityKg: 1200 },
+        { model: "Nissan Caravan", type: "Mini Van", capacityKg: 1100 },
+        { model: "Toyota Hilux", type: "Pickup Truck", capacityKg: 1000 },
+        { model: "Ford Ranger", type: "Pickup Truck", capacityKg: 1000 },
+        { model: "Mitsubishi L200", type: "Pickup Truck", capacityKg: 1000 },
+        { model: "Nissan Navara", type: "Pickup Truck", capacityKg: 1000 },
+        { model: "Isuzu D-Max", type: "Pickup Truck", capacityKg: 1100 },
+        { model: "Hyundai H100", type: "Medium Truck", capacityKg: 1300 },
+        { model: "Kia K2700", type: "Medium Truck", capacityKg: 1500 },
+        { model: "Kia K3000", type: "Medium Truck", capacityKg: 1600 },
+        { model: "Mitsubishi Canter", type: "Medium Truck", capacityKg: 3000 },
+        { model: "Isuzu NHR", type: "Medium Truck", capacityKg: 2000 },
+        { model: "Isuzu NPR", type: "Medium Truck", capacityKg: 3500 },
+        { model: "Isuzu NQR", type: "Medium Truck", capacityKg: 5000 },
+        { model: "Toyota Dyna", type: "Medium Truck", capacityKg: 3000 },
+        { model: "Foton Aumark", type: "Medium Truck", capacityKg: 5000 },
+        { model: "Mercedes-Benz 814", type: "Heavy Duty Truck", capacityKg: 5000 },
+        { model: "Mercedes-Benz 1117", type: "Heavy Duty Truck", capacityKg: 7000 },
+        { model: "MAN Diesel Truck", type: "Heavy Duty Truck", capacityKg: 12000 },
+        { model: "Iveco Cargo", type: "Heavy Duty Truck", capacityKg: 10000 },
+        { model: "DAF CF", type: "Heavy Duty Truck", capacityKg: 18000 },
+        { model: "Volvo FH", type: "Heavy Duty Truck", capacityKg: 25000 },
+        { model: "Refrigerated Van", type: "Refrigerated Truck", capacityKg: 1200 },
+        { model: "Refrigerated Box Truck", type: "Refrigerated Truck", capacityKg: 3500 }
+    ];
+
+    function normalizeVehicleText(value) {
+        return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    }
+
+    function findVehicleCapacity(modelName) {
+        const normalized = normalizeVehicleText(modelName);
+        if (!normalized) return null;
+
+        return vehicleCapacityCatalog.find(item => normalizeVehicleText(item.model) === normalized)
+            || vehicleCapacityCatalog.find(item => {
+                const catalogName = normalizeVehicleText(item.model);
+                return normalized.includes(catalogName) || catalogName.includes(normalized);
+            })
+            || vehicleCapacityCatalog.find(item => {
+                const terms = normalizeVehicleText(item.model).split(" ").filter(term => term.length > 2);
+                return terms.length > 0 && terms.every(term => normalized.includes(term));
+            });
+    }
+
+    function applyVehicleCapacityEstimate() {
+        const match = findVehicleCapacity(fields.vehicleModel.value);
+        if (!match) {
+            capacitySource.textContent = "No estimate found for that model yet. Enter the carrying limit manually if you know it.";
+            capacitySource.className = "text-xs text-amber-600 mt-2";
+            return;
+        }
+
+        fields.vehicleModel.value = match.model;
+        fields.vehicleType.value = match.type;
+        fields.capacityKg.value = match.capacityKg;
+        capacitySource.textContent = `Estimated from FarmRoute's vehicle catalog: ${match.model} usually carries about ${match.capacityKg.toLocaleString()} kg. You can adjust it.`;
+        capacitySource.className = "text-xs text-emerald-700 mt-2";
+        updatePreview();
+    }
+
+    function hideLoading() {
+        loadingScreen?.classList.add("hidden");
+    }
+
+    function escapeHTML(text) {
+        const div = document.createElement("div");
+        div.textContent = text ?? "";
+        return div.innerHTML;
+    }
+
+    function routeText(route) {
+        return `${route.from} -> ${route.to}`;
+    }
+
+    function getProfilePayload() {
+        return {
+            vehicleModel: fields.vehicleModel.value.trim(),
+            vehicleType: fields.vehicleType.value,
+            capacityKg: Number(fields.capacityKg.value || 0),
+            baseLocation: fields.baseLocation.value.trim(),
+            operatingRadiusKm: Number(fields.operatingRadiusKm.value || 0),
+            usualRoutes,
+            cargoType: fields.cargoType.value,
+            minimumPayout: Number(fields.minimumPayout.value || 0),
+            acceptSharedLoads: fields.acceptSharedLoads.checked,
+            hasCooling: fields.hasCooling.checked,
+            availableNow: fields.availableNow.checked
+        };
+    }
+
+    function calculateCompleteness(profile = getProfilePayload()) {
+        const routes = Array.isArray(profile.usualRoutes) ? profile.usualRoutes : [];
+        const checks = [
+            profile.vehicleType,
+            profile.vehicleModel,
+            profile.capacityKg > 0,
+            profile.baseLocation,
+            profile.operatingRadiusKm > 0,
+            routes.length > 0,
+            profile.cargoType,
+            profile.minimumPayout > 0,
+            profile.availableNow || profile.acceptSharedLoads || profile.hasCooling
+        ];
+        return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+    }
+
+    function renderRoutes() {
+        routesPreview.textContent = usualRoutes.length;
+        if (usualRoutes.length === 0) {
+            routesList.innerHTML = `<p class="text-sm text-gray-500">No usual routes added yet.</p>`;
+            return;
+        }
+
+        routesList.innerHTML = usualRoutes.map((route, index) => `
+            <span class="inline-flex items-center gap-2 bg-emerald-50 text-emerald-800 border border-emerald-100 px-3 py-2 rounded-full text-sm font-semibold">
+                <i class="fa-solid fa-route text-xs"></i>
+                ${escapeHTML(routeText(route))}
+                <button type="button" data-remove-route="${index}" class="text-emerald-700 hover:text-red-600" aria-label="Remove route">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </span>
+        `).join("");
+    }
+
+    function updatePreview() {
+        const profile = getProfilePayload();
+        capacityPreview.textContent = profile.capacityKg > 0 ? `${profile.capacityKg.toLocaleString()} kg` : "0 kg";
+        routesPreview.textContent = usualRoutes.length;
+        matchPreview.textContent = `${calculateCompleteness(profile)}%`;
+    }
+
+    function fillForm(profile = {}) {
+        fields.vehicleType.value = profile.vehicleType || "";
+        fields.vehicleModel.value = profile.vehicleModel || "";
+        fields.capacityKg.value = profile.capacityKg || "";
+        fields.baseLocation.value = profile.baseLocation || "";
+        fields.operatingRadiusKm.value = profile.operatingRadiusKm || "";
+        fields.cargoType.value = profile.cargoType || "";
+        fields.minimumPayout.value = profile.minimumPayout || "";
+        fields.acceptSharedLoads.checked = Boolean(profile.acceptSharedLoads);
+        fields.hasCooling.checked = Boolean(profile.hasCooling);
+        fields.availableNow.checked = Boolean(profile.availableNow);
+        usualRoutes = Array.isArray(profile.usualRoutes) ? profile.usualRoutes : [];
+        renderRoutes();
+        updatePreview();
+    }
+
+    function showStatus(message, type = "success") {
+        saveStatus.textContent = message;
+        saveStatus.className = `text-sm font-semibold ${type === "success" ? "text-emerald-700" : "text-red-600"}`;
+        saveStatus.classList.remove("hidden");
+    }
+
+    function routeMatchesProfile(load, profile) {
+        const routes = Array.isArray(profile.usualRoutes) ? profile.usualRoutes : [];
+        const routeHaystack = [
+            load.routeFrom,
+            load.location,
+            load.pickupPoint,
+            load.routeTo,
+            load.destination,
+            load.dropoffPoint
+        ].filter(Boolean).join(" ").toLowerCase();
+
+        const capacityOk = !profile.capacityKg || Number(load.quantity || load.weight || 0) <= profile.capacityKg;
+        const payoutOk = !profile.minimumPayout || Number(load.totalValue || load.price || 0) >= profile.minimumPayout;
+        const baseOk = !profile.baseLocation || routeHaystack.includes(profile.baseLocation.toLowerCase().split(",")[0].trim());
+        const routeOk = routes.length === 0 || routes.some(route => {
+            return routeHaystack.includes(route.from.toLowerCase()) || routeHaystack.includes(route.to.toLowerCase());
         });
-        
-        // 2. Uncover the current target step panel
-        document.getElementById(`panel-step-${stepNumber}`).classList.remove('hidden');
-        
-        // 3. Cycle and refresh step counter visual states
-        for (let i = 1; i <= 3; i++) {
-            const indicator = document.getElementById(`step-indicator-${i}`);
-            const numCircle = indicator.querySelector('.step-num');
-            const txtLabel = indicator.querySelector('.step-text');
-            
-            if (i === stepNumber) {
-                // Active Step Stylings
-                numCircle.className = "step-num w-7 h-7 rounded-full bg-emerald-700 text-white text-xs font-bold flex items-center justify-center";
-                txtLabel.className = "step-text text-xs font-semibold text-emerald-700 mt-1";
-            } else if (i < stepNumber) {
-                // Already Completed Step Stylings
-                numCircle.className = "step-num w-7 h-7 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold flex items-center justify-center";
-                txtLabel.className = "step-text text-xs font-medium text-gray-500 mt-1";
-            } else {
-                // Upcoming Inactive Step Stylings
-                numCircle.className = "step-num w-7 h-7 rounded-full bg-gray-100 text-gray-400 text-xs font-bold flex items-center justify-center border border-gray-200";
-                txtLabel.className = "step-text text-xs font-medium text-gray-400 mt-1";
+
+        return capacityOk && payoutOk && (baseOk || routeOk);
+    }
+
+    async function renderSuggestedLoads(profile = getProfilePayload()) {
+        if (!currentUser || !suggestedLoads) return;
+        suggestedLoads.innerHTML = `<p class="text-sm text-gray-500 py-4 text-center">Checking available loads...</p>`;
+
+        try {
+            const loadsQuery = query(collection(db, "products"), where("status", "==", "Searching"));
+            const snapshot = await getDocs(loadsQuery);
+            const matches = [];
+            snapshot.forEach((loadDoc) => {
+                const load = { id: loadDoc.id, ...loadDoc.data() };
+                if (routeMatchesProfile(load, profile)) matches.push(load);
+            });
+
+            suggestedCount.textContent = matches.length;
+            if (matches.length === 0) {
+                suggestedLoads.innerHTML = `<p class="text-sm text-gray-500 py-4 text-center">No current loads match these preferences yet.</p>`;
+                return;
             }
+
+            suggestedLoads.innerHTML = matches.slice(0, 4).map(load => {
+                const routeFrom = load.routeFrom || load.location || "Pickup";
+                const routeTo = load.routeTo || load.destination || "Delivery";
+                const quantity = `${load.quantity || load.weight || 0} ${load.unit || "kg"}`;
+                const payout = Number(load.totalValue || load.price || 0).toLocaleString();
+                return `
+                    <a href="available_loads.html?loadId=${encodeURIComponent(load.id)}" class="block border rounded-xl p-3 hover:border-emerald-200 hover:bg-emerald-50/30 transition">
+                        <div class="flex justify-between gap-3">
+                            <div class="min-w-0">
+                                <h4 class="font-semibold text-sm text-gray-900 truncate">${escapeHTML(load.name || "Produce Load")}</h4>
+                                <p class="text-xs text-gray-500 mt-1 truncate">${escapeHTML(routeFrom)} -> ${escapeHTML(routeTo)}</p>
+                                <p class="text-xs text-gray-400 mt-1">${escapeHTML(quantity)}</p>
+                            </div>
+                            <span class="text-xs font-bold text-emerald-700 shrink-0">NGN ${payout}</span>
+                        </div>
+                    </a>
+                `;
+            }).join("");
+        } catch (err) {
+            console.error("Suggested load lookup failed:", err);
+            suggestedLoads.innerHTML = `<p class="text-sm text-red-500 py-4 text-center">Could not load suggestions.</p>`;
         }
     }
+
+    document.getElementById("add-route-btn")?.addEventListener("click", () => {
+        const from = routeFromInput.value.trim();
+        const to = routeToInput.value.trim();
+        if (!from || !to) return;
+
+        const exists = usualRoutes.some(route => route.from.toLowerCase() === from.toLowerCase() && route.to.toLowerCase() === to.toLowerCase());
+        if (!exists) usualRoutes.push({ from, to });
+        routeFromInput.value = "";
+        routeToInput.value = "";
+        renderRoutes();
+        updatePreview();
+    });
+
+    vehicleModelOptions.innerHTML = vehicleCapacityCatalog
+        .map(item => `<option value="${escapeHTML(item.model)}">${item.type} - ${item.capacityKg} kg</option>`)
+        .join("");
+
+    document.getElementById("lookup-capacity-btn")?.addEventListener("click", applyVehicleCapacityEstimate);
+    fields.vehicleModel?.addEventListener("change", () => {
+        if (!fields.capacityKg.value) applyVehicleCapacityEstimate();
+        updatePreview();
+    });
+
+    routesList?.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-remove-route]");
+        if (!button) return;
+        usualRoutes.splice(Number(button.dataset.removeRoute), 1);
+        renderRoutes();
+        updatePreview();
+    });
+
+    Object.values(fields).forEach(field => field?.addEventListener("input", updatePreview));
+    Object.values(fields).forEach(field => field?.addEventListener("change", updatePreview));
+
+    form?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!currentUser) return;
+
+        const profile = getProfilePayload();
+        try {
+            await setDoc(doc(db, "users", currentUser.uid), {
+                driverPreferences: profile,
+                vehicleModel: profile.vehicleModel,
+                vehicleType: profile.vehicleType,
+                capacityKg: profile.capacityKg,
+                baseLocation: profile.baseLocation,
+                operatingArea: profile.baseLocation,
+                routeFrom: profile.usualRoutes[0]?.from || "",
+                routeTo: profile.usualRoutes[0]?.to || "",
+                availableNow: profile.availableNow,
+                updatedAt: serverTimestamp()
+            }, { merge: true });
+
+            showStatus("Route profile saved. Future AI matching can now use these driver signals.");
+            renderSuggestedLoads(profile);
+        } catch (err) {
+            console.error("Route profile save failed:", err);
+            showStatus("Could not save route profile. Please try again.", "error");
+        }
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            window.location.href = LOGIN_PAGE_URL;
+            return;
+        }
+
+        currentUser = user;
+        nameEl.textContent = user.displayName || "FarmRoute Driver";
+        if (user.photoURL) {
+            avatarEl.src = user.photoURL;
+            avatarEl.classList.remove("hidden");
+        }
+
+        try {
+            const userSnap = await getDoc(doc(db, "users", user.uid));
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                nameEl.textContent = userData.name || userData.fullName || user.displayName || "FarmRoute Driver";
+                if (userData.profilePictureUrl || userData.photoURL) {
+                    avatarEl.src = userData.profilePictureUrl || userData.photoURL;
+                    avatarEl.classList.remove("hidden");
+                }
+                fillForm(userData.driverPreferences || userData);
+                renderSuggestedLoads(userData.driverPreferences || getProfilePayload());
+            } else {
+                fillForm();
+            }
+        } catch (err) {
+            console.error("Driver profile load failed:", err);
+            fillForm();
+        } finally {
+            hideLoading();
+        }
+    });
+
+    document.getElementById("logout-btn")?.addEventListener("click", () => {
+        signOut(auth).then(() => window.location.href = LOGIN_PAGE_URL);
+    });
 
     document.getElementById("side-btn")?.addEventListener("click", () => {
         document.getElementById("side-bar")?.classList.remove("max-md:hidden");
@@ -481,6 +648,18 @@
 
     document.getElementById("closeside-btn")?.addEventListener("click", () => {
         document.getElementById("side-bar")?.classList.add("max-md:hidden");
+    });
+
+    const goOnlineBtn = document.getElementById("go-online-btn");
+    const onlineLabel = document.getElementById("online-label");
+    let isOnline = false;
+    goOnlineBtn?.addEventListener("click", () => {
+        isOnline = !isOnline;
+        onlineLabel.textContent = isOnline ? "Online - Visible to Farmers" : "Go Online";
+        goOnlineBtn.classList.toggle("bg-gray-700", isOnline);
+        goOnlineBtn.classList.toggle("hover:bg-gray-600", isOnline);
+        goOnlineBtn.classList.toggle("bg-green-600", !isOnline);
+        goOnlineBtn.classList.toggle("hover:bg-green-500", !isOnline);
     });
 </script>
 

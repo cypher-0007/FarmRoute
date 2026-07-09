@@ -75,10 +75,10 @@
                     Profile
                 </a>
 
-                <a href="#"
+                <a href="route_planner.html"
                     class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-6">
-                    <i class="fa-solid fa-gear"></i>
-                    Settings
+                    <i class="fa-solid fa-route"></i>
+                    Route Profile
                 </a>
 
                 <div class="px-4 mb-4">
@@ -167,6 +167,22 @@
                     <option>June 20, 2025</option>
                 </select>
 
+            </div>
+
+            <div class="bg-white rounded-2xl border p-5 sm:p-6 shadow-sm mb-8 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-route text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-emerald-700 uppercase tracking-wider">Driver Matching Setup</p>
+                        <h3 class="text-xl font-bold text-gray-900 mt-1">Set your capacity and usual routes</h3>
+                        <p class="text-sm text-gray-500 mt-1 max-w-2xl">Complete your Route Profile so future AI matching can prioritize loads that fit your truck, preferred lanes, and cargo handling.</p>
+                    </div>
+                </div>
+                <a href="route_planner.html" class="inline-flex items-center justify-center gap-2 bg-emerald-800 hover:bg-emerald-900 text-white font-semibold px-5 py-3 rounded-xl transition shrink-0">
+                    Open Route Profile <i class="fa-solid fa-arrow-right text-xs"></i>
+                </a>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
@@ -640,6 +656,7 @@
     ];
 
     let driverAreaKeywords = [];
+    let driverMatchPreferences = {};
 
     function hideLoading() {
         if (loadingScreen) loadingScreen.classList.add("hidden");
@@ -667,15 +684,23 @@
     }
 
     function getDriverAreaKeywords(userData = {}) {
+        const preferences = userData.driverPreferences || {};
+        const usualRouteTerms = Array.isArray(preferences.usualRoutes)
+            ? preferences.usualRoutes.flatMap(route => [route.from, route.to])
+            : [];
+
         const fields = [
             userData.location,
             userData.city,
             userData.state,
             userData.address,
             userData.baseLocation,
+            preferences.baseLocation,
             userData.currentLocation,
             userData.routeFrom,
-            userData.operatingArea
+            userData.routeTo,
+            userData.operatingArea,
+            ...usualRouteTerms
         ];
 
         return fields
@@ -686,7 +711,6 @@
     }
 
     function loadMatchesDriverArea(load) {
-        if (driverAreaKeywords.length === 0) return true;
         const routeText = [
             load.routeFrom,
             load.location,
@@ -695,7 +719,17 @@
             load.destination,
             load.dropoffPoint
         ].filter(Boolean).join(" ").toLowerCase();
-        return driverAreaKeywords.some(area => routeText.includes(area));
+
+        const capacity = Number(driverMatchPreferences.capacityKg || 0);
+        const minPayout = Number(driverMatchPreferences.minimumPayout || 0);
+        const loadWeight = Number(load.quantity || load.weight || 0);
+        const payout = Number(load.totalValue || load.price || 0);
+
+        const capacityOk = !capacity || !loadWeight || loadWeight <= capacity;
+        const payoutOk = !minPayout || payout >= minPayout;
+        const routeOk = driverAreaKeywords.length === 0 || driverAreaKeywords.some(area => routeText.includes(area));
+
+        return capacityOk && payoutOk && routeOk;
     }
 
     function getProductImage(data) {
@@ -903,6 +937,7 @@
                     roleEl.innerText = userData.role;
 
                 updateHeaderAvatar(userData.profilePictureUrl);
+                driverMatchPreferences = userData.driverPreferences || {};
                 driverAreaKeywords = getDriverAreaKeywords(userData);
             }
 

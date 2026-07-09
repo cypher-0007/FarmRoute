@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmRoute - Driver Payments</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+<div id="loading-screen" class="fixed inset-0 bg-white z-50 flex items-center justify-center font-semibold text-gray-600">
+    <div class="text-center">
+        <i class="fa-solid fa-circle-notch fa-spin text-3xl text-green-700 mb-2"></i>
+        <p>Loading payment ledger...</p>
+    </div>
+</div>
+
+<div class="flex h-screen overflow-hidden">
+    <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col h-screen shrink-0 z-50 fixed md:static inset-y-0 left-0 max-md:hidden">
+        <div class="px-6 py-4 flex items-center justify-between border-b border-green-900/50">
+            <div class="flex items-center gap-2">
+                <img class="h-14 object-contain" src="../assets/logo3.png" alt="FarmRoute Logo">
+            </div>
+            <button id="closeside-btn" class="md:hidden text-2xl text-gray-300 hover:text-white p-2">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <nav class="flex-1 mt-5 overflow-y-auto px-4 space-y-1">
+            <a href="dashboard.html" class="flex items-center gap-3 hover:bg-green-900/50 hover:text-white text-gray-300 px-4 py-3 rounded-xl font-medium transition">
+                <i class="fa-solid fa-house text-lg w-6 text-center"></i> Dashboard
+            </a>
+            <a href="available_loads.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 hover:bg-green-900/50 hover:text-white transition">
+                <i class="fa-solid fa-boxes-stacked text-lg w-6 text-center"></i> Available Loads
+            </a>
+            <a href="active_trips.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 hover:bg-green-900/50 hover:text-white transition">
+                <i class="fa-solid fa-truck-fast text-lg w-6 text-center"></i> My Active Trips
+            </a>
+            <a href="messages.html" class="flex items-center justify-between px-4 py-3 rounded-xl font-medium text-gray-300 hover:bg-green-900/50 hover:text-white transition">
+                <div class="flex items-center gap-3">
+                    <i class="fa-regular fa-message text-lg w-6 text-center"></i> Messages
+                </div>
+                <span class="bg-emerald-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">3</span>
+            </a>
+            <a href="payments.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold bg-green-700 text-white transition">
+                <i class="fa-solid fa-wallet text-lg w-6 text-center"></i> Payments
+            </a>
+            <a href="profile.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 hover:bg-green-900/50 hover:text-white transition">
+                <i class="fa-regular fa-user text-lg w-6 text-center"></i> Profile
+            </a>
+            <a href="route_planner.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 hover:bg-green-900/50 hover:text-white transition">
+                <i class="fa-solid fa-route text-lg w-6 text-center"></i> Route Profile
+            </a>
+
+            <div class="pt-2">
+                <button id="go-online-btn" class="flex items-center justify-center gap-2 w-full bg-green-600 hover:bg-green-500 font-semibold py-3 px-4 rounded-xl transition duration-200 shadow-sm text-sm">
+                    <i class="fa-solid fa-circle text-xs"></i>
+                    <span id="online-label">Go Online</span>
+                </button>
+            </div>
+        </nav>
+
+        <div class="p-4 border-t border-green-900/50">
+            <button id="logout-btn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-green-900/50 text-gray-300 hover:text-white font-medium transition text-left">
+                <i class="fa-solid fa-right-from-bracket w-6 text-center"></i> Logout
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 min-w-0 flex flex-col overflow-hidden">
+        <header class="bg-white h-20 px-4 sm:px-8 flex items-center justify-between border-b shrink-0">
+            <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+                <button id="side-btn" class="text-xl text-gray-700 md:hidden p-2">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="min-w-0">
+                    <h1 class="text-xl sm:text-2xl font-bold text-gray-900 truncate">Payments</h1>
+                    <p class="text-xs sm:text-sm text-gray-500 hidden sm:block">Track escrow, completed payouts, and trip payment history.</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 shrink-0">
+                <img id="user-avatar" alt="Profile picture" class="w-10 h-10 rounded-full object-cover hidden">
+                <div class="hidden sm:block">
+                    <h4 id="user-display-name" class="font-semibold text-sm leading-tight">Loading...</h4>
+                    <p id="user-display-role" class="text-xs text-emerald-600 font-medium">Driver</p>
+                </div>
+            </div>
+        </header>
+
+        <section class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+            <div class="max-w-7xl mx-auto space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-2xl border p-5 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm font-semibold text-gray-500">Total Paid</p>
+                            <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center"><i class="fa-solid fa-sack-dollar"></i></span>
+                        </div>
+                        <h2 id="metric-total-paid" class="text-3xl font-black text-gray-900 mt-4">NGN 0</h2>
+                    </div>
+                    <div class="bg-white rounded-2xl border p-5 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm font-semibold text-gray-500">Pending Escrow</p>
+                            <span class="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center"><i class="fa-solid fa-clock-rotate-left"></i></span>
+                        </div>
+                        <h2 id="metric-pending-escrow" class="text-3xl font-black text-gray-900 mt-4">NGN 0</h2>
+                    </div>
+                    <div class="bg-white rounded-2xl border p-5 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm font-semibold text-gray-500">Awaiting Release</p>
+                            <span class="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center"><i class="fa-solid fa-shield-halved"></i></span>
+                        </div>
+                        <h2 id="metric-awaiting-release" class="text-3xl font-black text-gray-900 mt-4">0</h2>
+                    </div>
+                    <div class="bg-white rounded-2xl border p-5 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm font-semibold text-gray-500">Transactions</p>
+                            <span class="w-10 h-10 rounded-xl bg-gray-100 text-gray-700 flex items-center justify-center"><i class="fa-solid fa-receipt"></i></span>
+                        </div>
+                        <h2 id="metric-transaction-count" class="text-3xl font-black text-gray-900 mt-4">0</h2>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border p-4 shadow-sm flex flex-col lg:flex-row gap-3 lg:items-center justify-between">
+                    <div class="relative flex-1">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input id="payment-search" type="text" placeholder="Search crop, route, farmer, status, or reference..." class="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-700">
+                    </div>
+                    <select id="status-filter" class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-700">
+                        <option value="all">All transactions</option>
+                        <option value="paid">Paid</option>
+                        <option value="escrow">Pending escrow</option>
+                        <option value="awaiting">Awaiting release</option>
+                        <option value="transit">In progress</option>
+                    </select>
+                </div>
+
+                <div class="bg-white rounded-2xl border shadow-sm overflow-hidden">
+                    <div class="px-5 py-4 border-b flex items-center justify-between">
+                        <div>
+                            <h2 class="font-bold text-gray-900">Transaction History</h2>
+                            <p class="text-xs text-gray-500 mt-0.5">Live records from accepted trips and payment ledger entries.</p>
+                        </div>
+                    </div>
+                    <div id="payments-list" class="divide-y divide-gray-100">
+                        <div class="text-center py-12 text-gray-500">
+                            <i class="fa-solid fa-spinner fa-spin text-2xl text-emerald-600 mb-2"></i>
+                            <p class="text-sm">Loading transactions...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<div id="payment-drawer" class="fixed inset-0 z-50 hidden">
+    <div id="drawer-overlay" class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm"></div>
+    <aside class="absolute inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl border-l border-gray-100 flex flex-col">
+        <div class="p-5 border-b flex items-center justify-between">
+            <div>
+                <p id="drawer-ref" class="text-xs font-bold text-emerald-700 uppercase tracking-wider">FR-000000</p>
+                <h3 id="drawer-title" class="text-lg font-bold text-gray-900 mt-1">Transaction Details</h3>
+            </div>
+            <button id="drawer-close" class="w-9 h-9 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-600 transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div id="drawer-content" class="flex-1 overflow-y-auto p-5 space-y-4"></div>
+    </aside>
+</div>
+
+<script type="module">
+    import { auth, db } from "../backend/firebaseConfig.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { collection, doc, getDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const LOGIN_PAGE_URL = "../login.html";
+    const loadingScreen = document.getElementById("loading-screen");
+    const listEl = document.getElementById("payments-list");
+    const searchEl = document.getElementById("payment-search");
+    const statusFilter = document.getElementById("status-filter");
+    const nameEl = document.getElementById("user-display-name");
+    const roleEl = document.getElementById("user-display-role");
+    const avatarEl = document.getElementById("user-avatar");
+    const drawer = document.getElementById("payment-drawer");
+    const drawerContent = document.getElementById("drawer-content");
+    const drawerTitle = document.getElementById("drawer-title");
+    const drawerRef = document.getElementById("drawer-ref");
+
+    const metrics = {
+        paid: document.getElementById("metric-total-paid"),
+        escrow: document.getElementById("metric-pending-escrow"),
+        awaiting: document.getElementById("metric-awaiting-release"),
+        count: document.getElementById("metric-transaction-count")
+    };
+
+    const paymentRecords = new Map();
+    const tripRecords = new Map();
+    const farmerCache = new Map();
+    let currentRows = [];
+
+    function hideLoading() {
+        loadingScreen?.classList.add("hidden");
+    }
+
+    function escapeHTML(text) {
+        const div = document.createElement("div");
+        div.textContent = text ?? "";
+        return div.innerHTML;
+    }
+
+    function money(value) {
+        return `NGN ${Number(value || 0).toLocaleString()}`;
+    }
+
+    function dateToMillis(value) {
+        if (!value) return 0;
+        if (typeof value.toDate === "function") return value.toDate().getTime();
+        if (value.seconds) return value.seconds * 1000;
+        const parsed = new Date(value).getTime();
+        return Number.isNaN(parsed) ? 0 : parsed;
+    }
+
+    function readableDate(value) {
+        const millis = dateToMillis(value);
+        if (!millis) return "Not recorded";
+        return new Date(millis).toLocaleString([], { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" });
+    }
+
+    function normalizeStatus(rawStatus = "") {
+        const status = String(rawStatus || "").toLowerCase();
+        if (["paid", "released", "complete", "completed", "delivered"].some(item => status.includes(item))) return "paid";
+        if (status.includes("escrow")) return "escrow";
+        if (status.includes("driver delivered") || status.includes("awaiting")) return "awaiting";
+        if (status.includes("matched") || status.includes("transit") || status.includes("searching")) return "transit";
+        if (status.includes("cancel")) return "cancelled";
+        return "transit";
+    }
+
+    function statusMeta(status) {
+        const map = {
+            paid: { label: "Paid", className: "bg-emerald-50 text-emerald-700 border-emerald-100", icon: "fa-circle-check" },
+            escrow: { label: "Pending Escrow", className: "bg-amber-50 text-amber-700 border-amber-200", icon: "fa-lock" },
+            awaiting: { label: "Awaiting Release", className: "bg-blue-50 text-blue-700 border-blue-100", icon: "fa-shield-halved" },
+            transit: { label: "In Progress", className: "bg-gray-50 text-gray-700 border-gray-200", icon: "fa-truck-fast" },
+            cancelled: { label: "Cancelled", className: "bg-red-50 text-red-700 border-red-100", icon: "fa-ban" }
+        };
+        return map[status] || map.transit;
+    }
+
+    async function getFarmerName(farmerId) {
+        if (!farmerId) return "FarmRoute Farmer";
+        if (farmerCache.has(farmerId)) return farmerCache.get(farmerId);
+
+        try {
+            const userSnap = await getDoc(doc(db, "users", farmerId));
+            const data = userSnap.exists() ? userSnap.data() : {};
+            const name = data.name || data.fullName || data.displayName || "FarmRoute Farmer";
+            farmerCache.set(farmerId, name);
+            return name;
+        } catch (err) {
+            console.error("Farmer lookup failed:", err);
+            return "FarmRoute Farmer";
+        }
+    }
+
+    function buildLedgerRow(id, data) {
+        const status = normalizeStatus(data.status || data.paymentStatus);
+        return {
+            id: `payment-${id}`,
+            sourceId: id,
+            source: "Payment Ledger",
+            reference: data.reference || data.paymentGatewayRef || id.slice(0, 8).toUpperCase(),
+            title: data.productName || data.cropName || data.name || "Driver payout",
+            routeFrom: data.routeFrom || data.pickupPoint || "Pickup",
+            routeTo: data.routeTo || data.dropoffPoint || "Delivery",
+            amount: Number(data.amount || data.price || data.totalValue || 0),
+            status,
+            farmerName: data.farmerName || "FarmRoute Farmer",
+            createdAt: data.createdAt || data.updatedAt || data.paidAt,
+            rawStatus: data.status || data.paymentStatus || "escrow",
+            notes: data.notes || "Payment ledger record"
+        };
+    }
+
+    async function buildTripRow(id, data) {
+        const status = normalizeStatus(data.isEscrowReleased ? "paid" : data.status);
+        const farmerName = await getFarmerName(data.farmerId || data.userId);
+        return {
+            id: `trip-${id}`,
+            sourceId: id,
+            source: "Trip Record",
+            reference: data.paymentGatewayRef || `FR-${id.slice(0, 7).toUpperCase()}`,
+            title: data.name || data.productName || "Produce Load",
+            routeFrom: data.routeFrom || data.location || data.pickupPoint || "Pickup",
+            routeTo: data.routeTo || data.destination || data.dropoffPoint || "Delivery",
+            amount: Number(data.totalValue || data.price || 0),
+            status,
+            farmerName,
+            createdAt: data.fundsCapturedAt || data.updatedAt || data.createdAt,
+            rawStatus: data.status || "Matched",
+            quantity: `${data.quantity || data.weight || 0} ${data.unit || "kg"}`,
+            notes: data.isEscrowReleased ? "Escrow released by farmer" : "Trip payment derived from accepted load"
+        };
+    }
+
+    function mergeRows() {
+        const rowsByTripOrPayment = new Map();
+        paymentRecords.forEach((row) => rowsByTripOrPayment.set(row.sourceId, row));
+        tripRecords.forEach((row) => {
+            if (!rowsByTripOrPayment.has(row.sourceId)) rowsByTripOrPayment.set(row.sourceId, row);
+        });
+        currentRows = Array.from(rowsByTripOrPayment.values())
+            .sort((a, b) => dateToMillis(b.createdAt) - dateToMillis(a.createdAt));
+        render();
+    }
+
+    function updateMetrics(rows) {
+        const paidTotal = rows.filter(row => row.status === "paid").reduce((sum, row) => sum + row.amount, 0);
+        const escrowTotal = rows.filter(row => row.status === "escrow").reduce((sum, row) => sum + row.amount, 0);
+        const awaitingCount = rows.filter(row => row.status === "awaiting").length;
+        metrics.paid.textContent = money(paidTotal);
+        metrics.escrow.textContent = money(escrowTotal);
+        metrics.awaiting.textContent = awaitingCount;
+        metrics.count.textContent = rows.length;
+    }
+
+    function filteredRows() {
+        const term = searchEl.value.trim().toLowerCase();
+        const status = statusFilter.value;
+        return currentRows.filter(row => {
+            const text = [row.title, row.routeFrom, row.routeTo, row.farmerName, row.reference, row.rawStatus, row.source].join(" ").toLowerCase();
+            const termOk = !term || text.includes(term);
+            const statusOk = status === "all" || row.status === status;
+            return termOk && statusOk;
+        });
+    }
+
+    function render() {
+        updateMetrics(currentRows);
+        const rows = filteredRows();
+        if (rows.length === 0) {
+            listEl.innerHTML = `
+                <div class="text-center py-12 text-gray-500">
+                    <i class="fa-regular fa-folder-open text-3xl text-gray-300 mb-2"></i>
+                    <p class="text-sm">No matching payment records found.</p>
+                </div>
+            `;
+            return;
+        }
+
+        listEl.innerHTML = rows.map(row => {
+            const meta = statusMeta(row.status);
+            return `
+                <button data-payment-id="${escapeHTML(row.id)}" class="w-full text-left p-4 sm:p-5 hover:bg-gray-50 transition">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <div class="flex items-start gap-4 min-w-0">
+                            <span class="w-11 h-11 rounded-xl bg-gray-100 text-gray-700 flex items-center justify-center shrink-0">
+                                <i class="fa-solid ${meta.icon}"></i>
+                            </span>
+                            <div class="min-w-0">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <h3 class="font-bold text-gray-900 truncate">${escapeHTML(row.title)}</h3>
+                                    <span class="${meta.className} border text-[11px] font-bold px-2.5 py-1 rounded-full">${meta.label}</span>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-1 truncate">${escapeHTML(row.routeFrom)} -> ${escapeHTML(row.routeTo)}</p>
+                                <p class="text-xs text-gray-400 mt-1">Farmer: ${escapeHTML(row.farmerName)} · ${escapeHTML(row.source)} · ${escapeHTML(readableDate(row.createdAt))}</p>
+                            </div>
+                        </div>
+                        <div class="lg:text-right shrink-0">
+                            <p class="font-black text-xl text-gray-900">${money(row.amount)}</p>
+                            <p class="text-xs text-gray-400 mt-1">${escapeHTML(row.reference)}</p>
+                        </div>
+                    </div>
+                </button>
+            `;
+        }).join("");
+    }
+
+    function openDrawer(row) {
+        const meta = statusMeta(row.status);
+        drawerTitle.textContent = row.title;
+        drawerRef.textContent = row.reference;
+        drawerContent.innerHTML = `
+            <div class="rounded-2xl bg-green-950 text-white p-5">
+                <p class="text-xs text-green-100 uppercase tracking-wider">Transaction Amount</p>
+                <h2 class="text-3xl font-black mt-1">${money(row.amount)}</h2>
+                <span class="inline-flex mt-4 ${meta.className} border text-xs font-bold px-3 py-1 rounded-full">${meta.label}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+                <div class="bg-gray-50 border rounded-xl p-3">
+                    <p class="text-xs text-gray-400 font-bold uppercase">From</p>
+                    <p class="font-semibold text-gray-900 mt-1">${escapeHTML(row.routeFrom)}</p>
+                </div>
+                <div class="bg-gray-50 border rounded-xl p-3">
+                    <p class="text-xs text-gray-400 font-bold uppercase">To</p>
+                    <p class="font-semibold text-gray-900 mt-1">${escapeHTML(row.routeTo)}</p>
+                </div>
+            </div>
+            <div class="space-y-3 text-sm">
+                <div class="flex justify-between gap-4 border-b pb-3">
+                    <span class="text-gray-500">Farmer</span>
+                    <span class="font-semibold text-gray-900 text-right">${escapeHTML(row.farmerName)}</span>
+                </div>
+                <div class="flex justify-between gap-4 border-b pb-3">
+                    <span class="text-gray-500">Raw status</span>
+                    <span class="font-semibold text-gray-900 text-right">${escapeHTML(row.rawStatus)}</span>
+                </div>
+                <div class="flex justify-between gap-4 border-b pb-3">
+                    <span class="text-gray-500">Date</span>
+                    <span class="font-semibold text-gray-900 text-right">${escapeHTML(readableDate(row.createdAt))}</span>
+                </div>
+                <div class="flex justify-between gap-4">
+                    <span class="text-gray-500">Source</span>
+                    <span class="font-semibold text-gray-900 text-right">${escapeHTML(row.source)}</span>
+                </div>
+            </div>
+            <div class="bg-gray-50 border rounded-xl p-4 text-sm text-gray-600">${escapeHTML(row.notes)}</div>
+        `;
+        drawer.classList.remove("hidden");
+    }
+
+    function closeDrawer() {
+        drawer.classList.add("hidden");
+    }
+
+    listEl.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-payment-id]");
+        if (!button) return;
+        const row = currentRows.find(item => item.id === button.dataset.paymentId);
+        if (row) openDrawer(row);
+    });
+
+    searchEl.addEventListener("input", render);
+    statusFilter.addEventListener("change", render);
+    document.getElementById("drawer-close")?.addEventListener("click", closeDrawer);
+    document.getElementById("drawer-overlay")?.addEventListener("click", closeDrawer);
+
+    function updateHeaderAvatar(profilePictureUrl) {
+        if (!avatarEl || !profilePictureUrl) return;
+        avatarEl.src = profilePictureUrl;
+        avatarEl.classList.remove("hidden");
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            window.location.href = LOGIN_PAGE_URL;
+            return;
+        }
+
+        nameEl.textContent = user.displayName || "FarmRoute Driver";
+        roleEl.textContent = "Driver";
+        updateHeaderAvatar(user.photoURL);
+        hideLoading();
+
+        try {
+            const userSnap = await getDoc(doc(db, "users", user.uid));
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                nameEl.textContent = userData.name || userData.fullName || user.displayName || "FarmRoute Driver";
+                roleEl.textContent = userData.role || "Driver";
+                updateHeaderAvatar(userData.profilePictureUrl || userData.photoURL);
+            }
+        } catch (err) {
+            console.error("Driver profile lookup failed:", err);
+        }
+
+        const ledgerQuery = query(collection(db, "payments"), where("driverId", "==", user.uid));
+        onSnapshot(ledgerQuery, (snapshot) => {
+            paymentRecords.clear();
+            snapshot.forEach((paymentDoc) => {
+                paymentRecords.set(paymentDoc.id, buildLedgerRow(paymentDoc.id, paymentDoc.data()));
+            });
+            mergeRows();
+        }, (err) => {
+            console.error("Payment ledger listener failed:", err);
+            mergeRows();
+        });
+
+        const tripsQuery = query(collection(db, "products"), where("driverId", "==", user.uid));
+        onSnapshot(tripsQuery, async (snapshot) => {
+            tripRecords.clear();
+            const rows = await Promise.all(snapshot.docs.map(tripDoc => buildTripRow(tripDoc.id, tripDoc.data())));
+            rows.forEach(row => tripRecords.set(row.sourceId, row));
+            mergeRows();
+        }, (err) => {
+            console.error("Driver trips payment fallback listener failed:", err);
+            mergeRows();
+        });
+    });
+
+    document.getElementById("logout-btn")?.addEventListener("click", () => {
+        signOut(auth).then(() => window.location.href = LOGIN_PAGE_URL);
+    });
+
+    document.getElementById("side-btn")?.addEventListener("click", () => {
+        document.getElementById("side-bar")?.classList.remove("max-md:hidden");
+    });
+
+    document.getElementById("closeside-btn")?.addEventListener("click", () => {
+        document.getElementById("side-bar")?.classList.add("max-md:hidden");
+    });
+
+    const goOnlineBtn = document.getElementById("go-online-btn");
+    const onlineLabel = document.getElementById("online-label");
+    let isOnline = false;
+    goOnlineBtn?.addEventListener("click", () => {
+        isOnline = !isOnline;
+        onlineLabel.textContent = isOnline ? "Online - Visible to Farmers" : "Go Online";
+        goOnlineBtn.classList.toggle("bg-gray-700", isOnline);
+        goOnlineBtn.classList.toggle("hover:bg-gray-600", isOnline);
+        goOnlineBtn.classList.toggle("bg-green-600", !isOnline);
+        goOnlineBtn.classList.toggle("hover:bg-green-500", !isOnline);
+    });
+</script>
+
+</body>
+</html>
