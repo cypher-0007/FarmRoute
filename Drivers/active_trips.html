@@ -104,7 +104,7 @@
     <script type="module">
     import { auth, db } from "../backend/firebaseConfig.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { doc, getDoc, collection, query, where, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { doc, getDoc, collection, query, where, onSnapshot, updateDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const LOGIN_PAGE_URL = "../login.html";
 
@@ -185,7 +185,7 @@
                 ? trip.images[0]
                 : (trip.imageUrl || fallbackImages[imgKey] || fallbackImages.default);
 
-            const totalPayout = Number(trip.price || 0);
+            const totalPayout = Number(trip.totalValue || trip.price || 0);
             
             // Map the status style cleanly
             let displayStatus = trip.status;
@@ -326,7 +326,35 @@
 
         try {
             const tripRef = doc(db, "products", tripId);
-            await updateDoc(tripRef, { status: nextStatus });
+            const tripSnap = await getDoc(tripRef);
+            const tripData = tripSnap.exists() ? tripSnap.data() : {};
+            const currentUser = auth.currentUser;
+            const paymentStatus = nextStatus === "Driver Delivered" ? "awaiting" : "escrow";
+
+            await updateDoc(tripRef, {
+                status: nextStatus,
+                paymentStatus,
+                updatedAt: serverTimestamp(),
+                ...(nextStatus === "In Transit" ? { inTransitAt: serverTimestamp() } : {}),
+                ...(nextStatus === "Driver Delivered" ? { driverDeliveredAt: serverTimestamp() } : {})
+            });
+
+            if (currentUser) {
+                await setDoc(doc(db, "payments", tripId), {
+                    loadId: tripId,
+                    productId: tripId,
+                    driverId: currentUser.uid,
+                    farmerId: tripData.farmerId || tripData.userId || "",
+                    productName: tripData.name || tripData.productName || "Produce Load",
+                    routeFrom: tripData.routeFrom || tripData.location || tripData.pickupPoint || "Pickup",
+                    routeTo: tripData.routeTo || tripData.destination || tripData.dropoffPoint || "Delivery",
+                    amount: Number(tripData.totalValue || tripData.price || 0),
+                    status: paymentStatus,
+                    paymentStatus,
+                    reference: tripData.escrowPaymentRef || tripData.paymentGatewayRef || `FR-${tripId.slice(0, 8).toUpperCase()}`,
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
+            }
             console.log(`Trip ${tripId} state shifted successfully to: ${nextStatus}`);
         } catch (error) {
             console.error("Firestore progress updates structural exception caught: ", error);
@@ -351,5 +379,6 @@
             .catch((err) => console.error(err));
     });
 </script>
+<script type="module" src="driver_status.js"></script>
 </body>
 </html>

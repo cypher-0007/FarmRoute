@@ -362,11 +362,39 @@
                     throw new Error("Cannot trace listing back to an original owner ID profile record.");
                 }
 
+                const payoutAmount = Number(loadData.totalValue || loadData.price || 0);
+                const routeFrom = loadData.routeFrom || loadData.location || loadData.pickupPoint || "Pickup";
+                const routeTo = loadData.routeTo || loadData.destination || loadData.dropoffPoint || "Delivery";
+
                 // 1. Update listing document properties across Firestore channels
                 await updateDoc(loadDocRef, {
                     status: "Matched",
-                    driverId: currentUser.uid
+                    driverId: currentUser.uid,
+                    driverName: currentDriverName,
+                    matchedAt: serverTimestamp(),
+                    updatedAt: serverTimestamp(),
+                    paymentStatus: "escrow"
                 });
+
+                await setDoc(doc(db, "payments", loadId), {
+                    loadId,
+                    productId: loadId,
+                    driverId: currentUser.uid,
+                    driverName: currentDriverName,
+                    farmerId,
+                    farmerName,
+                    productName: loadData.name || loadData.productName || "Produce Load",
+                    routeFrom,
+                    routeTo,
+                    pickupPoint: loadData.pickupPoint || routeFrom,
+                    dropoffPoint: loadData.dropoffPoint || routeTo,
+                    amount: payoutAmount,
+                    status: "escrow",
+                    paymentStatus: "escrow",
+                    reference: loadData.escrowPaymentRef || `FR-${loadId.slice(0, 8).toUpperCase()}`,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
 
                 // 2. Fire the asynchronous chat document creator step immediately and catch returned reference
                 const activeChatRoomId = await autoCreateChatRoom(
@@ -412,5 +440,6 @@
                 .catch((err) => console.error(err));
         });
     </script>
+    <script type="module" src="driver_status.js"></script>
 </body>
 </html>
