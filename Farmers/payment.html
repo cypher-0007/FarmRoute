@@ -81,7 +81,7 @@
 
 <div class="flex h-screen overflow-hidden">
     <!-- SIDEBAR -->
-    <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col h-screen shrink-0 z-50 fixed md:static inset-y-0 left-0 max-md:hidden">
+    <aside id="side-bar" class="md:w-64 w-full bg-green-950 text-white flex flex-col h-screen shrink-0 z-50 fixed inset-y-0 left-0 max-md:hidden">
         <div class="px-6 py-4 flex items-center justify-between border-b border-green-900/50">
             <div class="flex items-center gap-2">
                 <img class="h-14 object-contain" src="../assets/logo3.png" alt="FarmRoute Logo">
@@ -128,7 +128,7 @@
     </aside>
 
     <!-- MAIN VIEWPORT -->
-    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+    <main class="flex-1 flex flex-col h-screen overflow-hidden md:ml-64 md:w-[calc(100%-16rem)]">
         <header class="bg-white h-20 px-8 flex items-center justify-between border-b border-gray-100 shrink-0">
             <div class="flex items-center gap-4">
                 <button id="side-btn" class="text-2xl text-gray-600 md:hidden p-2">
@@ -279,6 +279,51 @@
     import { doc, getDoc, updateDoc, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const LOGIN_PAGE_URL = "../login.html";
+
+    function showNoticeModal(message, title = "FarmRoute Notice", type = "error") {
+        const modal = document.createElement("div");
+        modal.className = "fixed inset-0 z-[80] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm";
+        modal.innerHTML = `
+            <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center shadow-xl">
+                <div class="w-14 h-14 rounded-full ${type === "error" ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"} mx-auto mb-4 flex items-center justify-center text-xl">
+                    <i class="fa-solid ${type === "error" ? "fa-circle-xmark" : "fa-circle-check"}"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">${title}</h3>
+                <p class="text-gray-500 text-sm mb-6 leading-relaxed"></p>
+                <button class="w-full py-3 px-4 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl font-semibold text-sm">Dismiss</button>
+            </div>`;
+        modal.querySelector("p").textContent = message;
+        modal.querySelector("button").addEventListener("click", () => modal.remove());
+        document.body.appendChild(modal);
+    }
+
+    function showConfirmModal(message, title = "Confirm Action") {
+        return new Promise((resolve) => {
+            const modal = document.createElement("div");
+            modal.className = "fixed inset-0 z-[80] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm";
+            modal.innerHTML = `
+                <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center shadow-xl">
+                    <div class="w-14 h-14 rounded-full bg-amber-100 text-amber-600 mx-auto mb-4 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">${title}</h3>
+                    <p class="text-gray-500 text-sm mb-6 leading-relaxed"></p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button data-result="cancel" class="py-3 px-4 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl font-semibold text-sm">Cancel</button>
+                        <button data-result="confirm" class="py-3 px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold text-sm">Confirm</button>
+                    </div>
+                </div>`;
+            modal.querySelector("p").textContent = message;
+            modal.addEventListener("click", (event) => {
+                const button = event.target.closest("[data-result]");
+                if (!button) return;
+                const confirmed = button.dataset.result === "confirm";
+                modal.remove();
+                resolve(confirmed);
+            });
+            document.body.appendChild(modal);
+        });
+    }
     const nameEl = document.getElementById("user-display-name");
     const roleEl = document.getElementById("user-display-role");
     const avatarEl = document.getElementById("user-avatar");
@@ -444,7 +489,7 @@
             closeModalDrawer();
         } catch (error) {
             console.error("Escrow execution failure:", error);
-            alert("Error altering database entry status.");
+            showNoticeModal("Error altering database entry status.");
         }
     }
 
@@ -538,11 +583,10 @@
                 ]
             },
             callback: function(transactionReceipt) {
-                console.log("Paystack capture authorized successfully. Ref:", transactionReceipt.reference);
                 finalizeDatabaseTransactionRecord(orderId, transactionReceipt.reference);
             },
             onClose: function() {
-                alert("Escrow confirmation aborted. Checkout gateway closed without balance clearing.");
+                showNoticeModal("Escrow confirmation aborted. Checkout gateway closed without balance clearing.");
             }
         };
 
@@ -550,7 +594,6 @@
         if (driverSubaccountCode) {
             paystackConfig.subaccount = driverSubaccountCode;
             paystackConfig.bearer = "account"; // Platform absorbs gateway fees
-            console.log(`Routing split allocation straight to: ${driverSubaccountCode}`);
         }
 
         const paymentHandler = PaystackPop.setup(paystackConfig);
@@ -568,15 +611,15 @@
                 fundsCapturedAt: new Date()
             });
             closeModalDrawer();
-            alert("Success! Transaction fully cleared and signed off on.");
+            showNoticeModal("Success! Transaction fully cleared and signed off.", "Payment Released", "success");
         } catch (databaseWriteError) {
             console.error("Firestore balance lifecycle settlement mutation exception structural context error:", databaseWriteError);
-            alert("Payment recorded, but database updates failed. Please notify Support with reference ID.");
+            showNoticeModal("Payment recorded, but database updates failed. Please notify Support with reference ID.");
         }
     }
 
-    actionCancelBtn.addEventListener("click", () => {
-        if(confirm("Authorize immediate cancellation?")) {
+    actionCancelBtn.addEventListener("click", async () => {
+        if (await showConfirmModal("Authorize immediate cancellation?")) {
             updateEscrowStatus("Cancelled");
         }
     });

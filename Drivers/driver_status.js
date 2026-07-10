@@ -5,6 +5,23 @@ import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from "https://www.gst
 const ONLINE_TEXT = "Online - Visible to Farmers";
 const OFFLINE_TEXT = "Go Online";
 
+function showNoticeModal(message) {
+    const modal = document.createElement("div");
+    modal.className = "fixed inset-0 z-[80] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm";
+    modal.innerHTML = `
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center shadow-xl">
+            <div class="w-14 h-14 rounded-full bg-red-100 text-red-600 mx-auto mb-4 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-circle-xmark"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Availability Update Failed</h3>
+            <p class="text-gray-500 text-sm mb-6 leading-relaxed"></p>
+            <button class="w-full py-3 px-4 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl font-semibold text-sm">Dismiss</button>
+        </div>`;
+    modal.querySelector("p").textContent = message;
+    modal.querySelector("button").addEventListener("click", () => modal.remove());
+    document.body.appendChild(modal);
+}
+
 function findOnlineButton() {
     return document.getElementById("go-online-btn") || document.getElementById("online-toggle-btn");
 }
@@ -72,7 +89,7 @@ export function syncDriverOnlineToggle() {
         } catch (err) {
             console.error("Driver availability save failed:", err);
             setButtonVisual(button, !nextOnlineState);
-            alert("Could not update your driver availability. Please try again.");
+            showNoticeModal("Could not update your driver availability. Please try again.");
         }
     });
 }

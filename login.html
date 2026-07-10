@@ -327,6 +327,32 @@
 
         let isCreatingAccount = false;
 
+        function showAppModal(message, title = "FarmRoute", type = "error") {
+            let modal = document.getElementById("app-modal");
+            if (!modal) {
+                modal = document.createElement("div");
+                modal.id = "app-modal";
+                modal.className = "fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4";
+                modal.innerHTML = `
+                    <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-xl">
+                        <div id="app-modal-icon" class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full text-xl"></div>
+                        <h3 id="app-modal-title" class="mb-2 text-lg font-bold text-gray-900"></h3>
+                        <p id="app-modal-message" class="mb-6 text-sm leading-relaxed text-gray-500"></p>
+                        <button id="app-modal-close" class="w-full rounded-xl bg-emerald-800 px-4 py-3 text-sm font-semibold text-white">Dismiss</button>
+                    </div>`;
+                document.body.appendChild(modal);
+                modal.querySelector("#app-modal-close").addEventListener("click", () => modal.classList.add("hidden"));
+            }
+
+            const icon = modal.querySelector("#app-modal-icon");
+            icon.className = `mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full text-xl ${type === "error" ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"}`;
+            icon.innerHTML = `<i class="fa-solid ${type === "error" ? "fa-circle-xmark" : "fa-circle-check"}"></i>`;
+            modal.querySelector("#app-modal-title").textContent = title;
+            modal.querySelector("#app-modal-message").textContent = message;
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+        }
+
         const getRedirectUrl = (role) => {
             const isGitHubPages = window.location.hostname.includes("github.io");
             const repoPath = isGitHubPages ? `/${window.location.pathname.split('/')[1]}` : "";
@@ -353,15 +379,15 @@
                         window.location.href = targetUrl;
                     } else {
                         console.error("Unknown user role profile found:", role);
-                        alert("Error: Configured system role is invalid.");
+                        showAppModal("Configured system role is invalid.");
                     }
                 } else {
                     console.error("No Firestore document matching current UID found.");
-                    alert("Profile setup missing. Please sign up or contact administrator.");
+                    showAppModal("Profile setup missing. Please sign up or contact administrator.");
                 }
             } catch (error) {
                 console.error("Error reading database configuration setup:", error);
-                alert("Failed to retrieve your access credentials configuration permissions.");
+                showAppModal("Failed to retrieve your access credentials configuration permissions.");
             }
         }
 
@@ -405,7 +431,7 @@
             } catch (error) {
                 isCreatingAccount = false; 
                 console.error("Signup error:", error);
-                alert(`Signup Failed: ${error.message}`);
+                showAppModal(error.message, "Signup Failed");
             }
         });
 
@@ -419,7 +445,7 @@
                 await signInWithEmailAndPassword(auth, email, password);
             } catch (error) {
                 console.error("Login error:", error);
-                alert(`Login Failed: ${error.message}`);
+                showAppModal(error.message, "Login Failed");
             }
         });
     </script>
