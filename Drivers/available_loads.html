@@ -37,7 +37,7 @@
                     <div class="flex items-center gap-3">
                         <i class="fa-regular fa-message"></i> Messages
                     </div>
-                    <span class="bg-green-500 text-xs px-2 py-1 rounded-full text-white">3</span>
+                    <span id="message-notification-badge" class="bg-green-500 text-xs px-2 py-1 rounded-full text-white hidden">0</span>
                 </a>
                 <a href="payments.html" class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 text-gray-300 hover:text-white mb-2">
                     <i class="fa-solid fa-wallet"></i> Payments
@@ -175,6 +175,36 @@
             default: "https://images.unsplash.com/photo-1595855759920-86582396756a?w=200"
         };
 
+        const messageBadgeEl = document.getElementById("message-notification-badge");
+
+        function getMessageNotificationCount(snapshot, userId) {
+            let unreadTotal = 0;
+            let hasUnreadData = false;
+            snapshot.forEach((roomSnap) => {
+                const room = roomSnap.data();
+                if (room.unreadCounts || room.unreadBy || room.unread) hasUnreadData = true;
+                const countMap = room.unreadCounts || room.unreadBy || room.unread || {};
+                const count = Number(countMap[userId] || 0);
+                if (count > 0) unreadTotal += count;
+            });
+            return hasUnreadData ? unreadTotal : snapshot.size;
+        }
+
+        function updateMessageBadge(count) {
+            if (!messageBadgeEl) return;
+            if (count > 0) {
+                messageBadgeEl.textContent = count > 99 ? "99+" : String(count);
+                messageBadgeEl.classList.remove("hidden");
+            } else {
+                messageBadgeEl.classList.add("hidden");
+            }
+        }
+
+        function listenForMessageNotifications(userId) {
+            const chatsQuery = query(collection(db, "chats"), where("participants", "array-contains", userId));
+            onSnapshot(chatsQuery, (snapshot) => updateMessageBadge(getMessageNotificationCount(snapshot, userId)), () => updateMessageBadge(0));
+        }
+
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 window.location.href = LOGIN_PAGE_URL;
@@ -185,6 +215,7 @@
             nameEl.innerText = currentDriverName;
             roleEl.innerText = "Driver";
             updateHeaderAvatar(user.photoURL);
+            listenForMessageNotifications(user.uid);
 
             try {
                 const userDocSnap = await getDoc(doc(db, "users", user.uid));
@@ -368,6 +399,7 @@
 
         async function handleAcceptLoad(loadId) {
             const currentUser = auth.currentUser;
+            let listingClaimed = false;
             
             if (!currentUser) {
                 showNoticeModal("You must be logged in to accept this load.");
@@ -414,6 +446,7 @@
                     updatedAt: serverTimestamp(),
                     paymentStatus: "escrow"
                 });
+                listingClaimed = true;
 
                 await setDoc(doc(db, "payments", loadId), {
                     loadId,
@@ -451,6 +484,22 @@
 
             } catch (error) {
                 console.error("Failed to accept load configuration assignment:", error);
+
+                // The product update above is the actual claim. Payment and chat setup are
+                // follow-up records, so their failure must not report a successfully claimed
+                // load as unavailable.
+                if (listingClaimed) {
+                    showNoticeModal(
+                        "Load accepted successfully. It is now in your active trips.",
+                        "Load Accepted",
+                        "success"
+                    );
+                    setTimeout(() => {
+                        window.location.href = "active_trips.html";
+                    }, 700);
+                    return;
+                }
+
                 showNoticeModal("Could not claim this load. It may have been modified or accepted by another transport driver.");
                 
                 if (targetButton) {

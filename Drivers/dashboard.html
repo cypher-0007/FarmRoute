@@ -58,8 +58,8 @@
                         Messages
                     </div>
 
-                    <span class="bg-green-500 text-xs px-2 py-1 rounded-full">
-                        3
+                    <span id="message-notification-badge" class="bg-green-500 text-xs px-2 py-1 rounded-full hidden">
+                        0
                     </span>
                 </a>
 
@@ -117,12 +117,13 @@
 
             <div class="ml-auto flex items-center gap-4 sm:gap-8">
 
-                <button class="relative text-xl">
+                <button class="relative text-xl" onclick="window.location.href='messages.html'">
                     <i class="fa-regular fa-message"></i>
 
                     <span
-                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                        5
+                        id="header-message-notification-badge"
+                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center hidden">
+                        0
                     </span>
                 </button>
 
@@ -615,7 +616,7 @@
         onSnapshot
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const LOGIN_PAGE_URL = "/login.html";
+    const LOGIN_PAGE_URL = "../login.html";
 
     const nameEl = document.getElementById("user-display-name");
     const roleEl = document.getElementById("user-display-role");
@@ -928,6 +929,41 @@
         }).join("");
     }
 
+    const messageBadgeEl = document.getElementById("message-notification-badge");
+    const headerMessageBadgeEl = document.getElementById("header-message-notification-badge");
+
+    function getMessageNotificationCount(snapshot, userId) {
+        let unreadTotal = 0;
+        let hasUnreadData = false;
+        snapshot.forEach((roomSnap) => {
+            const room = roomSnap.data();
+            if (room.unreadCounts || room.unreadBy || room.unread) hasUnreadData = true;
+            const countMap = room.unreadCounts || room.unreadBy || room.unread || {};
+            const count = Number(countMap[userId] || 0);
+            if (count > 0) unreadTotal += count;
+        });
+        return hasUnreadData ? unreadTotal : snapshot.size;
+    }
+
+    function updateMessageBadge(count) {
+        [messageBadgeEl, headerMessageBadgeEl].forEach((badge) => {
+            if (!badge) return;
+            if (count > 0) {
+                badge.textContent = count > 99 ? "99+" : String(count);
+                badge.classList.remove("hidden");
+                if (badge === headerMessageBadgeEl) badge.classList.add("flex");
+            } else {
+                badge.classList.add("hidden");
+                if (badge === headerMessageBadgeEl) badge.classList.remove("flex");
+            }
+        });
+    }
+
+    function listenForMessageNotifications(userId) {
+        const chatsQuery = query(collection(db, "chats"), where("participants", "array-contains", userId));
+        onSnapshot(chatsQuery, (snapshot) => updateMessageBadge(getMessageNotificationCount(snapshot, userId)), () => updateMessageBadge(0));
+    }
+
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
             window.location.href = LOGIN_PAGE_URL;
@@ -938,6 +974,7 @@
         roleEl.innerText = "Driver";
         updateHeaderAvatar(user.photoURL);
         hideLoading();
+        listenForMessageNotifications(user.uid);
 
         try {
 

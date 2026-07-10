@@ -48,8 +48,8 @@
                         Messages
                     </div>
 
-                    <span class="bg-emerald-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
-                        3
+                    <span id="message-notification-badge" class="bg-emerald-500 text-white text-xs px-2 py-0.5 rounded-full font-bold hidden">
+                        0
                     </span>
                 </a>
 
@@ -366,6 +366,36 @@
             signOut(auth).then(() => window.location.href = "../login.html");
         });
 
+        const messageBadgeEl = document.getElementById("message-notification-badge");
+
+        function getMessageNotificationCount(snapshot, userId) {
+            let unreadTotal = 0;
+            let hasUnreadData = false;
+            snapshot.forEach((roomSnap) => {
+                const room = roomSnap.data();
+                if (room.unreadCounts || room.unreadBy || room.unread) hasUnreadData = true;
+                const countMap = room.unreadCounts || room.unreadBy || room.unread || {};
+                const count = Number(countMap[userId] || 0);
+                if (count > 0) unreadTotal += count;
+            });
+            return hasUnreadData ? unreadTotal : snapshot.size;
+        }
+
+        function updateMessageBadge(count) {
+            if (!messageBadgeEl) return;
+            if (count > 0) {
+                messageBadgeEl.textContent = count > 99 ? "99+" : String(count);
+                messageBadgeEl.classList.remove("hidden");
+            } else {
+                messageBadgeEl.classList.add("hidden");
+            }
+        }
+
+        function listenForMessageNotifications(userId) {
+            const chatsQuery = query(collection(db, "chats"), where("participants", "array-contains", userId));
+            onSnapshot(chatsQuery, (snapshot) => updateMessageBadge(getMessageNotificationCount(snapshot, userId)), () => updateMessageBadge(0));
+        }
+
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 window.location.href = "../login.html";
@@ -376,6 +406,7 @@
             const userTitle = user.displayName || "FarmRoute Driver";
             if (nameEl) nameEl.innerText = userTitle;
             updateHeaderAvatar(user.photoURL || "", userTitle);
+            listenForMessageNotifications(user.uid);
 
             try {
                 const userDocSnap = await getDoc(doc(db, "users", user.uid));

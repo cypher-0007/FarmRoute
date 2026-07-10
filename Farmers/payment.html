@@ -681,9 +681,14 @@ onAuthStateChanged(auth, async (user) => {
             const unit = data.unit || "kg";
             const routeFrom = data.routeFrom || data.location || "Farm Station";
             const routeTo = data.routeTo || "Hub";
-            const price = data.price
-                ? Number(data.price).toLocaleString()
-                : "0";
+            // `price` is the rate per unit. Payments must use the full listing value.
+            const quantity = Number(data.quantity || data.weight || 0);
+            const unitPrice = Number(data.price || 0);
+            const storedTotalValue = Number(data.totalValue);
+            const paymentAmount = Number.isFinite(storedTotalValue) && storedTotalValue > 0
+                ? storedTotalValue
+                : quantity * unitPrice;
+            const price = paymentAmount.toLocaleString();
 
             let rawStatus = data.status || "Matched";
 

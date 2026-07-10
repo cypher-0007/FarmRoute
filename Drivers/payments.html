@@ -41,7 +41,7 @@
                 <div class="flex items-center gap-3">
                     <i class="fa-regular fa-message text-lg w-6 text-center"></i> Messages
                 </div>
-                <span class="bg-emerald-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">3</span>
+                <span id="message-notification-badge" class="bg-emerald-500 text-white text-xs px-2 py-0.5 rounded-full font-bold hidden">0</span>
             </a>
             <a href="payments.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold bg-green-700 text-white transition">
                 <i class="fa-solid fa-wallet text-lg w-6 text-center"></i> Payments
@@ -444,6 +444,36 @@
         avatarEl.classList.remove("hidden");
     }
 
+    const messageBadgeEl = document.getElementById("message-notification-badge");
+
+    function getMessageNotificationCount(snapshot, userId) {
+        let unreadTotal = 0;
+        let hasUnreadData = false;
+        snapshot.forEach((roomSnap) => {
+            const room = roomSnap.data();
+            if (room.unreadCounts || room.unreadBy || room.unread) hasUnreadData = true;
+            const countMap = room.unreadCounts || room.unreadBy || room.unread || {};
+            const count = Number(countMap[userId] || 0);
+            if (count > 0) unreadTotal += count;
+        });
+        return hasUnreadData ? unreadTotal : snapshot.size;
+    }
+
+    function updateMessageBadge(count) {
+        if (!messageBadgeEl) return;
+        if (count > 0) {
+            messageBadgeEl.textContent = count > 99 ? "99+" : String(count);
+            messageBadgeEl.classList.remove("hidden");
+        } else {
+            messageBadgeEl.classList.add("hidden");
+        }
+    }
+
+    function listenForMessageNotifications(userId) {
+        const chatsQuery = query(collection(db, "chats"), where("participants", "array-contains", userId));
+        onSnapshot(chatsQuery, (snapshot) => updateMessageBadge(getMessageNotificationCount(snapshot, userId)), () => updateMessageBadge(0));
+    }
+
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
             window.location.href = LOGIN_PAGE_URL;
@@ -454,6 +484,7 @@
         roleEl.textContent = "Driver";
         updateHeaderAvatar(user.photoURL);
         hideLoading();
+        listenForMessageNotifications(user.uid);
 
         try {
             const userSnap = await getDoc(doc(db, "users", user.uid));
