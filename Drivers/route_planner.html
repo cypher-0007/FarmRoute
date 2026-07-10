@@ -499,6 +499,15 @@
         return capacityOk && payoutOk && (baseOk || routeOk);
     }
 
+    function normalizeStatus(status) {
+        return String(status || "").trim().toLowerCase();
+    }
+
+    function isOpenLoad(load) {
+        const status = normalizeStatus(load.status);
+        return !status || ["searching", "available", "open"].includes(status);
+    }
+
     async function renderSuggestedLoads(profile = getProfilePayload()) {
         if (!currentUser || !suggestedLoads) return;
         suggestedLoads.innerHTML = `<p class="text-sm text-gray-500 py-4 text-center">Checking available loads...</p>`;
@@ -509,7 +518,7 @@
             const matches = [];
             snapshot.forEach((loadDoc) => {
                 const load = { id: loadDoc.id, ...loadDoc.data() };
-                if (routeMatchesProfile(load, profile)) matches.push(load);
+                if (isOpenLoad(load) && routeMatchesProfile(load, profile)) matches.push(load);
             });
 
             suggestedCount.textContent = matches.length;

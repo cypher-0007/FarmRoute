@@ -732,6 +732,23 @@
         return capacityOk && payoutOk && routeOk;
     }
 
+    function normalizeStatus(status) {
+        return String(status || "").trim().toLowerCase();
+    }
+
+    function isOpenLoad(load) {
+        const status = normalizeStatus(load.status);
+        return !status || ["searching", "available", "open"].includes(status);
+    }
+
+    function isActiveTrip(trip) {
+        return ["matched", "in transit", "driver delivered"].includes(normalizeStatus(trip.status));
+    }
+
+    function isCompletedTrip(trip) {
+        return normalizeStatus(trip.status) === "delivered";
+    }
+
     function getProductImage(data) {
         const directImage = Array.isArray(data.images) && data.images.length > 0 ? data.images[0] : data.imageUrl;
         if (directImage) return directImage;
@@ -956,8 +973,8 @@
                 snapshot.forEach((tripDoc) => {
                     const trip = { id: tripDoc.id, ...tripDoc.data() };
                     trips.push(trip);
-                    if (["Matched", "In Transit", "Driver Delivered"].includes(trip.status)) activeTrips++;
-                    if (trip.status === "Delivered") {
+                    if (isActiveTrip(trip)) activeTrips++;
+                    if (isCompletedTrip(trip)) {
                         completedTrips++;
                         earnings += Number(trip.totalValue || trip.price || 0);
                     }
@@ -1015,7 +1032,7 @@
             */
 
             // ================= AVAILABLE LOADS =================
-            // Uses the same status as available_loads.html
+            // Keep the query narrow so Firestore rules can authorize marketplace reads.
             const availableLoadsQuery = query(
                 collection(db, "products"),
                 where("status", "==", "Searching")
@@ -1024,7 +1041,8 @@
             onSnapshot(availableLoadsQuery, (snapshot) => {
                 const loads = [];
                 snapshot.forEach((loadDoc) => {
-                    loads.push({ id: loadDoc.id, ...loadDoc.data() });
+                    const load = { id: loadDoc.id, ...loadDoc.data() };
+                    if (isOpenLoad(load)) loads.push(load);
                 });
                 const nearbyLoads = loads.filter(loadMatchesDriverArea);
                 availLoadsEl.innerText = nearbyLoads.length;

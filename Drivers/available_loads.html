@@ -75,7 +75,7 @@
                 </div>
                 <div class="flex items-center gap-4 sm:gap-6">
                     <div class="flex items-center gap-3 border-l pl-4 sm:pl-6">
-                        <img src="https://i.pravatar.cc/100?img=60" class="w-10 h-10 rounded-full object-cover">
+                        <img id="user-avatar" src="../assets/logo.png" alt="Driver profile picture" class="w-10 h-10 rounded-full object-cover border border-gray-100">
                         <div class="hidden sm:block text-left">
                             <h4 id="user-display-name" class="font-semibold text-sm text-gray-900 leading-tight">Loading...</h4>
                             <span id="user-display-role" class="text-xs text-emerald-600 font-medium capitalize">Logistics Driver</span>
@@ -140,6 +140,7 @@
 
         const nameEl = document.getElementById("user-display-name");
         const roleEl = document.getElementById("user-display-role");
+        const avatarEl = document.getElementById("user-avatar");
         const loadsWrapper = document.getElementById("loads-wrapper");
         const searchInput = document.getElementById("search-input");
         const sortFilter = document.getElementById("sort-filter");
@@ -147,6 +148,24 @@
         let cachedLoads = [];
         let currentDriverName = "Logistics Driver";
         const selectedLoadId = new URLSearchParams(window.location.search).get("loadId");
+
+        function normalizeStatus(status) {
+            return String(status || "").trim().toLowerCase();
+        }
+
+        function isOpenLoad(load) {
+            const status = normalizeStatus(load.status);
+            return !status || ["searching", "available", "open"].includes(status);
+        }
+
+        function getProfileAvatar(profile) {
+            return profile?.profilePictureUrl || profile?.profilePictureURL || profile?.photoURL || profile?.avatarUrl || profile?.avatar || "";
+        }
+
+        function updateHeaderAvatar(src) {
+            if (!avatarEl || !src) return;
+            avatarEl.src = src;
+        }
 
         const fallbackImages = {
             tomatoes: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=200",
@@ -165,6 +184,7 @@
             currentDriverName = user.displayName || "Logistics Driver";
             nameEl.innerText = currentDriverName;
             roleEl.innerText = "Driver";
+            updateHeaderAvatar(user.photoURL);
 
             try {
                 const userDocSnap = await getDoc(doc(db, "users", user.uid));
@@ -175,22 +195,24 @@
                         nameEl.innerText = userData.name;
                     }
                     if (userData.role) roleEl.innerText = userData.role;
+                    updateHeaderAvatar(getProfileAvatar(userData) || user.photoURL);
                 }
             } catch (err) {
                 console.error("Firestore driver profile profile payload failure:", err);
             }
 
-            // Sync listings that have a status of "Searching"
+            // Keep the query narrow so Firestore rules can authorize marketplace reads.
             const q = query(collection(db, "products"), where("status", "==", "Searching"));
             onSnapshot(q, (snapshot) => {
                 cachedLoads = [];
                 snapshot.forEach((doc) => {
-                    cachedLoads.push({ id: doc.id, ...doc.data() });
+                    const load = { id: doc.id, ...doc.data() };
+                    if (isOpenLoad(load)) cachedLoads.push(load);
                 });
                 renderLoads();
             }, (error) => {
                 console.error("Load snapshot syncing failure: ", error);
-                loadsWrapper.innerHTML = `<div class="text-center py-6 text-red-500 text-sm">Failed to sync open marketplace records.</div>`;
+                loadsWrapper.innerHTML = `<div class="text-center py-6 text-red-500 text-sm">Failed to sync open marketplace records: ${error.code || error.message}</div>`;
             });
         });
 

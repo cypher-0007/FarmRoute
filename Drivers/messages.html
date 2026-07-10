@@ -114,7 +114,7 @@
                             FN
                         </div>
                         <div class="hidden sm:flex items-center gap-1 cursor-pointer">
-                            <h4 id="user-display-name" class="text-sm font-semibold text-slate-800 leading-tight">Farmer Ndlovu</h4>
+                            <h4 id="user-display-name" class="text-sm font-semibold text-slate-800 leading-tight">FarmRoute Driver</h4>
                             <i class="fa-solid fa-chevron-down text-xs text-slate-500"></i>
                         </div>
                     </div>
@@ -373,8 +373,9 @@
             }
             currentUserData = user;
 
-            const userTitle = user.displayName || "Farmer Ndlovu";
+            const userTitle = user.displayName || "FarmRoute Driver";
             if (nameEl) nameEl.innerText = userTitle;
+            updateHeaderAvatar(user.photoURL || "", userTitle);
 
             try {
                 const userDocSnap = await getDoc(doc(db, "users", user.uid));
@@ -383,7 +384,7 @@
                     currentUserProfile = userData;
                     const profileName = getProfileName(userData, userTitle);
                     if (nameEl) nameEl.innerText = profileName;
-                    updateHeaderAvatar(getProfileAvatar(userData), profileName);
+                    updateHeaderAvatar(getProfileAvatar(userData) || user.photoURL || "", profileName);
                 } else {
                     updateHeaderAvatar(user.photoURL || "", userTitle);
                 }

@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmRoute USSD Farmer Simulator</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --phone: #111827;
+            --screen: #d9f99d;
+            --ink: #13210f;
+            --muted: #4d633f;
+            --key: #1f2937;
+            --accent: #22c55e;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            background: radial-gradient(circle at top, #164e36 0, #07130d 42%, #020617 100%);
+            font-family: Arial, Helvetica, sans-serif;
+            color: #f8fafc;
+            padding: 24px;
+        }
+
+        .shell {
+            width: min(430px, 100%);
+        }
+
+        .phone {
+            background: var(--phone);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 34px;
+            padding: 22px;
+            box-shadow: 0 28px 80px rgba(0, 0, 0, 0.45);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+            color: #dcfce7;
+            font-weight: 700;
+        }
+
+        .signal {
+            font-size: 12px;
+            color: #86efac;
+        }
+
+        .screen {
+            background: var(--screen);
+            color: var(--ink);
+            border-radius: 18px;
+            min-height: 430px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            border: 5px solid #0f172a;
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.14);
+        }
+
+        .screen-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--muted);
+            border-bottom: 1px solid rgba(19, 33, 15, 0.2);
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin: 0;
+            flex: 1;
+            font-family: "Courier New", monospace;
+            font-size: 15px;
+            line-height: 1.45;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 14px;
+            border-top: 1px solid rgba(19, 33, 15, 0.2);
+            padding-top: 12px;
+        }
+
+        input {
+            min-width: 0;
+            flex: 1;
+            border: 1px solid rgba(19, 33, 15, 0.28);
+            background: rgba(255, 255, 255, 0.5);
+            color: var(--ink);
+            border-radius: 10px;
+            padding: 11px 12px;
+            font: 600 15px Arial, Helvetica, sans-serif;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #166534;
+            box-shadow: 0 0 0 3px rgba(22, 101, 52, 0.16);
+        }
+
+        button {
+            border: 0;
+            border-radius: 10px;
+            background: #14532d;
+            color: white;
+            font-weight: 700;
+            padding: 0 16px;
+            cursor: pointer;
+        }
+
+        .keys {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .key {
+            min-height: 48px;
+            background: var(--key);
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            color: #e5e7eb;
+            font-weight: 800;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .key small {
+            display: block;
+            font-size: 9px;
+            font-weight: 600;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        .hint {
+            margin-top: 14px;
+            color: #bbf7d0;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <div class="phone">
+            <div class="brand">
+                <span>FarmRoute USSD</span>
+                <span class="signal">*347*01#</span>
+            </div>
+
+            <div class="screen">
+                <div class="screen-top">
+                    <span id="session-label">Checking session...</span>
+                    <span id="clock-label">00:00</span>
+                </div>
+                <pre id="ussd-output">Loading FarmRoute USSD...</pre>
+                <form id="ussd-form" class="input-row">
+                    <input id="ussd-input" autocomplete="off" placeholder="Type reply">
+                    <button type="submit">Send</button>
+                </form>
+            </div>
+
+            <div class="keys" aria-label="USSD keypad">
+                <div class="key" data-key="1">1<small>Menu</small></div>
+                <div class="key" data-key="2">2<small>ABC</small></div>
+                <div class="key" data-key="3">3<small>DEF</small></div>
+                <div class="key" data-key="4">4<small>GHI</small></div>
+                <div class="key" data-key="5">5<small>JKL</small></div>
+                <div class="key" data-key="6">6<small>MNO</small></div>
+                <div class="key" data-key="7">7<small>PQRS</small></div>
+                <div class="key" data-key="8">8<small>TUV</small></div>
+                <div class="key" data-key="9">9<small>WXYZ</small></div>
+                <div class="key" data-key="*">*</div>
+                <div class="key" data-key="0">0<small>Back</small></div>
+                <div class="key" data-key="#">#</div>
+            </div>
+        </div>
+        <p class="hint">Standalone simulator. It is not linked from the main dashboard, but it uses real FarmRoute Firebase auth and product records.</p>
+    </div>
+
+    <script type="module">
+        import { auth, db } from "./backend/firebaseConfig.js";
+        import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { addDoc, collection, doc, getDoc, getDocs, query, serverTimestamp, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const outputEl = document.getElementById("ussd-output");
+        const inputEl = document.getElementById("ussd-input");
+        const formEl = document.getElementById("ussd-form");
+        const sessionLabel = document.getElementById("session-label");
+        const clockLabel = document.getElementById("clock-label");
+
+        let currentUser = null;
+        let currentProfile = null;
+        let screen = "boot";
+        let pendingEmail = "";
+        let addDraft = {};
+        let addStepIndex = 0;
+        let productsCache = [];
+
+        const addSteps = [
+            { key: "name", label: "Product name", hint: "e.g. Tomatoes" },
+            { key: "category", label: "Category", hint: "e.g. Vegetables" },
+            { key: "unit", label: "Unit", hint: "kg, bags, crates" },
+            { key: "quantity", label: "Quantity", hint: "numbers only" },
+            { key: "price", label: "Price per unit", hint: "numbers only, in NGN" },
+            { key: "harvestDate", label: "Harvest date", hint: "YYYY-MM-DD or today" },
+            { key: "routeFrom", label: "Pickup city/state", hint: "e.g. Ibadan" },
+            { key: "routeTo", label: "Delivery destination", hint: "e.g. Lagos" },
+            { key: "pickupPoint", label: "Pickup point", hint: "e.g. Bodija Market" },
+            { key: "dropoffPoint", label: "Drop-off point", hint: "e.g. Mile 12 Depot" },
+            { key: "description", label: "Short description", hint: "e.g. fresh, ready today" }
+        ];
+
+        function tickClock() {
+            clockLabel.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        }
+
+        setInterval(tickClock, 1000);
+        tickClock();
+
+        function money(value) {
+            return `NGN ${Number(value || 0).toLocaleString()}`;
+        }
+
+        function clean(value, fallback = "-") {
+            const text = String(value ?? "").trim();
+            return text || fallback;
+        }
+
+        function productStatus(product) {
+            return product.status || "Searching";
+        }
+
+        function isFarmer(profile) {
+            return String(profile?.role || "").trim().toLowerCase() === "farmer";
+        }
+
+        function setScreen(name, text, placeholder = "Reply") {
+            screen = name;
+            outputEl.textContent = text;
+            inputEl.value = "";
+            inputEl.placeholder = placeholder;
+            inputEl.focus();
+        }
+
+        function mainMenu(prefix = "") {
+            const name = clean(currentProfile?.name || currentUser?.displayName, "Farmer");
+            setScreen("main", `${prefix}FarmRoute USSD
+Welcome ${name}
+
+1. Dashboard summary
+2. Add produce
+3. My listings
+4. Trip/status updates
+5. Account profile
+6. Refresh data
+7. Logout
+
+0. Exit`, "Choose option");
+        }
+
+        function loginEmailScreen() {
+            setScreen("loginEmail", `FarmRoute USSD
+No farmer session found.
+
+Enter your FarmRoute email to continue.
+
+0. Exit`, "Email");
+        }
+
+        function loginPasswordScreen(email) {
+            pendingEmail = email;
+            setScreen("loginPassword", `FarmRoute USSD
+Email: ${email}
+
+Enter password to sign in.
+
+0. Back`, "Password");
+            inputEl.type = "password";
+        }
+
+        async function loadFarmerData() {
+            if (!currentUser) return;
+            const profileSnap = await getDoc(doc(db, "users", currentUser.uid));
+            currentProfile = profileSnap.exists() ? profileSnap.data() : {};
+
+            if (!isFarmer(currentProfile)) {
+                setScreen("blocked", `FarmRoute USSD
+This USSD channel is only for farmers.
+
+Signed in as: ${currentProfile.role || "unknown"}
+
+7. Logout
+0. Exit`, "Choose option");
+                return;
+            }
+
+            await refreshProducts();
+            sessionLabel.textContent = clean(currentProfile.name || currentUser.displayName, "Farmer");
+            mainMenu();
+        }
+
+        async function refreshProducts() {
+            const productsQuery = query(collection(db, "products"), where("farmerId", "==", currentUser.uid));
+            const snapshot = await getDocs(productsQuery);
+            productsCache = [];
+            snapshot.forEach((item) => productsCache.push({ id: item.id, ...item.data() }));
+        }
+
+        async function showDashboard() {
+            await refreshProducts();
+            const total = productsCache.length;
+            const searching = productsCache.filter((item) => productStatus(item) === "Searching").length;
+            const matched = productsCache.filter((item) => productStatus(item) === "Matched").length;
+            const transit = productsCache.filter((item) => productStatus(item) === "In Transit").length;
+            const delivered = productsCache.filter((item) => productStatus(item) === "Delivered").length;
+            const inventoryValue = productsCache.reduce((sum, item) => sum + Number(item.totalValue || 0), 0);
+            const openValue = productsCache
+                .filter((item) => productStatus(item) !== "Delivered")
+                .reduce((sum, item) => sum + Number(item.totalValue || 0), 0);
+
+            setScreen("dashboard", `Dashboard Summary
+
+Listings: ${total}
+Searching driver: ${searching}
+Matched: ${matched}
+In transit: ${transit}
+Delivered: ${delivered}
+
+Total produce value:
+${money(inventoryValue)}
+
+Open produce value:
+${money(openValue)}
+
+1. View listings
+2. Add produce
+9. Main menu
+0. Back`, "Choose option");
+        }
+
+        function startAddProduce() {
+            addDraft = {};
+            addStepIndex = 0;
+            showAddStep();
+        }
+
+        function showAddStep(error = "") {
+            const step = addSteps[addStepIndex];
+            setScreen("addProduce", `${error}Add Produce (${addStepIndex + 1}/${addSteps.length})
+
+${step.label}
+Hint: ${step.hint}
+
+*. Cancel
+0. Back`, step.label);
+        }
+
+        function validateAddStep(step, value) {
+            if (!value) return "Value is required.\n\n";
+            if (["quantity", "price"].includes(step.key) && Number(value) <= 0) return "Enter a valid number above 0.\n\n";
+            return "";
+        }
+
+        function formatDraft() {
+            const quantity = Number(addDraft.quantity || 0);
+            const price = Number(addDraft.price || 0);
+            return `${clean(addDraft.name)} (${clean(addDraft.category)})
+Qty: ${quantity} ${clean(addDraft.unit)}
+Price: ${money(price)} / ${clean(addDraft.unit)}
+Total: ${money(quantity * price)}
+Route: ${clean(addDraft.routeFrom)} to ${clean(addDraft.routeTo)}
+Pickup: ${clean(addDraft.pickupPoint)}
+Drop-off: ${clean(addDraft.dropoffPoint)}
+Harvest: ${clean(addDraft.harvestDate)}
+Note: ${clean(addDraft.description)}`;
+        }
+
+        function confirmAddProduce() {
+            setScreen("confirmAdd", `Confirm Produce Listing
+
+${formatDraft()}
+
+1. Submit to FarmRoute
+2. Edit again
+*. Cancel`, "Choose option");
+        }
+
+        async function submitProduce() {
+            const quantity = Number(addDraft.quantity || 0);
+            const price = Number(addDraft.price || 0);
+            const totalValue = quantity * price;
+            const harvestDate = addDraft.harvestDate.toLowerCase() === "today"
+                ? new Date().toISOString().slice(0, 10)
+                : addDraft.harvestDate;
+
+            await addDoc(collection(db, "products"), {
+                farmerId: currentUser.uid,
+                name: addDraft.name,
+                category: addDraft.category,
+                unit: addDraft.unit,
+                description: addDraft.description,
+                price,
+                quantity,
+                totalValue,
+                harvestDate,
+                routeFrom: addDraft.routeFrom,
+                routeTo: addDraft.routeTo,
+                pickupPoint: addDraft.pickupPoint,
+                dropoffPoint: addDraft.dropoffPoint,
+                images: [],
+                status: "Searching",
+                escrowPaid: false,
+                listingSource: "USSD Simulator",
+                createdAt: serverTimestamp()
+            });
+
+            await refreshProducts();
+            mainMenu("Listing submitted. Driver search started.\n\n");
+        }
+
+        async function showListings(page = 0) {
+            await refreshProducts();
+            const pageSize = 4;
+            const start = page * pageSize;
+            const rows = productsCache.slice(start, start + pageSize);
+            const body = rows.length
+                ? rows.map((item, index) => {
+                    const number = start + index + 1;
+                    return `${number}. ${clean(item.name)}
+   ${clean(item.quantity, 0)} ${clean(item.unit)} | ${money(item.totalValue || item.price)}
+   ${clean(item.routeFrom)} > ${clean(item.routeTo)}
+   ${productStatus(item)}`;
+                }).join("\n")
+                : "No listings found.";
+
+            const hasNext = start + pageSize < productsCache.length;
+            setScreen(`listings:${page}`, `My Listings
+
+${body}
+
+${hasNext ? "8. Next page\n" : ""}${productsCache.length ? `1-${productsCache.length}. View details\n` : ""}6. Add produce
+9. Main menu
+0. Back`, "Choose option");
+        }
+
+        function showListingDetails(index) {
+            const item = productsCache[index];
+            if (!item) {
+                showListings();
+                return;
+            }
+
+            setScreen("listingDetails", `Listing Details
+
+${clean(item.name)}
+Status: ${productStatus(item)}
+Qty: ${clean(item.quantity, 0)} ${clean(item.unit)}
+Value: ${money(item.totalValue || item.price)}
+
+Route:
+${clean(item.routeFrom)} to ${clean(item.routeTo)}
+
+Pickup:
+${clean(item.pickupPoint)}
+
+Drop-off:
+${clean(item.dropoffPoint)}
+
+Driver:
+${clean(item.driverName, "Not assigned yet")}
+
+9. Main menu
+0. Listings`, "Choose option");
+        }
+
+        async function showTripStatus() {
+            await refreshProducts();
+            const active = productsCache.filter((item) => ["Matched", "In Transit", "Driver Delivered"].includes(productStatus(item)));
+            const body = active.length
+                ? active.slice(0, 5).map((item, index) => `${index + 1}. ${clean(item.name)}
+   ${productStatus(item)}
+   Driver: ${clean(item.driverName, "Pending")}
+   ${clean(item.routeFrom)} > ${clean(item.routeTo)}`).join("\n")
+                : "No active trips yet. Listings in Searching status are waiting for a driver.";
+
+            setScreen("tripStatus", `Trip/Status Updates
+
+${body}
+
+1. View all listings
+2. Add produce
+9. Main menu
+0. Back`, "Choose option");
+        }
+
+        function showProfile() {
+            setScreen("profile", `Account Profile
+
+Name: ${clean(currentProfile?.name || currentUser?.displayName)}
+Phone: ${clean(currentProfile?.phone || currentProfile?.phoneNumber)}
+Email: ${clean(currentUser?.email || currentProfile?.email)}
+Role: Farmer
+
+1. Dashboard
+2. My listings
+7. Logout
+9. Main menu`, "Choose option");
+        }
+
+        async function handleReply(rawValue) {
+            const value = rawValue.trim();
+            inputEl.type = "text";
+
+            try {
+                if (screen === "blocked") {
+                    if (value === "7") {
+                        await signOut(auth);
+                        currentUser = null;
+                        currentProfile = null;
+                        loginEmailScreen();
+                    }
+                    return;
+                }
+
+                if (screen === "loginEmail") {
+                    if (value === "0") return setScreen("exit", "FarmRoute USSD session closed.", "");
+                    if (!value.includes("@")) return loginEmailScreen();
+                    return loginPasswordScreen(value);
+                }
+
+                if (screen === "loginPassword") {
+                    if (value === "0") return loginEmailScreen();
+                    setScreen("loading", "Signing in...", "");
+                    await signInWithEmailAndPassword(auth, pendingEmail, value);
+                    return;
+                }
+
+                if (!currentUser) return loginEmailScreen();
+
+                if (value === "9") return mainMenu();
+                if (value === "*") return mainMenu("Action cancelled.\n\n");
+
+                if (screen === "main") {
+                    if (value === "1") return showDashboard();
+                    if (value === "2") return startAddProduce();
+                    if (value === "3") return showListings();
+                    if (value === "4") return showTripStatus();
+                    if (value === "5") return showProfile();
+                    if (value === "6") {
+                        await refreshProducts();
+                        return mainMenu("Data refreshed.\n\n");
+                    }
+                    if (value === "7") {
+                        await signOut(auth);
+                        currentUser = null;
+                        currentProfile = null;
+                        return loginEmailScreen();
+                    }
+                    if (value === "0") return setScreen("exit", "FarmRoute USSD session closed.", "");
+                    return mainMenu("Invalid option.\n\n");
+                }
+
+                if (screen === "dashboard") {
+                    if (value === "1") return showListings();
+                    if (value === "2") return startAddProduce();
+                    if (value === "0") return mainMenu();
+                    return showDashboard();
+                }
+
+                if (screen === "addProduce") {
+                    if (value === "0") {
+                        addStepIndex = Math.max(0, addStepIndex - 1);
+                        return showAddStep();
+                    }
+                    const step = addSteps[addStepIndex];
+                    const error = validateAddStep(step, value);
+                    if (error) return showAddStep(error);
+                    addDraft[step.key] = value;
+                    addStepIndex++;
+                    return addStepIndex >= addSteps.length ? confirmAddProduce() : showAddStep();
+                }
+
+                if (screen === "confirmAdd") {
+                    if (value === "1") {
+                        setScreen("loading", "Submitting listing to FarmRoute...", "");
+                        return submitProduce();
+                    }
+                    if (value === "2") return startAddProduce();
+                    return confirmAddProduce();
+                }
+
+                if (screen.startsWith("listings")) {
+                    const page = Number(screen.split(":")[1] || 0);
+                    const selectedIndex = Number(value) - 1;
+                    if (value === "8") return showListings(page + 1);
+                    if (value === "6") return startAddProduce();
+                    if (value === "0") return mainMenu();
+                    if (Number.isInteger(selectedIndex) && selectedIndex >= 0) return showListingDetails(selectedIndex);
+                    return showListings(page);
+                }
+
+                if (screen === "listingDetails") {
+                    if (value === "0") return showListings();
+                    return mainMenu();
+                }
+
+                if (screen === "tripStatus") {
+                    if (value === "1") return showListings();
+                    if (value === "2") return startAddProduce();
+                    if (value === "0") return mainMenu();
+                    return showTripStatus();
+                }
+
+                if (screen === "profile") {
+                    if (value === "1") return showDashboard();
+                    if (value === "2") return showListings();
+                    if (value === "7") {
+                        await signOut(auth);
+                        currentUser = null;
+                        currentProfile = null;
+                        return loginEmailScreen();
+                    }
+                    return mainMenu();
+                }
+
+                mainMenu();
+            } catch (error) {
+                console.error("USSD simulator error:", error);
+                setScreen("error", `FarmRoute USSD
+Request failed:
+${error.code || error.message}
+
+9. Main menu
+0. Exit`, "Choose option");
+            }
+        }
+
+        formEl.addEventListener("submit", (event) => {
+            event.preventDefault();
+            handleReply(inputEl.value);
+        });
+
+        document.querySelectorAll("[data-key]").forEach((key) => {
+            key.addEventListener("click", () => {
+                inputEl.value += key.getAttribute("data-key");
+                inputEl.focus();
+            });
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            if (!user) {
+                sessionLabel.textContent = "No session";
+                loginEmailScreen();
+                return;
+            }
+
+            sessionLabel.textContent = user.email || "Connected";
+            setScreen("loading", "Loading farmer USSD account...", "");
+            try {
+                await loadFarmerData();
+            } catch (error) {
+                console.error("USSD profile load failed:", error);
+                setScreen("error", `Could not load farmer data.
+${error.code || error.message}
+
+7. Logout
+0. Exit`, "Choose option");
+            }
+        });
+    </script>
+</body>
+</html>

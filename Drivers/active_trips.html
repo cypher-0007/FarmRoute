@@ -75,7 +75,7 @@
                 </div>
                 <div class="flex items-center gap-4 sm:gap-6">
                     <div class="flex items-center gap-3 border-l pl-4 sm:pl-6">
-                        <img src="https://i.pravatar.cc/100?img=60" class="w-10 h-10 rounded-full object-cover">
+                        <img id="user-avatar" src="../assets/logo.png" alt="Driver profile picture" class="w-10 h-10 rounded-full object-cover border border-gray-100">
                         <div class="hidden sm:block text-left">
                             <h4 id="user-display-name" class="font-semibold text-sm text-gray-900 leading-tight">Loading...</h4>
                             <span id="user-display-role" class="text-xs text-emerald-600 font-medium capitalize">Logistics Driver</span>
@@ -127,6 +127,7 @@
 
     const nameEl = document.getElementById("user-display-name");
     const roleEl = document.getElementById("user-display-role");
+    const avatarEl = document.getElementById("user-avatar");
     const tripsWrapper = document.getElementById("trips-wrapper");
 
     let cachedTrips = [];
@@ -145,6 +146,23 @@
         "Driver Delivered": "bg-amber-50 text-amber-700 border-amber-200 animate-pulse"
     };
 
+    function normalizeStatus(status) {
+        return String(status || "").trim().toLowerCase();
+    }
+
+    function isActiveTrip(trip) {
+        return ["matched", "in transit", "driver delivered"].includes(normalizeStatus(trip.status));
+    }
+
+    function getProfileAvatar(profile) {
+        return profile?.profilePictureUrl || profile?.profilePictureURL || profile?.photoURL || profile?.avatarUrl || profile?.avatar || "";
+    }
+
+    function updateHeaderAvatar(src) {
+        if (!avatarEl || !src) return;
+        avatarEl.src = src;
+    }
+
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
             window.location.href = LOGIN_PAGE_URL;
@@ -153,6 +171,7 @@
 
         nameEl.innerText = user.displayName || "Logistics Driver";
         roleEl.innerText = "Driver";
+        updateHeaderAvatar(user.photoURL);
 
         try {
             const userDocSnap = await getDoc(doc(db, "users", user.uid));
@@ -160,27 +179,44 @@
                 const userData = userDocSnap.data();
                 if (userData.name) nameEl.innerText = userData.name;
                 if (userData.role) roleEl.innerText = userData.role;
+                updateHeaderAvatar(getProfileAvatar(userData) || user.photoURL);
             }
         } catch (err) {
             console.error("Firestore user payload recovery failure:", err);
         }
 
-        // Included "Driver Delivered" in the listener query so it doesn't vanish while waiting on the Farmer's PIN
-        const q = query(
-            collection(db, "products"), 
-            where("driverId", "==", user.uid),
-            where("status", "in", ["Matched", "In Transit", "Driver Delivered"])
-        );
+        const activeTripStatuses = ["Matched", "In Transit", "Driver Delivered"];
+        const tripsById = new Map();
+        let tripListenerErrors = 0;
 
-        onSnapshot(q, (snapshot) => {
-            cachedTrips = [];
-            snapshot.forEach((doc) => {
-                cachedTrips.push({ id: doc.id, ...doc.data() });
-            });
+        function refreshTripList() {
+            cachedTrips = Array.from(tripsById.values()).filter(isActiveTrip);
             renderTrips();
-        }, (error) => {
-            console.error("Trips synchronization context loop failed: ", error);
-            tripsWrapper.innerHTML = `<div class="text-center py-6 text-red-500 text-sm">Failed to sync trip data logs.</div>`;
+        }
+
+        activeTripStatuses.forEach((status) => {
+            const q = query(
+                collection(db, "products"),
+                where("driverId", "==", user.uid),
+                where("status", "==", status)
+            );
+
+            onSnapshot(q, (snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === "removed") {
+                        tripsById.delete(change.doc.id);
+                    } else {
+                        tripsById.set(change.doc.id, { id: change.doc.id, ...change.doc.data() });
+                    }
+                });
+                refreshTripList();
+            }, (error) => {
+                tripListenerErrors++;
+                console.error(`Trips synchronization failed for ${status}:`, error);
+                if (tripListenerErrors === activeTripStatuses.length) {
+                    tripsWrapper.innerHTML = `<div class="text-center py-6 text-red-500 text-sm">Failed to sync trip data logs: ${error.code || error.message}</div>`;
+                }
+            });
         });
     });
 

@@ -353,13 +353,16 @@
             modal.classList.add("flex");
         }
 
+        const normalizeRole = (role) => String(role || "").trim().toLowerCase();
+
         const getRedirectUrl = (role) => {
             const isGitHubPages = window.location.hostname.includes("github.io");
             const repoPath = isGitHubPages ? `/${window.location.pathname.split('/')[1]}` : "";
+            const normalizedRole = normalizeRole(role);
             
-            if (role === "farmer") {
+            if (normalizedRole === "farmer") {
                 return `${window.location.origin}${repoPath}/Farmers/dashboard.html`;
-            } else if (role === "driver") {
+            } else if (normalizedRole === "driver") {
                 return `${window.location.origin}${repoPath}/Drivers/dashboard.html`;
             }
             return null;
@@ -372,13 +375,13 @@
 
                 if (userDoc.exists()) {
                     const userData = userDoc.data();
-                    const role = userData.role;
+                    const role = normalizeRole(userData.role);
                     const targetUrl = getRedirectUrl(role);
 
                     if (targetUrl) {
                         window.location.href = targetUrl;
                     } else {
-                        console.error("Unknown user role profile found:", role);
+                        console.error("Unknown user role profile found:", userData.role);
                         showAppModal("Configured system role is invalid.");
                     }
                 } else {
@@ -406,7 +409,7 @@
             const phone = document.getElementById('signup-phone').value.trim();
             const email = document.getElementById('signup-email').value.trim();
             const password = document.getElementById('signup-password').value;
-            const role = document.getElementById('user-role').value; 
+            const role = normalizeRole(document.getElementById('user-role').value); 
 
             try {
                 isCreatingAccount = true;
