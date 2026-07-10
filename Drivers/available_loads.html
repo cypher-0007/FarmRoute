@@ -400,6 +400,7 @@
         async function handleAcceptLoad(loadId) {
             const currentUser = auth.currentUser;
             let listingClaimed = false;
+            let activeChatRoomId = "";
             
             if (!currentUser) {
                 showNoticeModal("You must be logged in to accept this load.");
@@ -448,6 +449,14 @@
                 });
                 listingClaimed = true;
 
+                // Create the conversation as soon as the listing is matched. The payment
+                // ledger is supplementary and must not prevent farmer-driver messaging.
+                activeChatRoomId = await autoCreateChatRoom(
+                    loadId,
+                    { uid: farmerId, name: farmerName },
+                    { uid: currentUser.uid, name: currentDriverName }
+                );
+
                 await setDoc(doc(db, "payments", loadId), {
                     loadId,
                     productId: loadId,
@@ -468,16 +477,9 @@
                     updatedAt: serverTimestamp()
                 }, { merge: true });
 
-                // 2. Fire the asynchronous chat document creator step immediately and catch returned reference
-                const activeChatRoomId = await autoCreateChatRoom(
-                    loadId,
-                    { uid: farmerId, name: farmerName },
-                    { uid: currentUser.uid, name: currentDriverName }
-                );
-
                 showNoticeModal("Load accepted successfully! Opening message session with your farmer.", "Load Accepted", "success");
 
-                // 3. Append URL Query parameter to cleanly open this chat inside messages view
+                // Append URL Query parameter to cleanly open this chat inside messages view
                 setTimeout(() => {
                     window.location.href = `messages.html?chatId=${activeChatRoomId}`;
                 }, 700);
@@ -490,12 +492,16 @@
                 // load as unavailable.
                 if (listingClaimed) {
                     showNoticeModal(
-                        "Load accepted successfully. It is now in your active trips.",
+                        activeChatRoomId
+                            ? "Load accepted successfully! Opening message session with your farmer."
+                            : "Load accepted successfully. It is now in your active trips.",
                         "Load Accepted",
                         "success"
                     );
                     setTimeout(() => {
-                        window.location.href = "active_trips.html";
+                        window.location.href = activeChatRoomId
+                            ? `messages.html?chatId=${activeChatRoomId}`
+                            : "active_trips.html";
                     }, 700);
                     return;
                 }
