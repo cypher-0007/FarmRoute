@@ -561,10 +561,13 @@
                     const pricePerUnit = parseFloat(document.getElementById("pricePerUnit").value) || 0;
                     const totalProduceValue = quantity * pricePerUnit;
 
-                    // Pricing breakdown algorithms
-                    const DELIVERY_COST_NAIRA = totalProduceValue; 
-                    const ESCROW_LISTING_FEE_NAIRA = 2000; 
-                    const totalAmountInNaira = ESCROW_LISTING_FEE_NAIRA + DELIVERY_COST_NAIRA;
+                    // The driver payout is the listing value. FarmRoute's 5% fee is
+                    // charged to the farmer separately, so it is never included in
+                    // the amount held for the driver.
+                    const DELIVERY_COST_NAIRA = totalProduceValue;
+                    const PLATFORM_FEE_RATE = 0.05;
+                    const PLATFORM_FEE_NAIRA = Math.round(DELIVERY_COST_NAIRA * PLATFORM_FEE_RATE);
+                    const totalAmountInNaira = DELIVERY_COST_NAIRA + PLATFORM_FEE_NAIRA;
                     const totalAmountInKobo = totalAmountInNaira * 100;
 
                     const handler = PaystackPop.setup({
@@ -592,7 +595,8 @@
                                 images: imageUrls,
                                 status: "Searching", 
                                 
-                                listingFeePaid: ESCROW_LISTING_FEE_NAIRA,
+                                platformFeeRate: PLATFORM_FEE_RATE,
+                                platformFeePaid: PLATFORM_FEE_NAIRA,
                                 deliveryFeeEscrowed: DELIVERY_COST_NAIRA,
                                 totalAmountPaid: totalAmountInNaira,
                                 
@@ -702,5 +706,6 @@
             document.getElementById("side-bar")?.classList.add("max-md:hidden");
         });
     </script>
+<script type="module" src="/assets/farmroute-chat.js"></script>
 </body>
 </html>

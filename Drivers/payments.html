@@ -231,9 +231,10 @@
 
     function normalizeStatus(rawStatus = "") {
         const status = String(rawStatus || "").toLowerCase();
-        if (["paid", "released", "complete", "completed", "delivered"].some(item => status.includes(item))) return "paid";
+        // Delivery alone means the farmer still needs to authorize the escrow release.
+        if (["paid", "released", "complete", "completed"].some(item => status.includes(item))) return "paid";
         if (status.includes("escrow")) return "escrow";
-        if (status.includes("driver delivered") || status.includes("awaiting")) return "awaiting";
+        if (status.includes("delivered") || status.includes("awaiting")) return "awaiting";
         if (status.includes("matched") || status.includes("transit") || status.includes("searching")) return "transit";
         if (status.includes("cancel")) return "cancelled";
         return "transit";
@@ -267,7 +268,9 @@
     }
 
     function buildLedgerRow(id, data) {
-        const status = normalizeStatus(data.status || data.paymentStatus);
+        const status = data.isEscrowReleased
+            ? "paid"
+            : normalizeStatus(data.paymentStatus || data.status);
         return {
             id: `payment-${id}`,
             sourceId: id,
@@ -548,5 +551,6 @@
 </script>
 <script type="module" src="driver_status.js"></script>
 
+<script type="module" src="/assets/farmroute-chat.js"></script>
 </body>
 </html>

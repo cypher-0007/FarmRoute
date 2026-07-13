@@ -45,7 +45,7 @@
         </nav>
       </div>
 
-      <button class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-red-950/20 hover:text-red-400 transition duration-150 w-full text-left font-medium text-sm">
+      <button id="logout-btn" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-red-950/20 hover:text-red-400 transition duration-150 w-full text-left font-medium text-sm">
         <i class="fa-solid fa-arrow-right-from-bracket w-5 text-sm"></i> Logout
       </button>
     </aside>
@@ -161,6 +161,19 @@
     </main>
   </div>
 
-  <script type="module" src="app-profile.js"></script>
+  <script type="module">
+    import { auth } from "./backend/firebaseConfig.js";
+    import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    document.getElementById("logout-btn")?.addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+        window.location.href = "login.html";
+      } catch (error) {
+        console.error("Signout error:", error);
+      }
+    });
+  </script>
+<script type="module" src="/assets/farmroute-chat.js"></script>
 </body>
 </html>

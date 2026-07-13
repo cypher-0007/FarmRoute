@@ -418,7 +418,10 @@
 
     </div>
 
-    <script>
+    <script type="module">
+        import { auth } from "./backend/firebaseConfig.js";
+        import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
         document.getElementById("side-btn")?.addEventListener("click", () => {
             document.getElementById("side-bar")?.classList.remove("max-md:hidden");
         });
@@ -426,6 +429,16 @@
         document.getElementById("closeside-btn")?.addEventListener("click", () => {
             document.getElementById("side-bar")?.classList.add("max-md:hidden");
         });
+
+        document.getElementById("logout-btn")?.addEventListener("click", async () => {
+            try {
+                await signOut(auth);
+                window.location.href = "login.html";
+            } catch (error) {
+                console.error("Signout error:", error);
+            }
+        });
     </script>
+<script type="module" src="/assets/farmroute-chat.js"></script>
 </body>
 </html>

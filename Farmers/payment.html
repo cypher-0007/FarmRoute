@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FarmRoute - Escrow Payments</title>
-    <script src="https://js.paystack.co/v1/inline.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
@@ -364,9 +363,6 @@
 
     // Configuration Settings
     const TRANSACTION_SECURE_PIN = "123456";
-    // Replace this string with your real Paystack Public Key from dashboard (pk_test_...)
-    const PAYSTACK_PUBLIC_KEY = "pk_test_a6310c3751a19e50cc40c5b9f9452ef7c00df571"; 
-
     let targetedDocId = null;
     let countdownInterval = null;
 
@@ -533,21 +529,14 @@
         pinModal.classList.add("hidden");
     });
 
-    // PIN Submission Hooking with Paystack Pipeline
-    pinSubmitBtn.addEventListener("click", () => {
+    // The listing payment is already held in escrow. The PIN only authorizes its release.
+    pinSubmitBtn.addEventListener("click", async () => {
         let enteredPin = "";
         pinInputs.forEach(input => enteredPin += input.value);
 
         if (enteredPin === TRANSACTION_SECURE_PIN) {
             pinModal.classList.add("hidden");
-            
-            // Resolve object fields out of cached storage array
-            const targetTrip = window.cachedPayments[targetedDocId];
-            const numericalAmount = parseFloat(targetTrip.price.replace(/,/g, ''));
-            const userEmailAddress = auth.currentUser.email || "escrow-billing@farmroute.com";
-            
-            // Forward execution processing straight to Paystack
-            initiatePaystackEscrowCharge(numericalAmount, userEmailAddress, targetedDocId);
+            await finalizeDatabaseTransactionRecord(targetedDocId);
         } else {
             pinErrorMsg.classList.remove("hidden");
             pinInputs.forEach(input => {
@@ -558,60 +547,19 @@
         }
     });
 
-    // Paystack Inline SDK Execution Bridge Setup
-    function initiatePaystackEscrowCharge(amountInNaira, clientEmail, orderId) {
-        // Paystack tracks raw integer calculations as Kobo currency assets
-        const computeKoboValue = Math.round(amountInNaira * 100);
-        
-        // Grab the cached subaccount string for this transaction
-        const targetTrip = window.cachedPayments[orderId];
-        const driverSubaccountCode = targetTrip ? targetTrip.driverSubaccount : "";
-
-        const paystackConfig = {
-            key: PAYSTACK_PUBLIC_KEY,
-            email: clientEmail,
-            amount: computeKoboValue,
-            currency: "NGN",
-            ref: "FR-PAY-" + Date.now() + Math.floor(Math.random() * 1000), 
-            metadata: {
-                custom_fields: [
-                    {
-                        display_name: "Order ID Mapping",
-                        variable_name: "order_id",
-                        value: orderId
-                    }
-                ]
-            },
-            callback: function(transactionReceipt) {
-                finalizeDatabaseTransactionRecord(orderId, transactionReceipt.reference);
-            },
-            onClose: function() {
-                showNoticeModal("Escrow confirmation aborted. Checkout gateway closed without balance clearing.");
-            }
-        };
-
-        // Inject the subaccount configuration if available
-        if (driverSubaccountCode) {
-            paystackConfig.subaccount = driverSubaccountCode;
-            paystackConfig.bearer = "account"; // Platform absorbs gateway fees
-        }
-
-        const paymentHandler = PaystackPop.setup(paystackConfig);
-        paymentHandler.openIframe();
-    }
-
-    // Finalize product item status downstream in Firestore inside Callback loops safely
-    async function finalizeDatabaseTransactionRecord(targetId, trackingRef) {
+    // Finalize the escrow authorization without opening a second payment checkout.
+    async function finalizeDatabaseTransactionRecord(targetId) {
         try {
             const documentPointer = doc(db, "products", targetId);
             await updateDoc(documentPointer, {
-                status: "Delivered", // Sets to complete status on both screen listening loops
-                paymentGatewayRef: trackingRef,
+                status: "Delivered",
+                paymentStatus: "released",
                 isEscrowReleased: true,
+                paymentAuthorizedAt: new Date(),
                 fundsCapturedAt: new Date()
             });
             closeModalDrawer();
-            showNoticeModal("Success! Transaction fully cleared and signed off.", "Payment Released", "success");
+            showNoticeModal("The escrow payment has been authorized for the driver.", "Payment Released", "success");
         } catch (databaseWriteError) {
             console.error("Firestore balance lifecycle settlement mutation exception structural context error:", databaseWriteError);
             showNoticeModal("Payment recorded, but database updates failed. Please notify Support with reference ID.");
@@ -848,6 +796,17 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById("closeside-btn")?.addEventListener("click", () => {
         document.getElementById("side-bar")?.classList.add("max-md:hidden");
     });
+
+    document.getElementById("logout-btn")?.addEventListener("click", async () => {
+        try {
+            await signOut(auth);
+            window.location.href = LOGIN_PAGE_URL;
+        } catch (error) {
+            console.error("Signout error:", error);
+            showNoticeModal("Unable to log out. Please try again.");
+        }
+    });
 </script>
+<script type="module" src="/assets/farmroute-chat.js"></script>
 </body>
 </html>
