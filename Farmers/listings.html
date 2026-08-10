@@ -161,7 +161,7 @@
                 const count = Number(countMap[userId] || 0);
                 if (count > 0) unreadTotal += count;
             });
-            return hasUnreadData ? unreadTotal : snapshot.size;
+            return unreadTotal;
         }
 
         function updateMessageBadge(count) {
