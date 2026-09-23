@@ -122,6 +122,29 @@
                     </div>
                 </div>
 
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4" id="withdrawal-metrics-section">
+                    <div class="bg-white rounded-2xl border p-5 shadow-sm xl:col-span-2">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm font-semibold text-gray-500">Available Balance</p>
+                            <span class="w-10 h-10 rounded-xl bg-green-50 text-green-700 flex items-center justify-center"><i class="fa-solid fa-wallet"></i></span>
+                        </div>
+                        <h2 id="metric-available-balance" class="text-3xl font-black text-gray-900 mt-4">NGN 0</h2>
+                    </div>
+                    <div class="bg-white rounded-2xl border p-5 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm font-semibold text-gray-500">Total Withdrawn</p>
+                            <span class="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center"><i class="fa-solid fa-money-bill-transfer"></i></span>
+                        </div>
+                        <h2 id="metric-total-withdrawn" class="text-3xl font-black text-gray-900 mt-4">NGN 0</h2>
+                    </div>
+                    <div class="bg-white rounded-2xl border p-5 shadow-sm flex items-center justify-center">
+                        <button id="withdraw-btn" class="w-full sm:w-auto bg-green-700 hover:bg-green-800 text-white font-semibold py-3 px-6 rounded-xl transition flex items-center gap-2" disabled>
+                            <i class="fa-solid fa-arrow-down-to-bracket"></i>
+                            <span>Withdraw</span>
+                        </button>
+                    </div>
+                </div>
+
                 <div class="bg-white rounded-2xl border p-4 shadow-sm flex flex-col lg:flex-row gap-3 lg:items-center justify-between">
                     <div class="relative flex-1">
                         <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
@@ -171,10 +194,166 @@
     </aside>
 </div>
 
+<!-- WITHDRAWAL MODAL -->
+<div id="withdrawal-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"></div>
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative z-10 border border-gray-100 space-y-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-bold text-gray-900">Withdraw Funds</h3>
+                <p class="text-xs text-gray-500 mt-1">Available: <span id="withdraw-available-balance" class="font-semibold text-green-700">NGN 0</span></p>
+            </div>
+            <button id="withdrawal-close" class="w-9 h-9 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-600 transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-2">Withdrawal Amount</label>
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">NGN</span>
+                    <input id="withdrawal-amount" type="number" min="100" step="100" placeholder="Enter amount" class="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-10 pr-4 text-lg focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-700">
+                </div>
+                <p class="text-xs text-gray-400 mt-1">Minimum withdrawal: NGN 100</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <button id="withdraw-all-btn" type="button" class="bg-gray-50 border border-gray-200 hover:bg-gray-100 text-gray-700 py-2.5 rounded-xl font-semibold text-sm transition">All</button>
+                <button id="withdraw-half-btn" type="button" class="bg-gray-50 border border-gray-200 hover:bg-gray-100 text-gray-700 py-2.5 rounded-xl font-semibold text-sm transition">Half</button>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-2">Withdrawal PIN</label>
+                <div class="relative">
+                    <input id="withdrawal-pin" type="password" maxlength="6" placeholder="6-digit PIN" class="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-4 pr-4 text-lg focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-700 text-center tracking-widest">
+                </div>
+                <p id="withdrawal-pin-error" class="text-xs font-semibold text-red-500 hidden mt-1">Incorrect PIN. Please try again.</p>
+            </div>
+            <div id="withdrawal-no-pin" class="bg-amber-50 border border-amber-200 rounded-xl p-3 hidden">
+                <p class="text-xs text-amber-700 flex items-center gap-1">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    You haven't set a withdrawal PIN yet.
+                </p>
+                <button id="set-pin-from-withdrawal" class="mt-2 text-xs font-semibold text-amber-700 hover:underline">Set Withdrawal PIN</button>
+            </div>
+        </div>
+        <div class="flex gap-3 pt-2">
+            <button id="withdrawal-cancel-btn" class="flex-1 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 py-3 rounded-xl font-semibold text-sm transition">Cancel</button>
+            <button id="withdrawal-submit-btn" class="flex-1 bg-green-700 hover:bg-green-800 text-white py-3 rounded-xl font-semibold text-sm transition shadow-sm" disabled>
+                <i class="fa-solid fa-arrow-down-to-bracket mr-2"></i> Withdraw
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- SET WITHDRAWAL PIN MODAL -->
+<div id="set-pin-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"></div>
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative z-10 border border-gray-100 space-y-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-bold text-gray-900">Set Withdrawal PIN</h3>
+                <p class="text-xs text-gray-500 mt-1">Create a 6-digit PIN for secure withdrawals</p>
+            </div>
+            <button id="set-pin-close" class="w-9 h-9 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-600 transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-2">New PIN</label>
+                <div class="flex justify-center gap-2" id="new-pin-input-wrapper">
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-2">Confirm PIN</label>
+                <div class="flex justify-center gap-2" id="confirm-pin-input-wrapper">
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                </div>
+                <p id="set-pin-error" class="text-xs font-semibold text-red-500 hidden mt-1">PINs do not match. Please try again.</p>
+            </div>
+        </div>
+        <div class="flex gap-3 pt-2">
+            <button id="set-pin-cancel-btn" class="flex-1 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 py-3 rounded-xl font-semibold text-sm transition">Cancel</button>
+            <button id="set-pin-submit-btn" class="flex-1 bg-green-700 hover:bg-green-800 text-white py-3 rounded-xl font-semibold text-sm transition shadow-sm" disabled>
+                <i class="fa-solid fa-lock mr-2"></i> Set PIN
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- CHANGE WITHDRAWAL PIN MODAL -->
+<div id="change-pin-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"></div>
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative z-10 border border-gray-100 space-y-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-bold text-gray-900">Change Withdrawal PIN</h3>
+                <p class="text-xs text-gray-500 mt-1">Enter your current PIN, then set a new one</p>
+            </div>
+            <button id="change-pin-close" class="w-9 h-9 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-600 transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-2">Current PIN</label>
+                <div class="flex justify-center gap-2" id="current-pin-input-wrapper">
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                </div>
+                <p id="change-pin-current-error" class="text-xs font-semibold text-red-500 hidden mt-1">Incorrect current PIN.</p>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-2">New PIN</label>
+                <div class="flex justify-center gap-2" id="change-new-pin-input-wrapper">
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-2">Confirm New PIN</label>
+                <div class="flex justify-center gap-2" id="change-confirm-pin-input-wrapper">
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                    <input type="text" maxlength="1" class="w-11 h-12 text-center text-lg font-bold border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition" />
+                </div>
+                <p id="change-pin-error" class="text-xs font-semibold text-red-500 hidden mt-1">New PINs do not match.</p>
+            </div>
+        </div>
+        <div class="flex gap-3 pt-2">
+            <button id="change-pin-cancel-btn" class="flex-1 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 py-3 rounded-xl font-semibold text-sm transition">Cancel</button>
+            <button id="change-pin-submit-btn" class="flex-1 bg-green-700 hover:bg-green-800 text-white py-3 rounded-xl font-semibold text-sm transition shadow-sm" disabled>
+                <i class="fa-solid fa-lock mr-2"></i> Change PIN
+            </button>
+        </div>
+    </div>
+</div>
+
 <script type="module">
     import { auth, db } from "../backend/firebaseConfig.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { collection, doc, getDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { collection, doc, getDoc, onSnapshot, query, where, addDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const LOGIN_PAGE_URL = "../login.html";
     const loadingScreen = document.getElementById("loading-screen");
@@ -193,13 +372,57 @@
         paid: document.getElementById("metric-total-paid"),
         escrow: document.getElementById("metric-pending-escrow"),
         awaiting: document.getElementById("metric-awaiting-release"),
-        count: document.getElementById("metric-transaction-count")
+        count: document.getElementById("metric-transaction-count"),
+        availableBalance: document.getElementById("metric-available-balance"),
+        totalWithdrawn: document.getElementById("metric-total-withdrawn")
+    };
+
+    const withdrawalElements = {
+        modal: document.getElementById("withdrawal-modal"),
+        amountInput: document.getElementById("withdrawal-amount"),
+        pinInput: document.getElementById("withdrawal-pin"),
+        pinError: document.getElementById("withdrawal-pin-error"),
+        noPinSection: document.getElementById("withdrawal-no-pin"),
+        availableBalanceEl: document.getElementById("withdraw-available-balance"),
+        submitBtn: document.getElementById("withdrawal-submit-btn"),
+        cancelBtn: document.getElementById("withdrawal-cancel-btn"),
+        closeBtn: document.getElementById("withdrawal-close"),
+        allBtn: document.getElementById("withdraw-all-btn"),
+        halfBtn: document.getElementById("withdraw-half-btn"),
+        setPinFromWithdrawal: document.getElementById("set-pin-from-withdrawal"),
+        withdrawBtn: document.getElementById("withdraw-btn")
+    };
+
+    const setPinElements = {
+        modal: document.getElementById("set-pin-modal"),
+        newPinInputs: document.querySelectorAll("#new-pin-input-wrapper input"),
+        confirmPinInputs: document.querySelectorAll("#confirm-pin-input-wrapper input"),
+        error: document.getElementById("set-pin-error"),
+        submitBtn: document.getElementById("set-pin-submit-btn"),
+        cancelBtn: document.getElementById("set-pin-cancel-btn"),
+        closeBtn: document.getElementById("set-pin-close")
+    };
+
+    const changePinElements = {
+        modal: document.getElementById("change-pin-modal"),
+        currentPinInputs: document.querySelectorAll("#current-pin-input-wrapper input"),
+        newPinInputs: document.querySelectorAll("#change-new-pin-input-wrapper input"),
+        confirmPinInputs: document.querySelectorAll("#change-confirm-pin-input-wrapper input"),
+        currentError: document.getElementById("change-pin-current-error"),
+        error: document.getElementById("change-pin-error"),
+        submitBtn: document.getElementById("change-pin-submit-btn"),
+        cancelBtn: document.getElementById("change-pin-cancel-btn"),
+        closeBtn: document.getElementById("change-pin-close")
     };
 
     const paymentRecords = new Map();
     const tripRecords = new Map();
     const farmerCache = new Map();
     let currentRows = [];
+    let userWithdrawalPin = null;
+    let userTotalWithdrawn = 0;
+    let userAvailableBalance = 0;
+    let userData = null;
 
     function hideLoading() {
         loadingScreen?.classList.add("hidden");
@@ -328,6 +551,38 @@
         metrics.escrow.textContent = money(escrowTotal);
         metrics.awaiting.textContent = awaitingCount;
         metrics.count.textContent = rows.length;
+
+        userAvailableBalance = paidTotal - userTotalWithdrawn;
+        metrics.availableBalance.textContent = money(Math.max(0, userAvailableBalance));
+        metrics.totalWithdrawn.textContent = money(userTotalWithdrawn);
+        withdrawalElements.availableBalanceEl.textContent = money(Math.max(0, userAvailableBalance));
+        
+        const canWithdraw = userAvailableBalance >= 100 && userWithdrawalPin;
+        withdrawalElements.withdrawBtn.disabled = !canWithdraw;
+        withdrawalElements.withdrawBtn.classList.toggle("opacity-50", !canWithdraw);
+        withdrawalElements.withdrawBtn.classList.toggle("cursor-not-allowed", !canWithdraw);
+        
+        // Update button tooltip/text to show why disabled
+        if (!canWithdraw) {
+            if (!userWithdrawalPin) {
+                withdrawalElements.withdrawBtn.title = "Set a withdrawal PIN in Profile > Security to enable withdrawals";
+                withdrawalElements.withdrawBtn.innerHTML = `<i class="fa-solid fa-arrow-down-to-bracket"></i><span>Set PIN First</span>`;
+            } else if (userAvailableBalance < 100) {
+                withdrawalElements.withdrawBtn.title = `Available balance (${money(userAvailableBalance)}) is below minimum NGN 100`;
+                withdrawalElements.withdrawBtn.innerHTML = `<i class="fa-solid fa-arrow-down-to-bracket"></i><span>Balance Too Low</span>`;
+            }
+        } else {
+            withdrawalElements.withdrawBtn.title = "";
+            withdrawalElements.withdrawBtn.innerHTML = `<i class="fa-solid fa-arrow-down-to-bracket"></i><span>Withdraw</span>`;
+        }
+        
+        if (userWithdrawalPin) {
+            withdrawalElements.noPinSection.classList.add("hidden");
+            withdrawalElements.pinInput.parentElement.classList.remove("hidden");
+        } else {
+            withdrawalElements.noPinSection.classList.remove("hidden");
+            withdrawalElements.pinInput.parentElement.classList.add("hidden");
+        }
     }
 
     function filteredRows() {
@@ -429,6 +684,261 @@
         drawer.classList.add("hidden");
     }
 
+    // WITHDRAWAL FUNCTIONS
+    function openWithdrawalModal() {
+        if (!userWithdrawalPin) {
+            withdrawalElements.noPinSection.classList.remove("hidden");
+            withdrawalElements.pinInput.parentElement.classList.add("hidden");
+        } else {
+            withdrawalElements.noPinSection.classList.add("hidden");
+            withdrawalElements.pinInput.parentElement.classList.remove("hidden");
+        }
+        withdrawalElements.amountInput.value = "";
+        withdrawalElements.pinInput.value = "";
+        withdrawalElements.pinError.classList.add("hidden");
+        withdrawalElements.submitBtn.disabled = true;
+        withdrawalElements.modal.classList.remove("hidden");
+        setTimeout(() => withdrawalElements.amountInput.focus(), 100);
+    }
+
+    function closeWithdrawalModal() {
+        withdrawalElements.modal.classList.add("hidden");
+        withdrawalElements.amountInput.value = "";
+        withdrawalElements.pinInput.value = "";
+        withdrawalElements.pinError.classList.add("hidden");
+    }
+
+    function validateWithdrawalForm() {
+        const amount = Number(withdrawalElements.amountInput.value) || 0;
+        const pin = withdrawalElements.pinInput.value;
+        const isValid = amount >= 100 && amount <= userAvailableBalance && pin.length === 6 && userWithdrawalPin;
+        withdrawalElements.submitBtn.disabled = !isValid;
+    }
+
+    async function processWithdrawal() {
+        const amount = Number(withdrawalElements.amountInput.value) || 0;
+        const pin = withdrawalElements.pinInput.value;
+
+        if (pin !== userWithdrawalPin) {
+            withdrawalElements.pinError.classList.remove("hidden");
+            withdrawalElements.pinInput.value = "";
+            withdrawalElements.pinInput.focus();
+            return;
+        }
+
+        if (amount < 100 || amount > userAvailableBalance) {
+            showModalAlert("error", "Invalid Amount", `Withdrawal amount must be between NGN 100 and NGN ${userAvailableBalance.toLocaleString()}.`);
+            return;
+        }
+
+        const originalText = withdrawalElements.submitBtn.innerHTML;
+        withdrawalElements.submitBtn.disabled = true;
+        withdrawalElements.submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin mr-2"></i> Processing...`;
+
+        try {
+            const user = auth.currentUser;
+            if (!user) throw new Error("User not authenticated");
+
+            const withdrawalRef = await addDoc(collection(db, "withdrawals"), {
+                driverId: user.uid,
+                amount: amount,
+                status: "processing",
+                bankDetails: {
+                    bankName: userData?.bankDetails?.bankName || "",
+                    accountName: userData?.bankDetails?.accountName || "",
+                    accountNumber: userData?.bankDetails?.accountNumber || ""
+                },
+                createdAt: new Date(),
+                processedAt: null
+            });
+
+            await setDoc(doc(db, "users", user.uid), {
+                totalWithdrawn: (userTotalWithdrawn || 0) + amount,
+                lastWithdrawalAt: new Date()
+            }, { merge: true });
+
+            closeWithdrawalModal();
+            showModalAlert("success", "Withdrawal Requested", `Your withdrawal of ${money(amount)} has been submitted for processing. Funds will be transferred to your bank account within 24 hours.`);
+        } catch (err) {
+            console.error("Withdrawal failed:", err);
+            showModalAlert("error", "Withdrawal Failed", err.message || "Unable to process withdrawal. Please try again.");
+        } finally {
+            withdrawalElements.submitBtn.disabled = false;
+            withdrawalElements.submitBtn.innerHTML = originalText;
+        }
+    }
+
+    // SET PIN FUNCTIONS
+    function openSetPinModal() {
+        clearPinInputs(setPinElements.newPinInputs);
+        clearPinInputs(setPinElements.confirmPinInputs);
+        setPinElements.error.classList.add("hidden");
+        setPinElements.submitBtn.disabled = true;
+        setPinElements.modal.classList.remove("hidden");
+        setTimeout(() => setPinElements.newPinInputs[0].focus(), 100);
+    }
+
+    function closeSetPinModal() {
+        setPinElements.modal.classList.add("hidden");
+        clearPinInputs(setPinElements.newPinInputs);
+        clearPinInputs(setPinElements.confirmPinInputs);
+        setPinElements.error.classList.add("hidden");
+    }
+
+    function clearPinInputs(inputs) {
+        inputs.forEach(input => input.value = "");
+        inputs.forEach(input => input.classList.remove("border-red-500", "focus:ring-red-600"));
+    }
+
+    function setupPinInputNavigation(inputs) {
+        inputs.forEach((input, index) => {
+            input.addEventListener("input", (e) => {
+                if (e.target.value.length >= 1 && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+                validatePinForms();
+            });
+            input.addEventListener("keydown", (e) => {
+                if (e.key === "Backspace" && e.target.value.length === 0 && index > 0) {
+                    inputs[index - 1].focus();
+                }
+            });
+        });
+    }
+
+    function getPinFromInputs(inputs) {
+        return Array.from(inputs).map(input => input.value).join("");
+    }
+
+    function validatePinForms() {
+        const newPin = getPinFromInputs(setPinElements.newPinInputs);
+        const confirmPin = getPinFromInputs(setPinElements.confirmPinInputs);
+        const isValid = newPin.length === 6 && newPin === confirmPin;
+        setPinElements.submitBtn.disabled = !isValid;
+        setPinElements.error.classList.toggle("hidden", newPin === confirmPin || confirmPin.length < 6);
+    }
+
+    async function processSetPin() {
+        const newPin = getPinFromInputs(setPinElements.newPinInputs);
+        const confirmPin = getPinFromInputs(setPinElements.confirmPinInputs);
+
+        if (newPin !== confirmPin) {
+            setPinElements.error.classList.remove("hidden");
+            return;
+        }
+
+        const originalText = setPinElements.submitBtn.innerHTML;
+        setPinElements.submitBtn.disabled = true;
+        setPinElements.submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin mr-2"></i> Setting PIN...`;
+
+        try {
+            const user = auth.currentUser;
+            if (!user) throw new Error("User not authenticated");
+
+            await setDoc(doc(db, "users", user.uid), {
+                withdrawalPin: newPin
+            }, { merge: true });
+
+            userWithdrawalPin = newPin;
+            closeSetPinModal();
+            closeWithdrawalModal();
+            showModalAlert("success", "PIN Set Successfully", "Your withdrawal PIN has been set. You can now withdraw funds.");
+        } catch (err) {
+            console.error("Set PIN failed:", err);
+            showModalAlert("error", "Failed to Set PIN", err.message);
+        } finally {
+            setPinElements.submitBtn.disabled = false;
+            setPinElements.submitBtn.innerHTML = originalText;
+        }
+    }
+
+    // CHANGE PIN FUNCTIONS
+    function openChangePinModal() {
+        clearPinInputs(changePinElements.currentPinInputs);
+        clearPinInputs(changePinElements.newPinInputs);
+        clearPinInputs(changePinElements.confirmPinInputs);
+        changePinElements.currentError.classList.add("hidden");
+        changePinElements.error.classList.add("hidden");
+        changePinElements.submitBtn.disabled = true;
+        changePinElements.modal.classList.remove("hidden");
+        setTimeout(() => changePinElements.currentPinInputs[0].focus(), 100);
+    }
+
+    function closeChangePinModal() {
+        changePinElements.modal.classList.add("hidden");
+        clearPinInputs(changePinElements.currentPinInputs);
+        clearPinInputs(changePinElements.newPinInputs);
+        clearPinInputs(changePinElements.confirmPinInputs);
+        changePinElements.currentError.classList.add("hidden");
+        changePinElements.error.classList.add("hidden");
+    }
+
+    function validateChangePinForms() {
+        const currentPin = getPinFromInputs(changePinElements.currentPinInputs);
+        const newPin = getPinFromInputs(changePinElements.newPinInputs);
+        const confirmPin = getPinFromInputs(changePinElements.confirmPinInputs);
+        const isValid = currentPin.length === 6 && newPin.length === 6 && newPin === confirmPin;
+        changePinElements.submitBtn.disabled = !isValid;
+        changePinElements.error.classList.toggle("hidden", newPin === confirmPin || confirmPin.length < 6);
+    }
+
+    async function processChangePin() {
+        const currentPin = getPinFromInputs(changePinElements.currentPinInputs);
+        const newPin = getPinFromInputs(changePinElements.newPinInputs);
+        const confirmPin = getPinFromInputs(changePinElements.confirmPinInputs);
+
+        if (currentPin !== userWithdrawalPin) {
+            changePinElements.currentError.classList.remove("hidden");
+            clearPinInputs(changePinElements.currentPinInputs);
+            changePinElements.currentPinInputs[0].focus();
+            return;
+        }
+
+        if (newPin !== confirmPin) {
+            changePinElements.error.classList.remove("hidden");
+            return;
+        }
+
+        const originalText = changePinElements.submitBtn.innerHTML;
+        changePinElements.submitBtn.disabled = true;
+        changePinElements.submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin mr-2"></i> Changing PIN...`;
+
+        try {
+            const user = auth.currentUser;
+            if (!user) throw new Error("User not authenticated");
+
+            await setDoc(doc(db, "users", user.uid), {
+                withdrawalPin: newPin
+            }, { merge: true });
+
+            userWithdrawalPin = newPin;
+            closeChangePinModal();
+            showModalAlert("success", "PIN Changed Successfully", "Your withdrawal PIN has been updated.");
+        } catch (err) {
+            console.error("Change PIN failed:", err);
+            showModalAlert("error", "Failed to Change PIN", err.message);
+        } finally {
+            changePinElements.submitBtn.disabled = false;
+            changePinElements.submitBtn.innerHTML = originalText;
+        }
+    }
+
+    function showModalAlert(type, title, message) {
+        const modal = document.createElement("div");
+        modal.className = "fixed inset-0 z-[80] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm";
+        modal.innerHTML = `
+            <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center shadow-xl">
+                <div class="w-14 h-14 rounded-full ${type === "error" ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"} mx-auto mb-4 flex items-center justify-center text-xl">
+                    <i class="fa-solid ${type === "error" ? "fa-circle-xmark" : "fa-circle-check"}"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">${title}</h3>
+                <p class="text-gray-500 text-sm mb-6 leading-relaxed">${message}</p>
+                <button class="w-full py-3 px-4 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl font-semibold text-sm">Dismiss</button>
+            </div>`;
+        modal.querySelector("button").addEventListener("click", () => modal.remove());
+        document.body.appendChild(modal);
+    }
+
     listEl.addEventListener("click", (event) => {
         const button = event.target.closest("[data-payment-id]");
         if (!button) return;
@@ -492,10 +1002,16 @@
         try {
             const userSnap = await getDoc(doc(db, "users", user.uid));
             if (userSnap.exists()) {
-                const userData = userSnap.data();
+                userData = userSnap.data();
                 nameEl.textContent = userData.name || userData.fullName || user.displayName || "FarmRoute Driver";
                 roleEl.textContent = userData.role || "Driver";
                 updateHeaderAvatar(userData.profilePictureUrl || userData.photoURL);
+
+                userWithdrawalPin = userData.withdrawalPin || null;
+                userTotalWithdrawn = Number(userData.totalWithdrawn || 0);
+
+                // Update withdrawal button state immediately after loading user data
+                updateMetrics(currentRows);
             }
         } catch (err) {
             console.error("Driver profile lookup failed:", err);
@@ -548,8 +1064,154 @@
         goOnlineBtn.classList.toggle("bg-green-600", !isOnline);
         goOnlineBtn.classList.toggle("hover:bg-green-500", !isOnline);
     });
+
+    // WITHDRAWAL EVENT LISTENERS
+    withdrawalElements.withdrawBtn?.addEventListener("click", openWithdrawalModal);
+    withdrawalElements.closeBtn?.addEventListener("click", closeWithdrawalModal);
+    withdrawalElements.cancelBtn?.addEventListener("click", closeWithdrawalModal);
+    withdrawalElements.amountInput?.addEventListener("input", validateWithdrawalForm);
+    withdrawalElements.pinInput?.addEventListener("input", validateWithdrawalForm);
+    withdrawalElements.submitBtn?.addEventListener("click", processWithdrawal);
+    withdrawalElements.allBtn?.addEventListener("click", () => {
+        withdrawalElements.amountInput.value = Math.max(0, userAvailableBalance);
+        validateWithdrawalForm();
+    });
+    withdrawalElements.halfBtn?.addEventListener("click", () => {
+        withdrawalElements.amountInput.value = Math.floor(Math.max(0, userAvailableBalance) / 2 / 100) * 100;
+        validateWithdrawalForm();
+    });
+    withdrawalElements.setPinFromWithdrawal?.addEventListener("click", () => {
+        closeWithdrawalModal();
+        openSetPinModal();
+    });
+
+    // SET PIN EVENT LISTENERS
+    setupPinInputNavigation(setPinElements.newPinInputs);
+    setupPinInputNavigation(setPinElements.confirmPinInputs);
+    setPinElements.closeBtn?.addEventListener("click", closeSetPinModal);
+    setPinElements.cancelBtn?.addEventListener("click", closeSetPinModal);
+    setPinElements.submitBtn?.addEventListener("click", processSetPin);
+
+    // CHANGE PIN EVENT LISTENERS
+    setupPinInputNavigation(changePinElements.currentPinInputs);
+    setupPinInputNavigation(changePinElements.newPinInputs);
+    setupPinInputNavigation(changePinElements.confirmPinInputs);
+    changePinElements.closeBtn?.addEventListener("click", closeChangePinModal);
+    changePinElements.cancelBtn?.addEventListener("click", closeChangePinModal);
+    changePinElements.submitBtn?.addEventListener("click", processChangePin);
+
+    // Close modals on overlay click
+    withdrawalElements.modal?.addEventListener("click", (e) => {
+        if (e.target === withdrawalElements.modal) closeWithdrawalModal();
+    });
+    setPinElements.modal?.addEventListener("click", (e) => {
+        if (e.target === setPinElements.modal) closeSetPinModal();
+    });
+    changePinElements.modal?.addEventListener("click", (e) => {
+        if (e.target === changePinElements.modal) closeChangePinModal();
+    });
 </script>
 <script type="module" src="driver_status.js"></script>
 
+<!-- FarmRoute AI Assistant -->
+<div id="ai-chat-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+  <button id="chat-toggle" style="background:#16a34a;color:white;border:none;border-radius:50%;width:56px;height:56px;font-size:24px;cursor:pointer;box-shadow:0 4px 12px rgba(22,163,74,0.4);" aria-label="Open chat assistant">💬</button>
+
+  <div id="chat-box" style="display:none;flex-direction:column;width:320px;height:450px;background:white;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.15);position:absolute;bottom:70px;right:0;overflow:hidden;border:1px solid #e5e7eb;">
+    <div style="background:#16a34a;color:white;padding:12px 16px;font-weight:600;font-size:14px;display:flex;justify-content:space-between;align-items:center;">
+      <span>FarmRoute Assistant</span>
+      <button id="chat-close" style="background:none;border:none;color:white;font-size:18px;cursor:pointer;padding:0;line-height:1;">&times;</button>
+    </div>
+    <div id="chat-messages" style="flex:1;overflow-y:auto;padding:12px;font-size:13px;display:flex;flex-direction:column;gap:8px;"></div>
+    <div style="display:flex;border-top:1px solid #f1f1f1;background:#fafafa;padding:8px;gap:8px;">
+      <input id="chat-input" type="text" placeholder="Ask a question..." style="flex:1;border:1px solid #e5e7eb;border-radius:20px;padding:10px 14px;outline:none;font-size:13px;background:white;" />
+      <button id="chat-send" style="background:#16a34a;color:white;border:none;border-radius:20px;padding:0 20px;cursor:pointer;font-size:13px;font-weight:500;">Send</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const toggle = document.getElementById("chat-toggle");
+    const box = document.getElementById("chat-box");
+    const closeBtn = document.getElementById("chat-close");
+    const input = document.getElementById("chat-input");
+    const sendBtn = document.getElementById("chat-send");
+    const messages = document.getElementById("chat-messages");
+
+    let isOpen = false;
+
+    function toggleChat() {
+      isOpen = !isOpen;
+      box.style.display = isOpen ? "flex" : "none";
+      if (isOpen) input.focus();
+    }
+
+    toggle.onclick = toggleChat;
+    closeBtn.onclick = toggleChat;
+
+    function addMessage(text, sender) {
+      const div = document.createElement("div");
+      div.style.alignSelf = sender === "user" ? "flex-end" : "flex-start";
+      div.style.maxWidth = "80%";
+      const bg = sender === "user" ? "#dcfce7" : "#f3f4f6";
+      const textColor = sender === "user" ? "#166534" : "#1f2937";
+      div.innerHTML = `<span style="background:${bg};color:${textColor};padding:8px 12px;border-radius:12px;display:inline-block;line-height:1.4;">${escapeHtml(text)}</span>`;
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    async function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+      addMessage(text, "user");
+      input.value = "";
+      
+      const typingDiv = document.createElement("div");
+      typingDiv.style.alignSelf = "flex-start";
+      typingDiv.style.maxWidth = "80%";
+      typingDiv.innerHTML = `<span style="background:#f3f4f6;color:#6b7280;padding:8px 12px;border-radius:12px;display:inline-block;"><span class="typing-dots">Typing<span>.</span><span>.</span><span>.</span></span></span>`;
+      messages.appendChild(typingDiv);
+      messages.scrollTop = messages.scrollHeight;
+
+      try {
+        const res = await fetch("/api/ask-assistant", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text }),
+        });
+        const data = await res.json();
+        typingDiv.remove();
+        addMessage(data.reply, "bot");
+      } catch (err) {
+        console.error("Chat error:", err);
+        typingDiv.remove();
+        addMessage("Assistant's a bit busy — try again shortly.", "bot");
+      }
+    }
+
+    sendBtn.onclick = sendMessage;
+    input.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
+
+    const style = document.createElement("style");
+    style.textContent = `
+      .typing-dots span { display: inline-block; animation: typing 1.4s infinite; opacity: 0; }
+      .typing-dots span:nth-child(1) { animation-delay: 0s; }
+      .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+      .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+      @keyframes typing { 0%, 80%, 100% { opacity: 0; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-2px); } }
+    `;
+    document.head.appendChild(style);
+  })();
+</script>
 </body>
 </html>
+
