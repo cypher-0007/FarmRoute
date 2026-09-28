@@ -1,6 +1,4 @@
-const SYSTEM_PROMPT = `You are a helpful assistant for FarmRoute, an app connecting Nigerian farmers with drivers to transport goods. Keep answers short, practical, and friendly.`;
-
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -11,16 +9,9 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: "Message is required" });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
-
-  if (!apiKey) {
-    console.error("GEMINI_API_KEY not configured");
-    return res.status(500).json({ reply: "Assistant is not configured. Please contact support." });
-  }
-
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -29,7 +20,7 @@ module.exports = async function handler(req, res) {
             {
               parts: [
                 {
-                  text: `${SYSTEM_PROMPT}\n\nUser: ${message}`,
+                  text: `You are a helpful assistant for FarmRoute, an app connecting Nigerian farmers with drivers to transport goods. Keep answers short, practical, and friendly.\n\nUser: ${message}`,
                 },
               ],
             },
@@ -52,4 +43,4 @@ module.exports = async function handler(req, res) {
     console.error("Assistant error:", err);
     res.status(500).json({ reply: "Assistant's a bit busy right now — try again shortly." });
   }
-};
+}
