@@ -414,8 +414,20 @@
             try {
                 isCreatingAccount = true;
 
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
+                let user;
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    user = userCredential.user;
+                } catch (authError) {
+                    // A previous signup may have created the Auth account but failed
+                    // before its Firestore profile was saved. Let that same user resume.
+                    if (authError.code !== "auth/email-already-in-use") throw authError;
+
+                    const existingCredential = await signInWithEmailAndPassword(auth, email, password);
+                    user = existingCredential.user;
+                    const existingProfile = await getDoc(doc(db, "users", user.uid));
+                    if (existingProfile.exists()) throw authError;
+                }
 
                 await updateProfile(user, { displayName: name });
 
@@ -434,7 +446,17 @@
             } catch (error) {
                 isCreatingAccount = false; 
                 console.error("Signup error:", error);
-                showAppModal(error.message, "Signup Failed");
+                const signupMessages = {
+                    "auth/email-already-in-use": "An account already uses this email. Try logging in instead.",
+                    "auth/invalid-email": "Enter a valid email address.",
+                    "auth/weak-password": "Choose a stronger password (at least 6 characters).",
+                    "auth/operation-not-allowed": "Email and password sign-up is disabled in Firebase Authentication. Enable it in Firebase Console > Authentication > Sign-in method.",
+                    "auth/unauthorized-domain": "This website domain is not authorized for Firebase Authentication. Add it in Firebase Console > Authentication > Settings > Authorized domains.",
+                    "auth/invalid-api-key": "The Firebase API key is invalid. Check the web app configuration in backend/firebaseConfig.js.",
+                    "permission-denied": "The account was created, but Firestore denied saving its profile. Check the Firestore rules for users/{uid}.",
+                    "firestore/permission-denied": "The account was created, but Firestore denied saving its profile. Check the Firestore rules for users/{uid}."
+                };
+                showAppModal(signupMessages[error.code] || `${error.message}${error.code ? ` (${error.code})` : ""}`, "Signup Failed");
             }
         });
 
