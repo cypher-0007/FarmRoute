@@ -10,8 +10,16 @@ export default async function handler(req, res) {
   }
 
   try {
+    if (!process.env.GEMINI_API_KEY) {
+      console.error("GEMINI_API_KEY environment variable is not set");
+      return res.status(500).json({
+        reply: "Assistant's a bit busy right now — try again shortly.",
+        error: "GEMINI_API_KEY environment variable is not set",
+      });
+    }
+
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -30,10 +38,23 @@ export default async function handler(req, res) {
     );
 
     if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.status}`);
+      const errorBody = await response.text();
+      console.error(`Gemini API error: ${response.status}`, errorBody);
+      return res.status(response.status).json({
+        reply: "Assistant's a bit busy right now — try again shortly.",
+        error: `Gemini API error: ${response.status}`,
+      });
     }
 
     const result = await response.json();
+    if (!result.candidates || result.candidates.length === 0) {
+      console.error("Gemini API returned no candidates", result);
+      return res.status(500).json({
+        reply: "Assistant's a bit busy right now — try again shortly.",
+        error: "No candidates returned from Gemini API",
+      });
+    }
+
     const reply =
       result.candidates?.[0]?.content?.parts?.[0]?.text ||
       "Sorry, I couldn't process that.";
@@ -41,6 +62,9 @@ export default async function handler(req, res) {
     res.status(200).json({ reply });
   } catch (err) {
     console.error("Assistant error:", err);
-    res.status(500).json({ reply: "Assistant's a bit busy right now — try again shortly." });
+    res.status(500).json({
+      reply: "Assistant's a bit busy right now — try again shortly.",
+      error: err.message,
+    });
   }
 }
