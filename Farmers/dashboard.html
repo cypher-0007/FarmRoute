@@ -235,12 +235,12 @@
                 <div class="space-y-6">
                     <div id="shelf-life-card" class="bg-gradient-to-br from-gray-950 via-emerald-950 to-gray-950 rounded-2xl border border-emerald-800 p-6 text-white shadow-xl relative overflow-hidden group">
                         
-                        <div class="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(34,197,94,0)_95%,rgba(34,197,94,0.15)_98%,rgba(34,197,94,0)_100%)] bg-[length:100%_24px] animate-[pulse_3s_infinite]"></div>
+                        <div class="absolute inset-0 pointer-events-none bg-[linear-gradient(to_bottom,rgba(34,197,94,0)_95%,rgba(34,197,94,0.15)_98%,rgba(34,197,94,0)_100%)] bg-[length:100%_24px] animate-[pulse_3s_infinite]"></div>
                         
                         <div class="flex justify-between items-start relative z-10">
                             <div>
                                 <span class="bg-green-500/20 text-green-400 text-xs font-mono px-2.5 py-1 rounded-full border border-green-500/30 uppercase tracking-widest">
-                                    <i class="fa-solid fa-camera mr-1 animate-pulse"></i> Free Vision Scan
+                                    <i class="fa-solid fa-camera mr-1 animate-pulse"></i> Gemini Photo Analysis
                                 </span>
                                 <h2 class="text-xl font-bold mt-3 tracking-tight">
                                     AI Shelf-Life Diagnostics
@@ -270,6 +270,11 @@
                             </div>
                         </div>
 
+                        <label for="diagnostics-listing-select" class="relative z-10 block mt-4 text-xs font-semibold text-gray-300">Choose a listing to inspect</label>
+                        <select id="diagnostics-listing-select" class="relative z-10 mt-1 w-full rounded-lg bg-gray-900 border border-green-900 text-white text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <option value="">Loading your listings…</option>
+                        </select>
+
                         <div class="grid grid-cols-2 gap-3 mt-4">
                             <div class="bg-white/5 rounded-xl p-3 border border-white/5">
                                 <p class="text-xs text-gray-400">Estimated Shelf Life</p>
@@ -284,13 +289,13 @@
                         </div>
 
                         <p id="diagnostics-summary" class="text-xs text-gray-400/90 mt-5 leading-relaxed bg-green-950/30 p-3 rounded-lg border border-green-900/30 italic">
-                            Uploaded produce photos are checked with a free browser vision model and freshness signals, then ranked for priority shipping.
+                            Choose an active listing and run a Gemini assessment of its photo and listing details.
                         </p>
 
                         <div class="mt-4 relative z-10">
                             <div class="flex items-center justify-between mb-2">
                                 <p class="text-xs font-semibold uppercase tracking-widest text-gray-400">Priority queue</p>
-                                <span id="diagnostics-model-status" class="text-[10px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded-full">Loading vision API</span>
+                                <span id="diagnostics-model-status" class="text-[10px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded-full">Gemini ready</span>
                             </div>
                             <div id="diagnostics-alert-list" class="space-y-2">
                                 <p class="text-xs text-gray-500 border border-white/5 rounded-lg p-3 bg-white/5">Waiting for farmer listings...</p>
@@ -301,7 +306,7 @@
                             Review listings <i class="fa-solid fa-arrow-right text-xs"></i>
                         </a>
                         <button id="run-diagnostics-btn" class="mt-3 relative z-10 text-xs font-semibold text-white/90 bg-white/10 hover:bg-white/15 border border-white/10 px-3 py-2 rounded-lg transition">
-                            Run fresh scan
+                            Analyze selected listing
                         </button>
                     </div>
                 </div>
@@ -340,6 +345,7 @@
     const runDiagnosticsBtn = document.getElementById("run-diagnostics-btn");
     const diagnosticsAlertList = document.getElementById("diagnostics-alert-list");
     const diagnosticsModelStatus = document.getElementById("diagnostics-model-status");
+    const diagnosticsListingSelect = document.getElementById("diagnostics-listing-select");
 
     // Metric DOM Elements
     const completedEl = document.getElementById("metric-completed");
@@ -492,18 +498,14 @@
         if (cachedVisionModel) return cachedVisionModel;
         if (visionModelPromise) return visionModelPromise;
         if (!window.mobilenet) {
-            setModelStatus("Vision fallback active", "amber");
             return null;
         }
         visionModelPromise = (async () => {
             try {
-                setModelStatus("Loading vision API", "amber");
                 cachedVisionModel = await window.mobilenet.load();
-                setModelStatus("Vision API ready", "emerald");
                 return cachedVisionModel;
             } catch (error) {
                 console.warn("Vision model failed to load; using freshness fallback.", error);
-                setModelStatus("Vision fallback active", "amber");
                 return null;
             }
         })();
@@ -622,7 +624,6 @@
                 };
             } catch (error) {
                 console.warn("Image diagnostics failed for listing; using non-image estimate.", error);
-                setModelStatus("Image fallback active", "amber");
                 return {
                     imageRisk: 10,
                     imageLabel: "Photo unavailable",
@@ -808,16 +809,73 @@
         renderPriorityQueue(scoredProducts);
     }
 
+    function refreshDiagnosticsListingOptions() {
+        if (!diagnosticsListingSelect) return;
+        const current = diagnosticsListingSelect.value;
+        const active = cachedDiagnosticsProducts.filter(item => (item.data.status || "Searching") !== "Delivered");
+        diagnosticsListingSelect.innerHTML = active.length
+            ? `<option value="">Select a listing</option>${active.map(item => `<option value="${escapeAttr(item.id)}">${escapeHTML(item.data.name || "Produce")} · ${escapeHTML(item.data.status || "Searching")}</option>`).join("")}`
+            : `<option value="">No active listings found</option>`;
+        if (active.some(item => item.id === current)) diagnosticsListingSelect.value = current;
+    }
+
     runDiagnosticsBtn?.addEventListener("click", async () => {
-        if (diagnosticsSummary) diagnosticsSummary.textContent = "Running fresh shelf-life scan against your current listings...";
+        const product = cachedDiagnosticsProducts.find(item => item.id === diagnosticsListingSelect?.value);
+        if (!product) {
+            if (diagnosticsSummary) diagnosticsSummary.textContent = "Choose one of your active listings before running the detector.";
+            diagnosticsListingSelect?.focus();
+            return;
+        }
         runDiagnosticsBtn.disabled = true;
         runDiagnosticsBtn.classList.add("opacity-60", "cursor-wait");
-
-        window.setTimeout(async () => {
-            await renderShelfLifeDiagnostics(cachedDiagnosticsProducts);
+        runDiagnosticsBtn.textContent = "Analyzing…";
+        setModelStatus("Gemini analyzing", "amber");
+        if (diagnosticsSummary) diagnosticsSummary.textContent = "Sending the selected listing and photo for a freshness assessment…";
+        try {
+            const response = await fetch("/api/shelf-life", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    listing: {
+                        name: product.data.name || "Produce",
+                        category: product.data.category || "",
+                        harvestDate: product.data.harvestDate || null,
+                        description: product.data.description || "",
+                        status: product.data.status || "Searching"
+                    },
+                    imageUrl: getUploadedProductImage(product.data)
+                })
+            });
+            const responseText = await response.text();
+            let result;
+            try {
+                result = responseText ? JSON.parse(responseText) : {};
+            } catch {
+                throw new Error("The shelf-life API did not return JSON. Live Server cannot run Vercel API routes. Start the project with npm run dev and open the URL Vercel prints.");
+            }
+            if (!responseText && !response.ok) {
+                throw new Error("The shelf-life API is unavailable here. Run the project with npm run dev instead of VS Code Live Server.");
+            }
+            if (!response.ok) throw new Error(result.error || "Shelf-life analysis failed.");
+            diagnosticsProductName.textContent = product.data.name || "Produce";
+            diagnosticsSeverity.textContent = result.condition.toUpperCase();
+            diagnosticsBatchId.textContent = `#FR-${product.id.substring(0, 6).toUpperCase()}`;
+            diagnosticsRiskBar.style.width = `${Math.max(8, Math.min(100, result.riskScore))}%`;
+            diagnosticsShelfLife.textContent = result.estimatedShelfLife;
+            diagnosticsRoutingMode.innerHTML = `<i class="fa-solid fa-seedling text-xs"></i> ${escapeHTML(result.storageAdvice)}`;
+            diagnosticsSummary.textContent = `${result.summary} ${result.recommendation}`;
+            const photo = getUploadedProductImage(product.data) || getProductImage(product.data);
+            diagnosticsImageFrame.innerHTML = `<img src="${escapeAttr(photo)}" alt="${escapeAttr(product.data.name || "Produce")}" class="w-full h-full object-cover">`;
+            setModelStatus("Gemini scan complete", "emerald");
+        } catch (error) {
+            console.error("Shelf-life Gemini scan failed:", error);
+            if (diagnosticsSummary) diagnosticsSummary.textContent = error.message || "Could not analyze this listing. Please try again.";
+            setModelStatus("Scan failed", "red");
+        } finally {
             runDiagnosticsBtn.disabled = false;
             runDiagnosticsBtn.classList.remove("opacity-60", "cursor-wait");
-        }, 350);
+            runDiagnosticsBtn.textContent = "Analyze selected listing";
+        }
     });
 
     onAuthStateChanged(auth, async (user) => {
@@ -885,6 +943,7 @@
             });
             if (listingsEl) listingsEl.innerText = activeCount;
             cachedDiagnosticsProducts = diagnosticsProducts;
+            refreshDiagnosticsListingOptions();
             renderShelfLifeDiagnostics(cachedDiagnosticsProducts);
         }, (err) => console.error("All products query failed:", err));
 
