@@ -194,7 +194,7 @@
                                 <i class="fa-solid fa-lock text-gray-400"></i>
                                 <input type="password" value="password-hidden" disabled class="bg-transparent border-none outline-none w-full tracking-widest text-gray-400 select-none">
                             </div>
-                            <button type="button" class="text-xs font-medium text-gray-700 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition whitespace-nowrap">Change Password</button>
+                            <button id="driver-reset-password-btn" type="button" class="text-xs font-medium text-gray-700 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition whitespace-nowrap">Change Password</button>
                         </div>
                     </div>
                 </section>
@@ -365,7 +365,7 @@
 
 <script type="module">
         import { auth, db } from "../backend/firebaseConfig.js";
-        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { onAuthStateChanged, sendPasswordResetEmail, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { collection, doc, getDoc, onSnapshot, query, setDoc, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const pfpInput = document.getElementById("pfp-input");
@@ -495,6 +495,16 @@
         }
 
         modalCloseBtn.addEventListener("click", hideModalAlert);
+        document.getElementById("driver-reset-password-btn").addEventListener("click", async () => {
+            if (!currentUser?.email) return showModalAlert("error", "Password Reset Failed", "No email address is available for this account.");
+            try {
+                await sendPasswordResetEmail(auth, currentUser.email);
+                showModalAlert("success", "Check Your Email", `Password reset instructions were sent to ${currentUser.email}. Check your inbox and spam folder.`);
+            } catch (error) {
+                console.error("Password reset error:", error);
+                showModalAlert("error", "Password Reset Failed", error.message);
+            }
+        });
 
         pfpInput.addEventListener("change", (event) => {
             const file = event.target.files[0];

@@ -319,7 +319,8 @@
         import { auth, db } from "./backend/firebaseConfig.js"; 
         import { 
             createUserWithEmailAndPassword, 
-            signInWithEmailAndPassword, 
+            signInWithEmailAndPassword,
+            sendPasswordResetEmail,
             updateProfile,
             onAuthStateChanged,
             GoogleAuthProvider,
@@ -545,13 +546,41 @@
             }
         });
 
+        // PASSWORD RESET FLOW
+        document.getElementById('forgot-password').addEventListener('click', async (event) => {
+            event.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            if (!email) {
+                showAppModal('Enter your email address above, then select Forgot Password again.', 'Email Required');
+                document.getElementById('login-email').focus();
+                return;
+            }
+            try {
+                await sendPasswordResetEmail(auth, email);
+                showAppModal(`Password reset instructions were sent to ${email}. Check your inbox and spam folder.`, 'Check Your Email', 'success');
+            } catch (error) {
+                console.error('Password reset error:', error);
+                const messages = {
+                    'auth/invalid-email': 'Enter a valid email address.',
+                    'auth/user-not-found': 'No account was found for that email address.',
+                    'auth/too-many-requests': 'Too many attempts. Please wait a while and try again.'
+                };
+                showAppModal(messages[error.code] || error.message, 'Password Reset Failed');
+            }
+        });
+
         // LOGIN FLOW
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value;
+            const rememberMe = document.getElementById('remember_me').checked;
 
             try {
+                await setPersistence(
+                    auth,
+                    rememberMe ? browserLocalPersistence : browserSessionPersistence
+                );
                 await signInWithEmailAndPassword(auth, email, password);
             } catch (error) {
                 console.error("Login error:", error);
