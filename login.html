@@ -123,7 +123,7 @@
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
-                        <button type="button" class="flex items-center justify-center space-x-2 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 hover:cursor-not-allowed transition">
+                        <button type="button" id="google-login-btn" class="flex items-center justify-center space-x-2 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 hover:border-emerald-500 hover:text-emerald-800 transition">
                             <i class="fa-brands fa-google text-red-500"></i>
                             <span>Google</span>
                         </button>
@@ -224,7 +224,7 @@
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
-                        <button type="button" class="flex items-center justify-center space-x-2 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 hover:cursor-not-allowed transition">
+                        <button type="button" id="google-signup-btn" class="flex items-center justify-center space-x-2 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 hover:border-emerald-500 hover:text-emerald-800 transition">
                             <i class="fa-brands fa-google text-red-500"></i>
                             <span>Google</span>
                         </button>
@@ -323,13 +323,18 @@
             sendPasswordResetEmail,
             updateProfile,
             onAuthStateChanged,
-            setPersistence,
-            browserLocalPersistence,
-            browserSessionPersistence
+            GoogleAuthProvider,
+            getRedirectResult,
+            signInWithRedirect,
+            signOut
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         let isCreatingAccount = false;
+        let isHandlingGoogleRedirect = true;
+        const GOOGLE_SIGNUP_STORAGE_KEY = "farmroute.googleSignup";
+        const googleProvider = new GoogleAuthProvider();
+        googleProvider.setCustomParameters({ prompt: "select_account" });
 
         function showAppModal(message, title = "FarmRoute", type = "error") {
             let modal = document.getElementById("app-modal");
@@ -400,10 +405,87 @@
 
         // Active Session Checker
         onAuthStateChanged(auth, (user) => {
-            if (user && !isCreatingAccount) {
+            if (user && !isCreatingAccount && !isHandlingGoogleRedirect) {
                 redirectUserByRole(user.uid);
             }
         });
+
+        function googleErrorMessage(error) {
+            const messages = {
+                "auth/unauthorized-domain": "This website has not been authorized for Google sign-in yet.",
+                "auth/popup-blocked": "Google sign-in was blocked. Please try again.",
+                "auth/account-exists-with-different-credential": "This email is already associated with another sign-in method. Log in with that method first."
+            };
+            return messages[error.code] || "Google sign-in could not be completed. Please try again.";
+        }
+
+        async function beginGoogleSignIn(mode) {
+            try {
+                if (mode === "signup") {
+                    const role = normalizeRole(document.getElementById("user-role").value);
+                    const phone = document.getElementById("signup-phone").value.trim();
+                    const name = document.getElementById("signup-name").value.trim();
+
+                    if (!role || !phone) {
+                        showAppModal("Choose Farmer or Driver and enter your phone number before continuing with Google.", "Complete Your Profile");
+                        return;
+                    }
+
+                    sessionStorage.setItem(GOOGLE_SIGNUP_STORAGE_KEY, JSON.stringify({ role, phone, name }));
+                } else {
+                    sessionStorage.removeItem(GOOGLE_SIGNUP_STORAGE_KEY);
+                }
+
+                await signInWithRedirect(auth, googleProvider);
+            } catch (error) {
+                console.error("Google sign-in error:", error);
+                showAppModal(googleErrorMessage(error), "Google Sign-in");
+            }
+        }
+
+        async function completeGoogleSignIn() {
+            let handledRedirectResult = false;
+            try {
+                const result = await getRedirectResult(auth);
+                if (!result?.user) return;
+                handledRedirectResult = true;
+
+                const user = result.user;
+                const profileRef = doc(db, "users", user.uid);
+                const existingProfile = await getDoc(profileRef);
+
+                if (!existingProfile.exists()) {
+                    const savedSignup = sessionStorage.getItem(GOOGLE_SIGNUP_STORAGE_KEY);
+                    const signup = savedSignup ? JSON.parse(savedSignup) : null;
+
+                    if (!signup?.role || !signup?.phone) {
+                        await signOut(auth);
+                        switchTab("signup");
+                        showAppModal("New Google users need to choose a role and add a phone number before signing in.", "Complete Your Profile");
+                        return;
+                    }
+
+                    await setDoc(profileRef, {
+                        uid: user.uid,
+                        name: signup.name || user.displayName || "FarmRoute User",
+                        email: user.email || "",
+                        phone: signup.phone,
+                        role: signup.role,
+                        authProvider: "google.com",
+                        createdAt: new Date().toISOString()
+                    });
+                    sessionStorage.removeItem(GOOGLE_SIGNUP_STORAGE_KEY);
+                }
+
+                await redirectUserByRole(user.uid);
+            } catch (error) {
+                console.error("Google redirect error:", error);
+                showAppModal(googleErrorMessage(error), "Google Sign-in");
+            } finally {
+                isHandlingGoogleRedirect = false;
+                if (auth.currentUser && !handledRedirectResult) redirectUserByRole(auth.currentUser.uid);
+            }
+        }
 
         // SIGN UP FLOW
         document.getElementById('signup-form').addEventListener('submit', async (e) => {
@@ -505,6 +587,10 @@
                 showAppModal(error.message, "Login Failed");
             }
         });
+
+        document.getElementById("google-login-btn").addEventListener("click", () => beginGoogleSignIn("login"));
+        document.getElementById("google-signup-btn").addEventListener("click", () => beginGoogleSignIn("signup"));
+        completeGoogleSignIn();
     </script>
 </body>
 </html>

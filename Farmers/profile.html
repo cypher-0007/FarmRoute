@@ -245,24 +245,9 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, sendPasswordResetEmail, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        // Verified active project configurations
-        const firebaseConfig = {
-            apiKey: "AIzaSyDIbnRsXJNEOrWAGQos1iuZSXlCHwVoB_k",
-            authDomain: "farmroute-49758.firebaseapp.com",
-            projectId: "farmroute-49758",
-            storageBucket: "farmroute-49758.firebasestorage.app",
-            messagingSenderId: "1067367723341",
-            appId: "1:1067367723341:web:854daaa610d0bc87b80704",
-        };
-
-        // Initialize App Instances
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        import { auth, db } from "../backend/firebaseConfig.js";
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { doc, getDoc, setDoc, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // DOM Element Cache
         const pfpInput = document.getElementById('pfp-input');
