@@ -542,7 +542,7 @@
                     "permission-denied": "The account was created, but Firestore denied saving its profile. Check the Firestore rules for users/{uid}.",
                     "firestore/permission-denied": "The account was created, but Firestore denied saving its profile. Check the Firestore rules for users/{uid}."
                 };
-                showAppModal(signupMessages[error.code] || `${error.message}${error.code ? ` (${error.code})` : ""}`, "Signup Failed");
+                showAppModal(signupMessages[error.code] || "We could not create your account right now. Please try again.", "Signup Failed");
             }
         });
 
@@ -565,7 +565,7 @@
                     'auth/user-not-found': 'No account was found for that email address.',
                     'auth/too-many-requests': 'Too many attempts. Please wait a while and try again.'
                 };
-                showAppModal(messages[error.code] || error.message, 'Password Reset Failed');
+                showAppModal(messages[error.code] || "We could not send a password reset email. Please try again.", 'Password Reset Failed');
             }
         });
 
@@ -584,7 +584,7 @@
                 await signInWithEmailAndPassword(auth, email, password);
             } catch (error) {
                 console.error("Login error:", error);
-                showAppModal(error.message, "Login Failed");
+                showAppModal("We could not sign you in. Check your email and password, then try again.", "Login Failed");
             }
         });
 

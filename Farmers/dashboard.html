@@ -869,7 +869,7 @@
             setModelStatus("Gemini scan complete", "emerald");
         } catch (error) {
             console.error("Shelf-life Gemini scan failed:", error);
-            if (diagnosticsSummary) diagnosticsSummary.textContent = error.message || "Could not analyze this listing. Please try again.";
+            if (diagnosticsSummary) diagnosticsSummary.textContent = "We could not analyze this listing right now. Please try again.";
             setModelStatus("Scan failed", "red");
         } finally {
             runDiagnosticsBtn.disabled = false;

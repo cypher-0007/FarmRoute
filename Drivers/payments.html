@@ -761,7 +761,7 @@
             showModalAlert("success", "Withdrawal Requested", `Your withdrawal of ${money(amount)} has been submitted for processing. Funds will be transferred to your bank account within 24 hours.`);
         } catch (err) {
             console.error("Withdrawal failed:", err);
-            showModalAlert("error", "Withdrawal Failed", err.message || "Unable to process withdrawal. Please try again.");
+            showModalAlert("error", "Withdrawal Failed", "We could not process your withdrawal. Please check your details and try again.");
         } finally {
             withdrawalElements.submitBtn.disabled = false;
             withdrawalElements.submitBtn.innerHTML = originalText;
@@ -845,7 +845,7 @@
             showModalAlert("success", "PIN Set Successfully", "Your withdrawal PIN has been set. You can now withdraw funds.");
         } catch (err) {
             console.error("Set PIN failed:", err);
-            showModalAlert("error", "Failed to Set PIN", err.message);
+            showModalAlert("error", "Failed to Set PIN", "We could not set your PIN. Please check your details and try again.");
         } finally {
             setPinElements.submitBtn.disabled = false;
             setPinElements.submitBtn.innerHTML = originalText;
@@ -916,7 +916,7 @@
             showModalAlert("success", "PIN Changed Successfully", "Your withdrawal PIN has been updated.");
         } catch (err) {
             console.error("Change PIN failed:", err);
-            showModalAlert("error", "Failed to Change PIN", err.message);
+            showModalAlert("error", "Failed to Change PIN", "We could not update your PIN. Please check your current PIN and try again.");
         } finally {
             changePinElements.submitBtn.disabled = false;
             changePinElements.submitBtn.innerHTML = originalText;

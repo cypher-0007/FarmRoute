@@ -77,6 +77,6 @@ authForm.addEventListener("submit", async (e) => {
     }
   } catch (error) {
     console.error("Authentication error:", error.code, error.message);
-    showAppModal(error.message, "Authentication Error", "error");
+    showAppModal("We could not complete that request. Please check your details and try again.", "Authentication Error", "error");
   }
 });

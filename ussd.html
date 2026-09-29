@@ -650,7 +650,7 @@ Role: Farmer
                 console.error("USSD simulator error:", error);
                 setScreen("error", `FarmRoute USSD
 Request failed:
-${error.code || error.message}
+Something went wrong while processing your request. Please try again.
 
 9. Main menu
 0. Exit`, "Choose option");
@@ -683,8 +683,7 @@ ${error.code || error.message}
                 await loadFarmerData();
             } catch (error) {
                 console.error("USSD profile load failed:", error);
-                setScreen("error", `Could not load farmer data.
-${error.code || error.message}
+                setScreen("error", `We could not load your farmer details. Please try again.
 
 7. Logout
 0. Exit`, "Choose option");

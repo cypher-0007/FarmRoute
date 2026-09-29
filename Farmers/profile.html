@@ -324,7 +324,7 @@
                 showModalAlert('success', 'Check Your Email', `Password reset instructions were sent to ${currentUser.email}. Check your inbox and spam folder.`);
             } catch (error) {
                 console.error('Password reset error:', error);
-                showModalAlert('error', 'Password Reset Failed', error.message);
+                showModalAlert('error', 'Password Reset Failed', 'We could not send a password reset email. Please try again.');
             }
         });
 
@@ -470,7 +470,7 @@
                 showModalAlert('success', 'Changes Saved', 'Your profile adjustments have been synchronized and updated successfully.');
             } catch (error) {
                 console.error("Error syncing profile modifications to database:", error);
-                showModalAlert('error', 'Update Failed', error.message);
+                showModalAlert('error', 'Update Failed', 'We could not save your changes. Please try again.');
             } finally {
                 saveBtn.disabled = false;
                 saveBtn.innerHTML = originalText;

@@ -245,7 +245,7 @@
                 tripListenerErrors++;
                 console.error(`Trips synchronization failed for ${status}:`, error);
                 if (tripListenerErrors === activeTripStatuses.length) {
-                    tripsWrapper.innerHTML = `<div class="text-center py-6 text-red-500 text-sm">Failed to sync trip data logs: ${error.code || error.message}</div>`;
+                    tripsWrapper.innerHTML = `<div class="text-center py-6 text-red-500 text-sm">We could not load your trips. Please refresh and try again.</div>`;
                 }
             });
         });

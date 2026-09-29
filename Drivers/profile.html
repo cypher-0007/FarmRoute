@@ -502,7 +502,7 @@
                 showModalAlert("success", "Check Your Email", `Password reset instructions were sent to ${currentUser.email}. Check your inbox and spam folder.`);
             } catch (error) {
                 console.error("Password reset error:", error);
-                showModalAlert("error", "Password Reset Failed", error.message);
+                showModalAlert("error", "Password Reset Failed", "We could not send a password reset email. Please try again.");
             }
         });
 
@@ -560,7 +560,7 @@
                     updatePfpUI(userData.profilePictureUrl || user.photoURL);
                 }
             } catch (error) {
-                showModalAlert("error", "Profile Load Failed", error.message);
+                showModalAlert("error", "Profile Load Failed", "We could not load your profile. Please refresh and try again.");
             }
         });
 
@@ -594,7 +594,7 @@
                 await setDoc(doc(db, "users", currentUser.uid), payload, { merge: true });
                 showModalAlert("success", "Changes Saved", "Your driver profile and bank details have been updated.");
             } catch (error) {
-                showModalAlert("error", "Update Failed", error.message);
+                showModalAlert("error", "Update Failed", "We could not save your changes. Please try again.");
             } finally {
                 saveBtn.disabled = false;
                 saveBtn.innerHTML = originalText;
@@ -691,7 +691,7 @@
                 showModalAlert("success", "PIN Set Successfully", "Your withdrawal PIN has been set. You can now withdraw funds from the Payments page.");
             } catch (err) {
                 console.error("Set PIN failed:", err);
-                showModalAlert("error", "Failed to Set PIN", err.message);
+                showModalAlert("error", "Failed to Set PIN", "We could not set your PIN. Please check your details and try again.");
             } finally {
                 setPinSubmitBtn.disabled = false;
                 setPinSubmitBtn.innerHTML = originalText;
@@ -729,7 +729,7 @@
                 showModalAlert("success", "PIN Changed Successfully", "Your withdrawal PIN has been updated.");
             } catch (err) {
                 console.error("Change PIN failed:", err);
-                showModalAlert("error", "Failed to Change PIN", err.message);
+                showModalAlert("error", "Failed to Change PIN", "We could not update your PIN. Please check your current PIN and try again.");
             } finally {
                 changePinSubmitBtn.disabled = false;
                 changePinSubmitBtn.innerHTML = originalText;

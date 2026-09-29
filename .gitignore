@@ -21,3 +21,6 @@ firebase-adminsdk-*.json
 private/
 backups/
 *.backup
+
+# KiloCode skills (local installable skill packs, large data files)
+.kilicode/
