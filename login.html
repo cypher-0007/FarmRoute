@@ -319,8 +319,7 @@
         import { auth, db } from "./backend/firebaseConfig.js"; 
         import { 
             createUserWithEmailAndPassword, 
-            signInWithEmailAndPassword,
-            sendPasswordResetEmail,
+            signInWithEmailAndPassword, 
             updateProfile,
             onAuthStateChanged,
             GoogleAuthProvider,
@@ -546,6 +545,7 @@
             }
         });
 
+<<<<<<< HEAD
         // PASSWORD RESET FLOW
         document.getElementById('forgot-password').addEventListener('click', async (event) => {
             event.preventDefault();
@@ -569,18 +569,15 @@
             }
         });
 
+=======
+>>>>>>> 96023b4f6c3513a2423f0af226fd3f78fda749e7
         // LOGIN FLOW
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value;
-            const rememberMe = document.getElementById('remember_me').checked;
 
             try {
-                await setPersistence(
-                    auth,
-                    rememberMe ? browserLocalPersistence : browserSessionPersistence
-                );
                 await signInWithEmailAndPassword(auth, email, password);
             } catch (error) {
                 console.error("Login error:", error);
