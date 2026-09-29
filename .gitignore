@@ -1,4 +1,23 @@
+# Dependencies and deployment artifacts
+node_modules/
 functions/node_modules/
-functions/.env
-functions/.env.*
-!functions/.env.example
+.vercel/
+
+# Secrets: keep every real environment file, key, certificate, and service account
+# out of Git. Commit only the redacted example files.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+service-account*.json
+firebase-adminsdk-*.json
+
+# Local exports and backups can contain customer or operational data.
+private/
+backups/
+*.backup

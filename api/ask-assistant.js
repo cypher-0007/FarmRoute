@@ -5,8 +5,16 @@ export default async function handler(req, res) {
 
   const { message } = req.body;
 
-  if (!message || typeof message !== "string") {
-    return res.status(400).json({ error: "Message is required" });
+  const allowedOrigins = (process.env.ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  if (!req.headers.origin || !allowedOrigins.includes(req.headers.origin)) {
+    return res.status(403).json({ error: "Origin is not allowed" });
+  }
+
+  if (!message || typeof message !== "string" || message.length > 1000) {
+    return res.status(400).json({ error: "Message must be between 1 and 1,000 characters" });
   }
 
   try {
