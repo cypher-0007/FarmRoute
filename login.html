@@ -122,14 +122,10 @@
                         <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-stone-50/30 px-3 text-[10px] font-medium uppercase tracking-wider text-gray-400">or continue with</span>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 gap-3">
                         <button type="button" id="google-login-btn" class="flex items-center justify-center space-x-2 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 hover:border-emerald-500 hover:text-emerald-800 transition">
                             <i class="fa-brands fa-google text-red-500"></i>
                             <span>Google</span>
-                        </button>
-                        <button type="button" class="flex items-center justify-center space-x-2 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 hover:cursor-not-allowed transition">
-                            <i class="fa-brands fa-apple text-black"></i>
-                            <span>Apple</span>
                         </button>
                     </div>
 
@@ -223,14 +219,10 @@
                         <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-stone-50/30 px-3 text-[10px] font-medium uppercase tracking-wider text-gray-400">or continue with</span>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 gap-3">
                         <button type="button" id="google-signup-btn" class="flex items-center justify-center space-x-2 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 hover:border-emerald-500 hover:text-emerald-800 transition">
                             <i class="fa-brands fa-google text-red-500"></i>
                             <span>Google</span>
-                        </button>
-                        <button type="button" class="flex items-center justify-center space-x-2 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 hover:cursor-not-allowed transition">
-                            <i class="fa-brands fa-apple text-black"></i>
-                            <span>Apple</span>
                         </button>
                     </div>
 
@@ -320,17 +312,17 @@
         import { 
             createUserWithEmailAndPassword, 
             signInWithEmailAndPassword, 
+            sendPasswordResetEmail,
             updateProfile,
             onAuthStateChanged,
             GoogleAuthProvider,
-            getRedirectResult,
-            signInWithRedirect,
+            signInWithPopup,
             signOut
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         let isCreatingAccount = false;
-        let isHandlingGoogleRedirect = true;
+        let authStateReady = false;
         const GOOGLE_SIGNUP_STORAGE_KEY = "farmroute.googleSignup";
         const googleProvider = new GoogleAuthProvider();
         googleProvider.setCustomParameters({ prompt: "select_account" });
@@ -404,14 +396,16 @@
 
         // Active Session Checker
         onAuthStateChanged(auth, (user) => {
-            if (user && !isCreatingAccount && !isHandlingGoogleRedirect) {
+            const firstAuthState = !authStateReady;
+            authStateReady = true;
+            if (user && !firstAuthState && !isCreatingAccount) {
                 redirectUserByRole(user.uid);
             }
         });
 
         function googleErrorMessage(error) {
             const messages = {
-                "auth/unauthorized-domain": "This website has not been authorized for Google sign-in yet.",
+                "auth/unauthorized-domain": `Add ${window.location.hostname} to Firebase Console > Authentication > Settings > Authorized domains, then try Google sign-in again.`,
                 "auth/popup-blocked": "Google sign-in was blocked. Please try again.",
                 "auth/account-exists-with-different-credential": "This email is already associated with another sign-in method. Log in with that method first."
             };
@@ -462,6 +456,7 @@
 
         async function beginGoogleSignIn(mode) {
             try {
+<<<<<<< HEAD
                 sessionStorage.removeItem(GOOGLE_SIGNUP_STORAGE_KEY);
                 await signInWithRedirect(auth, googleProvider);
             } catch (error) {
@@ -479,21 +474,58 @@
                 if (!user || !signedInWithGoogle) return;
                 handledRedirectResult = true;
 
+=======
+                if (mode === "signup") {
+                    const role = normalizeRole(document.getElementById("user-role").value);
+                    const phone = document.getElementById("signup-phone").value.trim();
+                    const name = document.getElementById("signup-name").value.trim();
+
+                    if (!role || !phone) {
+                        showAppModal("Choose Farmer or Driver and enter your name and phone number before continuing with Google.", "Complete Your Profile");
+                        return;
+                    }
+
+                    sessionStorage.setItem(GOOGLE_SIGNUP_STORAGE_KEY, JSON.stringify({ role, phone, name }));
+                } else {
+                    sessionStorage.removeItem(GOOGLE_SIGNUP_STORAGE_KEY);
+                }
+
+                const result = await signInWithPopup(auth, googleProvider);
+                const user = result.user;
+>>>>>>> a29dfc3185284fa08b1addd3b3ae6e7b528e63a0
                 const profileRef = doc(db, "users", user.uid);
                 const existingProfile = await getDoc(profileRef);
                 if (!existingProfile.exists()) {
+<<<<<<< HEAD
                     const savedRole = await showGoogleRolePicker(user);
                     if (!savedRole) return;
+=======
+                    const savedSignup = sessionStorage.getItem(GOOGLE_SIGNUP_STORAGE_KEY);
+                    const signup = savedSignup ? JSON.parse(savedSignup) : null;
+                    if (mode !== "signup" || !signup?.role || !signup?.phone) {
+                        await signOut(auth);
+                        switchTab("signup");
+                        showAppModal("Choose a role and enter your phone number before creating a Google account.", "Complete Your Profile");
+                        return;
+                    }
+
+                    await setDoc(profileRef, {
+                        uid: user.uid,
+                        name: signup.name || user.displayName || "FarmRoute User",
+                        email: user.email || "",
+                        phone: signup.phone,
+                        role: signup.role,
+                        authProvider: "google.com",
+                        createdAt: new Date().toISOString()
+                    });
+>>>>>>> a29dfc3185284fa08b1addd3b3ae6e7b528e63a0
                 }
 
                 sessionStorage.removeItem(GOOGLE_SIGNUP_STORAGE_KEY);
                 await redirectUserByRole(user.uid);
             } catch (error) {
-                console.error("Google redirect error:", error);
+                console.error("Google sign-in error:", error);
                 showAppModal(googleErrorMessage(error), "Google Sign-in");
-            } finally {
-                isHandlingGoogleRedirect = false;
-                if (auth.currentUser && !handledRedirectResult) redirectUserByRole(auth.currentUser.uid);
             }
         }
 
@@ -545,9 +577,9 @@
                 const signupMessages = {
                     "auth/email-already-in-use": "An account already uses this email. Try logging in instead.",
                     "auth/invalid-email": "Enter a valid email address.",
-                    "auth/weak-password": "Choose a stronger password (at least 6 characters).",
-                    "auth/operation-not-allowed": "Email and password sign-up is disabled in Firebase Authentication. Enable it in Firebase Console > Authentication > Sign-in method.",
-                    "auth/unauthorized-domain": "This website domain is not authorized for Firebase Authentication. Add it in Firebase Console > Authentication > Settings > Authorized domains.",
+                "auth/weak-password": "Choose a stronger password (at least 6 characters).",
+                "auth/operation-not-allowed": "Email and password sign-up is disabled in Firebase Authentication. Enable it in Firebase Console > Authentication > Sign-in method.",
+                    "auth/unauthorized-domain": `Add ${window.location.hostname} to Firebase Console > Authentication > Settings > Authorized domains.`,
                     "auth/invalid-api-key": "The Firebase API key is invalid. Check the web app configuration in backend/firebaseConfig.js.",
                     "permission-denied": "The account was created, but Firestore denied saving its profile. Check the Firestore rules for users/{uid}.",
                     "firestore/permission-denied": "The account was created, but Firestore denied saving its profile. Check the Firestore rules for users/{uid}."
@@ -589,14 +621,20 @@
                 await signInWithEmailAndPassword(auth, email, password);
             } catch (error) {
                 console.error("Login error:", error);
-                showAppModal("We could not sign you in. Check your email and password, then try again.", "Login Failed");
+                const messages = {
+                    "auth/invalid-credential": "Email or password is incorrect. Check both and try again.",
+                    "auth/user-not-found": "No account was found for that email. Create an account first.",
+                    "auth/wrong-password": "Email or password is incorrect. Check both and try again.",
+                    "auth/too-many-requests": "Too many failed attempts. Wait a moment, then try again.",
+                    "auth/operation-not-allowed": "Email and password sign-in is disabled in Firebase Authentication. Enable it in Firebase Console > Authentication > Sign-in method.",
+                    "auth/unauthorized-domain": `Add ${window.location.hostname} to Firebase Console > Authentication > Settings > Authorized domains.`
+                };
+                showAppModal(messages[error.code] || `${error.message}${error.code ? ` (${error.code})` : ""}`, "Login Failed");
             }
         });
 
         document.getElementById("google-login-btn").addEventListener("click", () => beginGoogleSignIn("login"));
         document.getElementById("google-signup-btn").addEventListener("click", () => beginGoogleSignIn("signup"));
-        completeGoogleSignIn();
     </script>
 </body>
 </html>
-
