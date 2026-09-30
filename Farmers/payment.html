@@ -881,8 +881,10 @@ onAuthStateChanged(auth, async (user) => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ message: text }),
         });
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         typingDiv.remove();
+        if (!res.ok) throw new Error(data.error || "Assistant request failed.");
+        if (typeof data.reply !== "string" || !data.reply.trim()) throw new Error("Assistant returned an empty response.");
         addMessage(data.reply, "bot");
       } catch (err) {
         console.error("Chat error:", err);

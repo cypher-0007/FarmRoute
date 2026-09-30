@@ -9,7 +9,17 @@ export default async function handler(req, res) {
     .split(",")
     .map((origin) => origin.trim())
     .filter(Boolean);
-  if (!req.headers.origin || !allowedOrigins.includes(req.headers.origin)) {
+  const origin = req.headers.origin;
+  const forwardedHost = req.headers["x-forwarded-host"] || req.headers.host || "";
+  const requestHost = String(forwardedHost).split(",")[0].trim().toLowerCase();
+  let originHost = "";
+  try {
+    originHost = origin ? new URL(origin).host.toLowerCase() : "";
+  } catch {
+    originHost = "";
+  }
+  const isSameOrigin = Boolean(originHost && requestHost && originHost === requestHost);
+  if (!isSameOrigin && (!origin || !allowedOrigins.includes(origin))) {
     return res.status(403).json({ error: "Origin is not allowed" });
   }
 
@@ -30,6 +40,7 @@ export default async function handler(req, res) {
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: "POST",
+        signal: AbortSignal.timeout(20000),
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           contents: [
@@ -70,7 +81,7 @@ export default async function handler(req, res) {
     res.status(200).json({ reply });
   } catch (err) {
     console.error("Assistant error:", err);
-    res.status(500).json({
+    res.status(err.name === "TimeoutError" ? 504 : 500).json({
       reply: "Assistant's a bit busy right now — try again shortly.",
       error: err.message,
     });
