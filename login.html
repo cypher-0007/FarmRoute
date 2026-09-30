@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -418,23 +418,51 @@
             return messages[error.code] || "Google sign-in could not be completed. Please try again.";
         }
 
+        function showGoogleRolePicker(user) {
+            return new Promise((resolve) => {
+                let modal = document.getElementById("google-role-modal");
+                if (!modal) {
+                    modal = document.createElement("div");
+                    modal.id = "google-role-modal";
+                    modal.className = "fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4";
+                    modal.innerHTML = `
+                        <div class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+                            <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-700"><i class="fa-solid fa-seedling text-xl"></i></div>
+                            <h3 class="mb-2 text-center text-lg font-bold text-gray-900">Choose your FarmRoute role</h3>
+                            <p class="mb-5 text-center text-sm text-gray-500">Select how you’ll use FarmRoute. This will be your assigned role.</p>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button type="button" data-role="farmer" class="rounded-xl border-2 border-gray-200 bg-white px-4 py-3 font-semibold text-gray-700 hover:border-emerald-600"><i class="fa-solid fa-wheat-awn mr-2"></i>Farmer</button>
+                                <button type="button" data-role="driver" class="rounded-xl border-2 border-gray-200 bg-white px-4 py-3 font-semibold text-gray-700 hover:border-emerald-600"><i class="fa-solid fa-truck mr-2"></i>Driver</button>
+                            </div>
+                        </div>`;
+                    document.body.appendChild(modal);
+                }
+                const finish = async (role) => {
+                    modal.remove();
+                    try {
+                        await setDoc(doc(db, "users", user.uid), {
+                            uid: user.uid,
+                            name: user.displayName || "FarmRoute User",
+                            email: user.email || "",
+                            phone: "",
+                            role,
+                            authProvider: "google.com",
+                            createdAt: new Date().toISOString()
+                        });
+                        resolve(true);
+                    } catch (error) {
+                        console.error("Google profile setup error:", error);
+                        showAppModal("We couldn’t save your role. Please sign in again and retry.", "Profile Setup Failed");
+                        resolve(false);
+                    }
+                };
+                modal.querySelectorAll("[data-role]").forEach((button) => button.addEventListener("click", () => finish(button.dataset.role), { once: true }));
+            });
+        }
+
         async function beginGoogleSignIn(mode) {
             try {
-                if (mode === "signup") {
-                    const role = normalizeRole(document.getElementById("user-role").value);
-                    const phone = document.getElementById("signup-phone").value.trim();
-                    const name = document.getElementById("signup-name").value.trim();
-
-                    if (!role || !phone) {
-                        showAppModal("Choose Farmer or Driver and enter your phone number before continuing with Google.", "Complete Your Profile");
-                        return;
-                    }
-
-                    sessionStorage.setItem(GOOGLE_SIGNUP_STORAGE_KEY, JSON.stringify({ role, phone, name }));
-                } else {
-                    sessionStorage.removeItem(GOOGLE_SIGNUP_STORAGE_KEY);
-                }
-
+                sessionStorage.removeItem(GOOGLE_SIGNUP_STORAGE_KEY);
                 await signInWithRedirect(auth, googleProvider);
             } catch (error) {
                 console.error("Google sign-in error:", error);
@@ -446,36 +474,19 @@
             let handledRedirectResult = false;
             try {
                 const result = await getRedirectResult(auth);
-                if (!result?.user) return;
+                const user = result?.user || auth.currentUser;
+                const signedInWithGoogle = user?.providerData?.some((provider) => provider.providerId === "google.com");
+                if (!user || !signedInWithGoogle) return;
                 handledRedirectResult = true;
 
-                const user = result.user;
                 const profileRef = doc(db, "users", user.uid);
                 const existingProfile = await getDoc(profileRef);
-
                 if (!existingProfile.exists()) {
-                    const savedSignup = sessionStorage.getItem(GOOGLE_SIGNUP_STORAGE_KEY);
-                    const signup = savedSignup ? JSON.parse(savedSignup) : null;
-
-                    if (!signup?.role || !signup?.phone) {
-                        await signOut(auth);
-                        switchTab("signup");
-                        showAppModal("New Google users need to choose a role and add a phone number before signing in.", "Complete Your Profile");
-                        return;
-                    }
-
-                    await setDoc(profileRef, {
-                        uid: user.uid,
-                        name: signup.name || user.displayName || "FarmRoute User",
-                        email: user.email || "",
-                        phone: signup.phone,
-                        role: signup.role,
-                        authProvider: "google.com",
-                        createdAt: new Date().toISOString()
-                    });
-                    sessionStorage.removeItem(GOOGLE_SIGNUP_STORAGE_KEY);
+                    const savedRole = await showGoogleRolePicker(user);
+                    if (!savedRole) return;
                 }
 
+                sessionStorage.removeItem(GOOGLE_SIGNUP_STORAGE_KEY);
                 await redirectUserByRole(user.uid);
             } catch (error) {
                 console.error("Google redirect error:", error);
@@ -545,7 +556,6 @@
             }
         });
 
-<<<<<<< HEAD
         // PASSWORD RESET FLOW
         document.getElementById('forgot-password').addEventListener('click', async (event) => {
             event.preventDefault();
@@ -569,8 +579,6 @@
             }
         });
 
-=======
->>>>>>> 96023b4f6c3513a2423f0af226fd3f78fda749e7
         // LOGIN FLOW
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
