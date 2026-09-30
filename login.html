@@ -1,4 +1,4 @@
-﻿!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -13,9 +13,9 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
+<body class="bg-gray-100 min-h-screen flex items-start justify-center p-4 sm:p-6 lg:p-8">
 
-    <div class="w-full max-w-5xl bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col lg:flex-row min-h-[800px]">
+    <div class="w-full max-w-5xl bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col lg:flex-row min-h-[calc(100vh-2rem)] lg:min-h-[calc(100vh-4rem)]">
         
         <div class="hidden lg:flex lg:w-1/2 relative bg-cover bg-center p-12 flex-col justify-between text-white" style="background-image: linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.25)), url('https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&q=80&w=1000');">
             <div class="flex items-center space-x-2 bg-white/90 text-emerald-800 py-2 px-4 rounded-full w-fit backdrop-blur-sm shadow-sm">
@@ -317,13 +317,12 @@
             onAuthStateChanged,
             GoogleAuthProvider,
             signInWithPopup,
-            signOut
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         let isCreatingAccount = false;
         let authStateReady = false;
-        const GOOGLE_SIGNUP_STORAGE_KEY = "farmroute.googleSignup";
+        let isHandlingGoogleSignIn = false;
         const googleProvider = new GoogleAuthProvider();
         googleProvider.setCustomParameters({ prompt: "select_account" });
 
@@ -398,7 +397,7 @@
         onAuthStateChanged(auth, (user) => {
             const firstAuthState = !authStateReady;
             authStateReady = true;
-            if (user && !firstAuthState && !isCreatingAccount) {
+            if (user && !firstAuthState && !isCreatingAccount && !isHandlingGoogleSignIn) {
                 redirectUserByRole(user.uid);
             }
         });
@@ -454,78 +453,25 @@
             });
         }
 
-        async function beginGoogleSignIn(mode) {
+        async function beginGoogleSignIn() {
+            isHandlingGoogleSignIn = true;
             try {
-<<<<<<< HEAD
-                sessionStorage.removeItem(GOOGLE_SIGNUP_STORAGE_KEY);
-                await signInWithRedirect(auth, googleProvider);
-            } catch (error) {
-                console.error("Google sign-in error:", error);
-                showAppModal(googleErrorMessage(error), "Google Sign-in");
-            }
-        }
-
-        async function completeGoogleSignIn() {
-            let handledRedirectResult = false;
-            try {
-                const result = await getRedirectResult(auth);
-                const user = result?.user || auth.currentUser;
-                const signedInWithGoogle = user?.providerData?.some((provider) => provider.providerId === "google.com");
-                if (!user || !signedInWithGoogle) return;
-                handledRedirectResult = true;
-
-=======
-                if (mode === "signup") {
-                    const role = normalizeRole(document.getElementById("user-role").value);
-                    const phone = document.getElementById("signup-phone").value.trim();
-                    const name = document.getElementById("signup-name").value.trim();
-
-                    if (!role || !phone) {
-                        showAppModal("Choose Farmer or Driver and enter your name and phone number before continuing with Google.", "Complete Your Profile");
-                        return;
-                    }
-
-                    sessionStorage.setItem(GOOGLE_SIGNUP_STORAGE_KEY, JSON.stringify({ role, phone, name }));
-                } else {
-                    sessionStorage.removeItem(GOOGLE_SIGNUP_STORAGE_KEY);
-                }
-
                 const result = await signInWithPopup(auth, googleProvider);
                 const user = result.user;
->>>>>>> a29dfc3185284fa08b1addd3b3ae6e7b528e63a0
                 const profileRef = doc(db, "users", user.uid);
                 const existingProfile = await getDoc(profileRef);
-                if (!existingProfile.exists()) {
-<<<<<<< HEAD
-                    const savedRole = await showGoogleRolePicker(user);
-                    if (!savedRole) return;
-=======
-                    const savedSignup = sessionStorage.getItem(GOOGLE_SIGNUP_STORAGE_KEY);
-                    const signup = savedSignup ? JSON.parse(savedSignup) : null;
-                    if (mode !== "signup" || !signup?.role || !signup?.phone) {
-                        await signOut(auth);
-                        switchTab("signup");
-                        showAppModal("Choose a role and enter your phone number before creating a Google account.", "Complete Your Profile");
-                        return;
-                    }
 
-                    await setDoc(profileRef, {
-                        uid: user.uid,
-                        name: signup.name || user.displayName || "FarmRoute User",
-                        email: user.email || "",
-                        phone: signup.phone,
-                        role: signup.role,
-                        authProvider: "google.com",
-                        createdAt: new Date().toISOString()
-                    });
->>>>>>> a29dfc3185284fa08b1addd3b3ae6e7b528e63a0
+                if (!existingProfile.exists()) {
+                    const roleSaved = await showGoogleRolePicker(user);
+                    if (!roleSaved) return;
                 }
 
-                sessionStorage.removeItem(GOOGLE_SIGNUP_STORAGE_KEY);
                 await redirectUserByRole(user.uid);
             } catch (error) {
                 console.error("Google sign-in error:", error);
                 showAppModal(googleErrorMessage(error), "Google Sign-in");
+            } finally {
+                isHandlingGoogleSignIn = false;
             }
         }
 
@@ -632,9 +578,8 @@
                 showAppModal(messages[error.code] || `${error.message}${error.code ? ` (${error.code})` : ""}`, "Login Failed");
             }
         });
-
-        document.getElementById("google-login-btn").addEventListener("click", () => beginGoogleSignIn("login"));
-        document.getElementById("google-signup-btn").addEventListener("click", () => beginGoogleSignIn("signup"));
+        document.getElementById("google-login-btn").addEventListener("click", () => beginGoogleSignIn());
+        document.getElementById("google-signup-btn").addEventListener("click", () => beginGoogleSignIn());
     </script>
 </body>
 </html>
