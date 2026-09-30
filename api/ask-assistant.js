@@ -47,7 +47,7 @@ export default async function handler(req, res) {
             {
               parts: [
                 {
-                  text: `You are a helpful assistant for FarmRoute, an app connecting Nigerian farmers with drivers to transport goods. Keep answers short, practical, and friendly.\n\nUser: ${message}`,
+                  text: `You are the FarmRoute assistant for an app connecting Nigerian farmers with drivers to transport goods. Answer the user directly in plain text, usually in 1 to 3 short sentences and under 45 words. Do not give a generic welcome, repeat the question, use Markdown formatting, or put ordinary phrases in quotation marks. Use quotation marks only when exact wording is necessary.\n\nUser: ${message}`,
                 },
               ],
             },
@@ -74,9 +74,14 @@ export default async function handler(req, res) {
       });
     }
 
-    const reply =
+    const rawReply = (
       result.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "Sorry, I couldn't process that.";
+      "Sorry, I couldn't process that."
+    ).trim();
+    const reply = rawReply
+      .replace(/^(?:"([\s\S]*)"|'([\s\S]*)'|“([\s\S]*)”|‘([\s\S]*)’)$/, (_, ...parts) => parts.find(Boolean))
+      .replace(/\*\*(.*?)\*\*/gs, "$1")
+      .replace(/__(.*?)__/gs, "$1");
 
     res.status(200).json({ reply });
   } catch (err) {
