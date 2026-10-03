@@ -275,6 +275,7 @@
         import { auth, db } from "../backend/firebaseConfig.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { doc, getDoc, collection, addDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { createNotification } from "../backend/notificationService.js";
 
         const LOGIN_PAGE_URL = "../login.html";
 
@@ -499,7 +500,16 @@
         // Isolated Firebase Save function execution context
         async function saveProductListing(productPayload) {
             try {
-                await addDoc(collection(db, "products"), productPayload);
+                const listingRef = await addDoc(collection(db, "products"), productPayload);
+                const listingCode = `FR-${listingRef.id.slice(0, 8).toUpperCase()}`;
+                await createNotification(db, productPayload.farmerId, {
+                    recipientRole: "farmer",
+                    type: "listing",
+                    title: `You successfully listed ${productPayload.name || "your product"}`,
+                    body: `Listing ${listingCode} is live and awaiting a driver match.`,
+                    href: "listings.html",
+                    relatedId: listingCode
+                });
                 nextBtn.innerText = "Success";
                 showSuccessModal();
             } catch (error) {
@@ -813,6 +823,7 @@
     document.head.appendChild(style);
   })();
 </script>
+    <script type="module" src="../backend/notificationBadges.js"></script>
 </body>
 </html>
 

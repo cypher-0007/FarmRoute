@@ -105,6 +105,7 @@
     import { auth, db } from "../backend/firebaseConfig.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { doc, getDoc, collection, query, where, onSnapshot, updateDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { createNotification } from "../backend/notificationService.js";
 
     const LOGIN_PAGE_URL = "../login.html";
 
@@ -426,6 +427,36 @@
             tripUpdated = true;
 
             if (currentUser) {
+                const listingCode = `FR-${tripId.slice(0, 8).toUpperCase()}`;
+                const isDeliveredToHub = nextStatus === "Driver Delivered";
+                const actionText = isDeliveredToHub ? "has arrived at the delivery hub" : "is now in transit";
+                const driverBody = isDeliveredToHub
+                    ? `${tripData.name || "Your delivery"} reached the delivery hub. The farmer will review it and release escrow.`
+                    : `${tripData.name || "Your delivery"} is on the way from ${tripData.routeFrom || tripData.location || "pickup"} to ${tripData.routeTo || tripData.destination || "the destination"}.`;
+                const farmerBody = isDeliveredToHub
+                    ? `${tripData.name || "Your listing"} (${listingCode}) arrived at the delivery hub. Review the delivery to authorize escrow release.`
+                    : `The driver started delivery for ${tripData.name || "your listing"} (${listingCode}); it is now in transit.`;
+                await Promise.all([
+                    createNotification(db, currentUser.uid, {
+                        recipientRole: "driver",
+                        type: isDeliveredToHub ? "payment" : "shipment",
+                        title: `${tripData.name || "Your trip"} ${actionText}`,
+                        body: driverBody,
+                        href: isDeliveredToHub ? "payments.html" : "active_trips.html",
+                        relatedId: listingCode
+                    }),
+                    createNotification(db, tripData.farmerId || tripData.userId, {
+                        recipientRole: "farmer",
+                        type: isDeliveredToHub ? "payment" : "shipment",
+                        title: isDeliveredToHub ? `Delivery ${listingCode} is awaiting your review` : `Listing ${listingCode} is in transit`,
+                        body: farmerBody,
+                        href: isDeliveredToHub ? "payment.html" : "listings.html",
+                        relatedId: listingCode
+                    })
+                ]);
+            }
+
+            if (currentUser) {
                 await setDoc(doc(db, "payments", tripId), {
                     loadId: tripId,
                     productId: tripId,
@@ -575,6 +606,7 @@
     document.head.appendChild(style);
   })();
 </script>
+    <script type="module" src="../backend/notificationBadges.js"></script>
 </body>
 </html>
 

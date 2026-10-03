@@ -284,6 +284,7 @@
     import { auth, db } from "../backend/firebaseConfig.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { doc, getDoc, setDoc, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { watchUserNotifications } from "../backend/notificationService.js";
 
     const LOGIN_PAGE_URL = "../login.html";
 
@@ -326,6 +327,7 @@
     let notifications = [];
     let listingSnapshots = [];
     let chatSnapshots = [];
+    let actionNotificationSnapshots = [];
     let readState = loadReadState();
     let enabledChannels = loadChannels();
 
@@ -345,6 +347,7 @@
     function saveReadState() {
         try {
             localStorage.setItem(storageKey(), JSON.stringify(readState));
+            window.dispatchEvent(new Event("farmroute:notification-read-state"));
         } catch (error) {
             console.error("Notification state could not be saved:", error);
         }
@@ -457,12 +460,35 @@
                 };
             }
 
+            if (status === "Matched") {
+                return {
+                    ...shared,
+                    key: `shipment-${productSnap.id}-matched`,
+                    type: "shipment",
+                    title: `${crop} matched with a driver`,
+                    body: `A driver accepted listing ${productSnap.id.slice(0, 8).toUpperCase()}. Delivery is awaiting pickup.`,
+                    meta: "Awaiting pickup"
+                };
+            }
+
+            if (status === "Driver Delivered") {
+                return {
+                    ...shared,
+                    key: `shipment-${productSnap.id}-driver-delivered`,
+                    type: "payment",
+                    title: `Delivery of ${crop} is awaiting your review`,
+                    body: `Listing ${productSnap.id.slice(0, 8).toUpperCase()} reached the delivery hub. Review the delivery to authorize escrow release.`,
+                    href: "payment.html",
+                    meta: "Awaiting review"
+                };
+            }
+
             return {
                 ...shared,
-                key: `shipment-${productSnap.id}-searching`,
-                type: "listing",
-                title: `${crop} is searching for a driver`,
-                body: `Your listing is live on ${route}. Drivers nearby can now accept this load.`,
+                    key: `shipment-${productSnap.id}-searching`,
+                    type: "listing",
+                    title: `You successfully listed ${crop}`,
+                    body: `Listing ${productSnap.id.slice(0, 8).toUpperCase()} is live on ${route} and awaiting a driver match.`,
                 meta: "Searching"
             };
         });
@@ -781,6 +807,10 @@
 
         currentUserId = user.uid;
         readState = loadReadState();
+        watchUserNotifications(db, user.uid, (docs) => {
+            actionNotificationSnapshots = docs;
+            rebuildNotifications(user.uid);
+        }, (error) => console.error("Action notification listener failed:", error));
         nameEl.innerText = user.displayName || "FarmRoute User";
         roleEl.innerText = "Farmer";
         hideLoading();
@@ -819,8 +849,24 @@
     });
 
     function rebuildNotifications(userId) {
+        const actionListingCodes = new Set(actionNotificationSnapshots.map((snapshot) => snapshot.data().relatedId).filter(Boolean));
+        const shipmentNotifications = buildShipmentNotifications(listingSnapshots, false)
+            .filter((item) => !actionListingCodes.has(`FR-${String(item.id).slice(0, 8).toUpperCase()}`));
         notifications = [
-            ...buildShipmentNotifications(listingSnapshots, false),
+            ...actionNotificationSnapshots.map((snapshot) => {
+                const data = snapshot.data();
+                return {
+                    key: `event-${snapshot.id}`,
+                    type: data.type || "shipment",
+                    category: CATEGORY_BY_TYPE[data.type] || "shipments",
+                    timestamp: toMillis(data.createdAt) || Date.now(),
+                    href: data.href || "listings.html",
+                    title: data.title || "FarmRoute update",
+                    body: data.body || "There is a new update on your account.",
+                    meta: data.relatedId ? `#${data.relatedId}` : ""
+                };
+            }),
+            ...shipmentNotifications,
             ...buildMessageNotifications(chatSnapshots, userId, false)
         ];
         render();
@@ -847,5 +893,6 @@
     closeSide.addEventListener("click", () => sideBar.classList.add("max-md:hidden"))
 </script>
 
+    <script type="module" src="../backend/notificationBadges.js"></script>
 </body>
 </html>

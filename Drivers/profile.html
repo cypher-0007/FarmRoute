@@ -78,7 +78,7 @@
                 <div class="ml-auto flex items-center gap-3 shrink-0">
                     <a href="notifications.html" class="relative w-10 h-10 rounded-full bg-white border border-gray-100 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition" aria-label="Notifications">
                         <i class="fa-regular fa-bell"></i>
-                        <span id="header-message-notification-badge" class="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-green-600 text-white text-[10px] font-bold items-center justify-center hidden">0</span>
+                        <span id="header-notification-badge" class="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-green-600 text-white text-[10px] font-bold items-center justify-center hidden">0</span>
                     </a>
                     <div class="hidden sm:flex items-center gap-3 border-l border-gray-200 pl-3">
                         <img id="header-user-avatar" alt="Profile picture" class="w-10 h-10 rounded-full object-cover border border-gray-100 hidden">
@@ -897,6 +897,7 @@
     document.head.appendChild(style);
   })();
 </script>
+    <script type="module" src="../backend/notificationBadges.js"></script>
 </body>
 </html>
 

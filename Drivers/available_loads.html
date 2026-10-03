@@ -118,6 +118,7 @@
         import { auth, db } from "../backend/firebaseConfig.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { doc, getDoc, collection, query, where, onSnapshot, updateDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { createNotification } from "../backend/notificationService.js";
 
         const LOGIN_PAGE_URL = "../login.html";
 
@@ -449,6 +450,26 @@
                 });
                 listingClaimed = true;
 
+                const listingCode = `FR-${loadId.slice(0, 8).toUpperCase()}`;
+                await Promise.all([
+                    createNotification(db, farmerId, {
+                        recipientRole: "farmer",
+                        type: "shipment",
+                        title: `Listing ${listingCode} matched with a driver`,
+                        body: `${currentDriverName} accepted ${loadData.name || "your listing"}. It is awaiting pickup and delivery.`,
+                        href: "listings.html",
+                        relatedId: listingCode
+                    }),
+                    createNotification(db, currentUser.uid, {
+                        recipientRole: "driver",
+                        type: "listing",
+                        title: `You accepted listing ${listingCode}`,
+                        body: `${loadData.name || "Produce load"} is now in your active trips and awaiting pickup.`,
+                        href: "active_trips.html",
+                        relatedId: listingCode
+                    })
+                ]);
+
                 // Create the conversation as soon as the listing is matched. The payment
                 // ledger is supplementary and must not prevent farmer-driver messaging.
                 activeChatRoomId = await autoCreateChatRoom(
@@ -639,6 +660,7 @@
     document.head.appendChild(style);
   })();
 </script>
+    <script type="module" src="../backend/notificationBadges.js"></script>
 </body>
 </html>
 

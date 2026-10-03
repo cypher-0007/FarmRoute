@@ -208,7 +208,7 @@
 
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-semibold">
-                            Deliveries for Selected Month
+                            Recent Deliveries
                         </h2>
                     </div>
 
@@ -364,24 +364,34 @@
         return Number.isNaN(parsed) ? null : parsed;
     }
 
-    function renderSelectedMonthDeliveries() {
-        if (!dashboardMonthFilter || !recentContainer) return;
+    function updateDashboardMetrics() {
+        if (!dashboardMonthFilter) return;
         const selectedMonth = dashboardMonthFilter.value;
-        const delivered = farmerProducts.filter(({ data }) => data.status === "Delivered");
-        const monthRows = delivered.filter(({ data }) => {
+        const monthProducts = farmerProducts.filter(({ data }) => {
             if (selectedMonth === "all") return true;
             const millis = deliveryDateMillis(data);
             return millis !== null && new Date(millis).toISOString().slice(0, 7) === selectedMonth;
-        }).sort((a, b) => deliveryDateMillis(b.data) - deliveryDateMillis(a.data));
+        });
+        const countStatus = (statuses) => monthProducts.filter(({ data }) => statuses.includes(data.status || "Searching")).length;
+        if (completedEl) completedEl.innerText = String(countStatus(["Delivered"]));
+        if (activeEl) activeEl.innerText = String(countStatus(["Matched", "In Transit", "Driver Delivered"]));
+        if (pendingEl) pendingEl.innerText = String(countStatus(["Searching"]));
+        if (listingsEl) listingsEl.innerText = String(monthProducts.filter(({ data }) => data.status !== "Delivered").length);
+    }
 
-        if (completedEl) completedEl.innerText = String(monthRows.length);
+    function renderRecentDeliveries() {
+        if (!recentContainer) return;
+        const recentRows = farmerProducts
+            .filter(({ data }) => data.status === "Delivered")
+            .sort((a, b) => (deliveryDateMillis(b.data) || 0) - (deliveryDateMillis(a.data) || 0))
+            .slice(0, 4);
         recentContainer.innerHTML = "";
-        if (!monthRows.length) {
-            recentContainer.innerHTML = `<p class="text-gray-500 py-6 text-center">No completed deliveries for this month.</p>`;
+        if (!recentRows.length) {
+            recentContainer.innerHTML = `<p class="text-gray-500 py-6 text-center">No recent deliveries yet.</p>`;
             return;
         }
 
-        monthRows.forEach(({ data }) => {
+        recentRows.forEach(({ data }) => {
             const productName = data.name || "Unnamed Crop";
             const weight = data.weight || "0";
             const unit = data.unit || "kg";
@@ -403,7 +413,7 @@
         });
     }
 
-    dashboardMonthFilter?.addEventListener("change", renderSelectedMonthDeliveries);
+    dashboardMonthFilter?.addEventListener("change", updateDashboardMetrics);
 
     function hideLoading() {
         if (loadingScreen) loadingScreen.classList.add("hidden");
@@ -963,18 +973,6 @@
             where("farmerId", "==", user.uid)
         );
 
-        const pendingQuery = query(
-            productsRef, 
-            where("farmerId", "==", user.uid), 
-            where("status", "==", "Searching")
-        );
-
-        const activeQuery = query(
-            productsRef, 
-            where("farmerId", "==", user.uid), 
-            where("status", "==", "In Transit")
-        );
-
         // --- Snapshot Streams ---
 
         onSnapshot(allFarmerProductsQuery, (snapshot) => {
@@ -991,31 +989,25 @@
             });
             if (listingsEl) listingsEl.innerText = activeCount;
             cachedDiagnosticsProducts = diagnosticsProducts;
-            const deliveredMonths = [...new Set(farmerProducts
-                .filter(({ data }) => data.status === "Delivered")
+        const dashboardMonths = [...new Set(farmerProducts
                 .map(({ data }) => deliveryDateMillis(data))
                 .filter((millis) => millis !== null)
                 .map((millis) => new Date(millis).toISOString().slice(0, 7)))].sort().reverse();
             const previousSelection = dashboardMonthFilter?.value;
             if (dashboardMonthFilter) {
-                dashboardMonthFilter.innerHTML = `<option value="all">All time</option>${deliveredMonths.map((month) => `<option value="${month}">${new Date(`${month}-02T00:00:00`).toLocaleDateString([], { month: "long", year: "numeric" })}</option>`).join("")}`;
-                if (previousSelection === "all" || deliveredMonths.includes(previousSelection)) dashboardMonthFilter.value = previousSelection;
+                dashboardMonthFilter.innerHTML = `<option value="all">All time</option>${dashboardMonths.map((month) => `<option value="${month}">${new Date(`${month}-02T00:00:00`).toLocaleDateString([], { month: "long", year: "numeric" })}</option>`).join("")}`;
+                if (previousSelection === "all" || dashboardMonths.includes(previousSelection)) dashboardMonthFilter.value = previousSelection;
             }
-            if (deliveredMonths.length && (!dashboardMonthFilter?.value || dashboardMonthFilter.value === "all")) {
-                dashboardMonthFilter.value = previousSelection === "all" ? "all" : deliveredMonths[0];
+            if (dashboardMonths.length && (!dashboardMonthFilter?.value || dashboardMonthFilter.value === "all")) {
+                dashboardMonthFilter.value = previousSelection === "all" ? "all" : dashboardMonths[0];
             }
-            renderSelectedMonthDeliveries();
+            updateDashboardMetrics();
+            renderRecentDeliveries();
             refreshDiagnosticsListingOptions();
             renderShelfLifeDiagnostics(cachedDiagnosticsProducts);
         }, (err) => console.error("All products query failed:", err));
 
-        onSnapshot(pendingQuery, (snapshot) => {
-            if (pendingEl) pendingEl.innerText = snapshot.size;
-        }, (err) => console.error("Pending query failed:", err));
-
-        onSnapshot(activeQuery, (snapshot) => {
-            if (activeEl) activeEl.innerText = snapshot.size;
-        }, (err) => console.error("Active shipments query failed:", err));
+        // The month filter updates all four metric cards from the complete snapshot.
 
         // Delivery counts and history are rendered from the complete farmer snapshot above.
 
@@ -1028,7 +1020,7 @@
         );
 
         onSnapshot(recentQuery, (snapshot) => {
-            renderSelectedMonthDeliveries();
+            renderRecentDeliveries();
             return;
             if (!recentContainer) return;
             recentContainer.innerHTML = "";
@@ -1211,6 +1203,7 @@
     document.head.appendChild(style);
   })();
 </script>
+<script type="module" src="../backend/notificationBadges.js"></script>
 </body>
 </html>
 

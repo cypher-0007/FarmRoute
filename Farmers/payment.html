@@ -282,6 +282,7 @@
     import { auth, db } from "../backend/firebaseConfig.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { doc, getDoc, updateDoc, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { createNotification } from "../backend/notificationService.js";
 
     const LOGIN_PAGE_URL = "../login.html";
 
@@ -558,7 +559,30 @@
         if (!targetedDocId) return;
         try {
             const docRef = doc(db, "products", targetedDocId);
+            const listingSnapshot = await getDoc(docRef);
+            const listingData = listingSnapshot.exists() ? listingSnapshot.data() : {};
             await updateDoc(docRef, { status: newStatus });
+            if (newStatus === "Cancelled") {
+                const listingCode = `FR-${targetedDocId.slice(0, 8).toUpperCase()}`;
+                await Promise.all([
+                    createNotification(db, listingData.farmerId || auth.currentUser?.uid, {
+                        recipientRole: "farmer",
+                        type: "shipment",
+                        title: `Listing ${listingCode} was cancelled`,
+                        body: `${listingData.name || "Your listing"} was removed from active delivery matching.`,
+                        href: "listings.html",
+                        relatedId: listingCode
+                    }),
+                    createNotification(db, listingData.driverId, {
+                        recipientRole: "driver",
+                        type: "shipment",
+                        title: `Listing ${listingCode} was cancelled`,
+                        body: `${listingData.name || "The load"} was cancelled by the farmer. Check your active trips for updates.`,
+                        href: "active_trips.html",
+                        relatedId: listingCode
+                    })
+                ]);
+            }
             closeModalDrawer();
         } catch (error) {
             console.error("Escrow execution failure:", error);
@@ -628,6 +652,8 @@
     async function finalizeDatabaseTransactionRecord(targetId) {
         try {
             const documentPointer = doc(db, "products", targetId);
+            const listingSnapshot = await getDoc(documentPointer);
+            const listingData = listingSnapshot.exists() ? listingSnapshot.data() : {};
             await updateDoc(documentPointer, {
                 status: "Delivered",
                 paymentStatus: "released",
@@ -635,6 +661,25 @@
                 paymentAuthorizedAt: new Date(),
                 fundsCapturedAt: new Date()
             });
+            const listingCode = `FR-${targetId.slice(0, 8).toUpperCase()}`;
+            await Promise.all([
+                createNotification(db, listingData.farmerId || auth.currentUser?.uid, {
+                    recipientRole: "farmer",
+                    type: "payment",
+                    title: `Payment released for listing ${listingCode}`,
+                    body: `Escrow for ${listingData.name || "your delivery"} has been authorized and the delivery is complete.`,
+                    href: "payment.html",
+                    relatedId: listingCode
+                }),
+                createNotification(db, listingData.driverId, {
+                    recipientRole: "driver",
+                    type: "payment",
+                    title: `Payout released for listing ${listingCode}`,
+                    body: `The farmer authorized escrow for ${listingData.name || "your delivery"}. Review your payment ledger for the payout.`,
+                    href: "payments.html",
+                    relatedId: listingCode
+                })
+            ]);
             closeModalDrawer();
             showNoticeModal("The escrow payment has been authorized for the driver.", "Payment Released", "success");
         } catch (databaseWriteError) {
@@ -993,6 +1038,7 @@ onAuthStateChanged(auth, async (user) => {
     document.head.appendChild(style);
   })();
 </script>
+    <script type="module" src="../backend/notificationBadges.js"></script>
 </body>
 </html>
 

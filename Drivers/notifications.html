@@ -321,6 +321,7 @@
     import { auth, db } from "../backend/firebaseConfig.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { doc, getDoc, setDoc, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { watchUserNotifications } from "../backend/notificationService.js";
 
     const LOGIN_PAGE_URL = "../login.html";
 
@@ -364,6 +365,7 @@
     let tripSnapshots = [];
     let chatSnapshots = [];
     let paymentSnapshots = [];
+    let actionNotificationSnapshots = [];
     let readState = loadReadState();
     let enabledChannels = loadChannels();
 
@@ -383,6 +385,7 @@
     function saveReadState() {
         try {
             localStorage.setItem(storageKey(), JSON.stringify(readState));
+            window.dispatchEvent(new Event("farmroute:notification-read-state"));
         } catch (error) {
             console.error("Notification state could not be saved:", error);
         }
@@ -492,6 +495,18 @@
                     title: `Trip in progress for ${crop}`,
                     body: `Collect ${crop} from ${pickup} and deliver to ${dropoff}. Keep the route on schedule.`,
                     meta: "In transit"
+                };
+            }
+
+            if (status === "Driver Delivered") {
+                return {
+                    ...shared,
+                    key: `trip-${tripSnap.id}-driver-delivered`,
+                    type: "payment",
+                    title: `Delivery completed for ${crop}`,
+                    body: `You delivered ${crop} to the hub. The farmer must review the arrival before payout release.`,
+                    href: "payments.html",
+                    meta: "Awaiting payout"
                 };
             }
 
@@ -820,6 +835,10 @@
 
         currentUserId = user.uid;
         readState = loadReadState();
+        watchUserNotifications(db, user.uid, (docs) => {
+            actionNotificationSnapshots = docs;
+            rebuildNotifications(user.uid);
+        }, (error) => console.error("Action notification listener failed:", error));
         nameEl.innerText = user.displayName || "FarmRoute Driver";
         roleEl.innerText = "Driver";
         hideLoading();
@@ -863,8 +882,24 @@
     });
 
     function rebuildNotifications(userId) {
+        const actionTripCodes = new Set(actionNotificationSnapshots.map((snapshot) => snapshot.data().relatedId).filter(Boolean));
+        const tripNotifications = buildTripNotifications(tripSnapshots)
+            .filter((item) => !actionTripCodes.has(`FR-${String(item.id).slice(0, 8).toUpperCase()}`));
         notifications = [
-            ...buildTripNotifications(tripSnapshots),
+            ...actionNotificationSnapshots.map((snapshot) => {
+                const data = snapshot.data();
+                return {
+                    key: `event-${snapshot.id}`,
+                    type: data.type || "shipment",
+                    category: CATEGORY_BY_TYPE[data.type] || "shipments",
+                    timestamp: toMillis(data.createdAt) || Date.now(),
+                    href: data.href || "active_trips.html",
+                    title: data.title || "FarmRoute update",
+                    body: data.body || "There is a new update on your account.",
+                    meta: data.relatedId ? `#${data.relatedId}` : ""
+                };
+            }),
+            ...tripNotifications,
             ...buildPaymentNotifications(paymentSnapshots),
             ...buildMessageNotifications(chatSnapshots, userId)
         ];
@@ -899,5 +934,6 @@
 
 <script type="module" src="driver_status.js"></script>
 
+    <script type="module" src="../backend/notificationBadges.js"></script>
 </body>
 </html>
