@@ -163,7 +163,7 @@
     <script type="module">
         import { auth, db } from "../backend/firebaseConfig.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { collection, query, where, orderBy, addDoc, updateDoc, serverTimestamp, doc, getDoc, getDocs, onSnapshot, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { collection, query, where, orderBy, addDoc, updateDoc, serverTimestamp, doc, getDoc, getDocs, onSnapshot, limit, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const chatThreadsContainer = document.getElementById("chat-threads-container");
         const chatListPanel = document.getElementById("chat-list-panel");
@@ -453,6 +453,7 @@
             activeChatId = roomId;
             const room = activeRooms.get(roomId);
             if (!room) return;
+            updateDoc(doc(db, "chats", roomId), { [`unreadCounts.${currentUserData.uid}`]: 0 }).catch((err) => console.error("Could not clear chat unread count:", err));
             const recipientName = room.recipientName;
 
             emptyChatState?.classList.add("hidden");
@@ -678,10 +679,12 @@
                     timestamp: serverTimestamp()
                 });
 
-                await updateDoc(doc(db, "chats", activeChatId), {
-                    lastMessage: textPayload,
-                    lastMessageTime: serverTimestamp()
-                });
+                const room = activeRooms.get(activeChatId) || {};
+                const recipientId = [room.farmerId, room.driverId, ...(room.participants || [])]
+                    .find((participantId) => participantId && participantId !== currentUserData.uid);
+                const chatUpdate = { lastMessage: textPayload, lastMessageTime: serverTimestamp() };
+                if (recipientId) chatUpdate[`unreadCounts.${recipientId}`] = increment(1);
+                await updateDoc(doc(db, "chats", activeChatId), chatUpdate);
             } catch (dispatchErr) {
                 console.error("Transmission workflow error:", dispatchErr);
             } finally {
