@@ -6,8 +6,6 @@
     <title>FarmRoute Dashboard</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js"></script>
 
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
@@ -471,26 +469,10 @@
         "corn": "https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=200"
     };
 
-    const shelfLifeProfiles = [
-        { label: "Tomatoes", keys: ["tomato", "tomatoes"], baseHours: 72, sensitivity: 1.3, range: "2-4 days" },
-        { label: "Fresh pepper", keys: ["pepper", "habanero", "chilli", "chili", "bell pepper"], baseHours: 96, sensitivity: 1.15, range: "3-5 days" },
-        { label: "Leafy vegetables", keys: ["leaf", "lettuce", "spinach", "ugu", "vegetable", "greens", "cabbage"], baseHours: 36, sensitivity: 1.55, range: "1-2 days" },
-        { label: "Okra", keys: ["okra"], baseHours: 48, sensitivity: 1.35, range: "2-3 days" },
-        { label: "Banana or plantain", keys: ["banana", "plantain"], baseHours: 120, sensitivity: 1.05, range: "4-7 days" },
-        { label: "Root crops", keys: ["yam", "potato", "sweet potato", "cassava", "cocoyam"], baseHours: 336, sensitivity: 0.7, range: "2-4 weeks" },
-        { label: "Maize or corn", keys: ["maize", "corn"], baseHours: 168, sensitivity: 0.85, range: "5-10 days" },
-        { label: "Onion or garlic", keys: ["onion", "garlic"], baseHours: 504, sensitivity: 0.55, range: "3-6 weeks" },
-        { label: "Cucumber", keys: ["cucumber"], baseHours: 120, sensitivity: 1.1, range: "4-6 days" },
-        { label: "Citrus fruit", keys: ["orange", "lemon", "lime", "citrus"], baseHours: 336, sensitivity: 0.75, range: "2-3 weeks" },
-        { label: "Pineapple", keys: ["pineapple"], baseHours: 120, sensitivity: 1.05, range: "4-6 days" },
-        { label: "Mango", keys: ["mango"], baseHours: 120, sensitivity: 1.1, range: "3-6 days" }
-    ];
-
     let cachedDiagnosticsProducts = [];
-    let cachedVisionModel = null;
-    let visionModelPromise = null;
+    let scoredDiagnosticsProducts = [];
+    const geminiDiagnosticsCache = new Map();
     let diagnosticsRenderToken = 0;
-    const imageAnalysisCache = new Map();
 
     function escapeHTML(text) {
         const div = document.createElement("div");
@@ -535,16 +517,6 @@
         return Number.isNaN(parsed) ? Date.now() : parsed;
     }
 
-    function getShelfProfile(productName, category) {
-        const key = `${productName || ""} ${category || ""}`.toLowerCase();
-        return shelfLifeProfiles.find(profile => profile.keys.some(item => key.includes(item))) || {
-            label: "General fresh produce",
-            baseHours: 120,
-            sensitivity: 1,
-            range: "3-5 days"
-        };
-    }
-
     function setModelStatus(text, tone = "emerald") {
         if (!diagnosticsModelStatus) return;
         const toneClasses = {
@@ -556,216 +528,75 @@
         diagnosticsModelStatus.className = `text-[10px] border px-2 py-1 rounded-full ${toneClasses[tone] || toneClasses.emerald}`;
     }
 
-    async function loadVisionModel() {
-        if (cachedVisionModel) return cachedVisionModel;
-        if (visionModelPromise) return visionModelPromise;
-        if (!window.mobilenet) {
-            return null;
-        }
-        visionModelPromise = (async () => {
-            try {
-                cachedVisionModel = await window.mobilenet.load();
-                return cachedVisionModel;
-            } catch (error) {
-                console.warn("Vision model failed to load; using freshness fallback.", error);
-                return null;
-            }
-        })();
-
-        return visionModelPromise;
-    }
-
-    function loadImageElement(src) {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.crossOrigin = "anonymous";
-            img.onload = () => resolve(img);
-            img.onerror = reject;
-            img.src = src;
-        });
-    }
-
-    function inspectFreshnessPixels(img) {
-        const canvas = document.createElement("canvas");
-        const size = 72;
-        canvas.width = size;
-        canvas.height = size;
-        const ctx = canvas.getContext("2d", { willReadFrequently: true });
-        ctx.drawImage(img, 0, 0, size, size);
-        const pixels = ctx.getImageData(0, 0, size, size).data;
-        let dark = 0;
-        let brown = 0;
-        let dull = 0;
-        let green = 0;
-        let red = 0;
-        let moldLike = 0;
-        let yellowing = 0;
-        const total = pixels.length / 4;
-
-        for (let i = 0; i < pixels.length; i += 4) {
-            const r = pixels[i];
-            const g = pixels[i + 1];
-            const b = pixels[i + 2];
-            const max = Math.max(r, g, b);
-            const min = Math.min(r, g, b);
-            const brightness = (r + g + b) / 3;
-            const saturation = max === 0 ? 0 : (max - min) / max;
-
-            if (brightness < 58) dark++;
-            if (r > 65 && g > 38 && b < 75 && r >= g * 0.9) brown++;
-            if (saturation < 0.18 && brightness < 170) dull++;
-            if (brightness > 165 && saturation < 0.12) moldLike++;
-            if (r > 115 && g > 95 && b < 80 && Math.abs(r - g) < 55) yellowing++;
-            if (g > r * 1.08 && g > b * 1.08 && brightness > 45) green++;
-            if (r > g * 1.12 && r > b * 1.12 && brightness > 55) red++;
-        }
-
-        const browningPct = Math.round((brown / total) * 100);
-        const darkPct = Math.round((dark / total) * 100);
-        const dullPct = Math.round((dull / total) * 100);
-        const moldPct = Math.round((moldLike / total) * 100);
-        const yellowPct = Math.round((yellowing / total) * 100);
-        const signs = [];
-
-        if (browningPct >= 18) signs.push("browning");
-        if (darkPct >= 16) signs.push("dark soft spots");
-        if (dullPct >= 30) signs.push("dull/dehydrated surface");
-        if (moldPct >= 10) signs.push("pale mold-like patches");
-        if (yellowPct >= 22) signs.push("yellowing");
-
-        const spoilageScore = Math.min(44, Math.round(
-            (brown / total) * 44 +
-            (dark / total) * 28 +
-            (dull / total) * 18 +
-            (moldLike / total) * 34 +
-            (yellowing / total) * 16
-        ));
-        const healthyColorScore = Math.min(12, Math.round(((green + red) / total) * 10));
-
-        return {
-            spoilageScore: Math.max(0, spoilageScore - healthyColorScore),
-            signs,
-            notes: signs.length > 0
-                ? `${signs.join(", ")} detected`
-                : `no strong spoilage signs detected (${browningPct}% browning, ${darkPct}% dark patches)`
-        };
-    }
-
-    async function analyzeProduceImage(imageSrc) {
-        if (!imageSrc) {
-            return {
-                imageRisk: 14,
-                imageLabel: "No produce photo",
-                imageNotes: "Upload a clear photo for stronger shelf-life diagnostics.",
-                imageSigns: ["photo required"]
-            };
-        }
-        if (imageAnalysisCache.has(imageSrc)) return imageAnalysisCache.get(imageSrc);
-
-        const analysisPromise = (async () => {
-            try {
-                const img = await loadImageElement(imageSrc);
-                const pixelScan = inspectFreshnessPixels(img);
-                const model = await loadVisionModel();
-                let imageLabel = "Produce image";
-                let modelConfidenceRisk = 0;
-
-                if (model) {
-                    const predictions = await model.classify(img, 3);
-                    const best = predictions[0];
-                    imageLabel = best ? `${best.className.split(",")[0]} ${Math.round(best.probability * 100)}%` : imageLabel;
-                    const produceMatch = predictions.some(item => /fruit|vegetable|tomato|pepper|corn|banana|plantain|potato|yam|cucumber|orange|lemon|apple|cabbage|broccoli|mushroom|pineapple|strawberry/i.test(item.className));
-                    modelConfidenceRisk = produceMatch ? -4 : 6;
-                }
-
-                return {
-                    imageRisk: Math.max(-4, Math.min(40, pixelScan.spoilageScore + modelConfidenceRisk)),
-                    imageLabel,
-                    imageNotes: pixelScan.notes,
-                    imageSigns: pixelScan.signs
-                };
-            } catch (error) {
-                console.warn("Image diagnostics failed for listing; using non-image estimate.", error);
-                return {
-                    imageRisk: 10,
-                    imageLabel: "Photo unavailable",
-                    imageNotes: "Could not read this image in the browser.",
-                    imageSigns: ["photo unreadable"]
-                };
-            }
-        })();
-
-        imageAnalysisCache.set(imageSrc, analysisPromise);
-        return analysisPromise;
-    }
-
     async function analyzeShelfLife(product) {
         const data = product.data;
-        const profile = getShelfProfile(data.name, data.category);
-        const harvestMs = dateToMillis(data.harvestDate || data.createdAt);
-        const ageHours = Math.max(0, (Date.now() - harvestMs) / 36e5);
-        const status = data.status || "Searching";
-        const statusPressure = status === "Searching" ? 14 : status === "Matched" ? 8 : status === "In Transit" ? 18 : 0;
-        const routeText = `${data.routeFrom || data.location || ""} ${data.routeTo || ""}`.trim();
-        const routePressure = routeText.length > 35 ? 8 : 0;
-        const uploadedImageSrc = getUploadedProductImage(data);
-        const displayImageSrc = getProductImage(data);
-        const imageAnalysis = await analyzeProduceImage(uploadedImageSrc);
-        const imageShelfPenalty = Math.max(0, imageAnalysis.imageRisk);
-        const imageQualityBonus = Math.min(0, imageAnalysis.imageRisk);
-        const normalShelfHours = profile.baseHours;
-        const remainingHours = Math.max(0, Math.round(
-            normalShelfHours -
-            (ageHours * profile.sensitivity) -
-            statusPressure -
-            routePressure -
-            imageShelfPenalty -
-            imageQualityBonus
-        ));
-        const ageRiskScore = Math.round(100 - ((remainingHours / normalShelfHours) * 100));
-        const imageRiskScore = Math.max(0, Math.round(imageShelfPenalty * 1.8));
-        const riskScore = Math.min(100, Math.max(0, ageRiskScore + imageRiskScore));
-        const imageSigns = imageAnalysis.imageSigns || [];
-        const hasLowShelfImageSigns = imageSigns.some(sign => !["photo required", "photo unreadable"].includes(sign));
-
-        let severity = "STABLE";
-        if (riskScore >= 78 || remainingHours <= 24 || (remainingHours <= 48 && hasLowShelfImageSigns)) severity = "CRITICAL";
-        else if (riskScore >= 55 || remainingHours <= 48 || hasLowShelfImageSigns) severity = "URGENT";
-        else if (riskScore >= 32 || remainingHours <= 96 || imageSigns.length > 0) severity = "WATCH";
+        const imageSrc = getUploadedProductImage(data);
+        const listing = {
+            name: data.name || "Produce",
+            category: data.category || "",
+            harvestDate: data.harvestDate ? new Date(dateToMillis(data.harvestDate)).toISOString().slice(0, 10) : null,
+            description: data.description || "",
+            status: data.status || "Searching",
+            quantity: data.quantity ?? null,
+            unit: data.unit || "",
+            location: data.location || "",
+            routeFrom: data.routeFrom || "",
+            routeTo: data.routeTo || ""
+        };
+        const cacheKey = JSON.stringify([product.id, listing, imageSrc]);
+        let analysisPromise = geminiDiagnosticsCache.get(cacheKey);
+        if (!analysisPromise) {
+            analysisPromise = fetch("/api/shelf-life", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ listing, imageUrl: imageSrc || null })
+            }).then(async response => {
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(result.error || "Gemini shelf-life analysis failed.");
+                return result;
+            });
+            geminiDiagnosticsCache.set(cacheKey, analysisPromise);
+        }
+        let analysis;
+        try {
+            analysis = await analysisPromise;
+        } catch (error) {
+            geminiDiagnosticsCache.delete(cacheKey);
+            console.error(`Gemini analysis failed for ${data.name || product.id}:`, error);
+            return { ...product, data, imageSrc: getProductImage(data), riskScore: 50, severity: "URGENT", remainingHours: null, estimatedShelfLife: "Analysis unavailable", routeMode: "Review listing", insight: "Gemini could not analyze this listing. Retry the analysis." , analysisError: true };
+        }
+        const riskScore = Math.max(0, Math.min(100, Number(analysis.riskScore) || 0));
+        const severity = riskScore >= 78 ? "CRITICAL" : riskScore >= 55 ? "URGENT" : riskScore >= 32 ? "WATCH" : "STABLE";
 
         return {
             ...product,
-            normalShelfHours,
-            normalShelfRange: profile.range,
-            profileLabel: profile.label,
-            remainingHours,
+            data,
             riskScore,
             severity,
-            routeMode: severity === "CRITICAL" ? "Priority Match" : severity === "URGENT" ? "Fast Route" : severity === "WATCH" ? "Monitor Route" : "Standard",
-            imageSrc: displayImageSrc,
-            uploadedImageSrc,
-            imageLabel: imageAnalysis.imageLabel,
-            imageNotes: imageAnalysis.imageNotes,
-            imageSigns,
-            priorityReason: `${profile.label} normally lasts ${profile.range}; image scan ${imageAnalysis.imageNotes}.`,
-            insight: `${profile.label} normal shelf life: ${profile.range}. Harvest age ${Math.round(ageHours)}h, ${status.toLowerCase()} status, ${routeText ? "route data available" : "route pending"}, image scan: ${imageAnalysis.imageNotes}.`
+            estimatedShelfLife: analysis.estimatedShelfLife,
+            remainingHours: null,
+            routeMode: analysis.routingMode,
+            storageAdvice: analysis.storageAdvice,
+            imageSrc: getProductImage(data),
+            imageLabel: analysis.condition,
+            priorityReason: analysis.recommendation,
+            insight: analysis.summary,
+            recommendation: analysis.recommendation
         };
-    }
-
-    function formatShelfLife(hours) {
-        if (hours <= 0) return "Expired risk";
-        if (hours < 48) return `${hours} Hours`;
-        return `${Math.round(hours / 24)} Days`;
     }
 
     function renderPriorityQueue(scoredProducts) {
         if (!diagnosticsAlertList) return;
         const priorityProducts = scoredProducts
-            .filter(item => ["CRITICAL", "URGENT", "WATCH"].includes(item.severity))
+            .filter(item => !item.analysisError && ["CRITICAL", "URGENT", "WATCH"].includes(item.severity))
+            .sort((a, b) => b.riskScore - a.riskScore)
             .slice(0, 3);
 
         if (priorityProducts.length === 0) {
-            diagnosticsAlertList.innerHTML = `<p class="text-xs text-emerald-300 border border-emerald-500/10 rounded-lg p-3 bg-emerald-500/5">No produce needs priority shipping right now.</p>`;
+            const failed = scoredProducts.some(item => item.analysisError);
+            diagnosticsAlertList.innerHTML = failed
+                ? `<p class="text-xs text-amber-300 border border-amber-500/10 rounded-lg p-3 bg-amber-500/5">Gemini could not assess some listings. Retry analysis before relying on their shelf-life estimates.</p>`
+                : `<p class="text-xs text-emerald-300 border border-emerald-500/10 rounded-lg p-3 bg-emerald-500/5">No produce needs priority shipping right now.</p>`;
             return;
         }
 
@@ -785,7 +616,7 @@
                             <p class="text-sm font-semibold truncate">${escapeHTML(data.name || "Produce Cargo")}</p>
                             <span class="text-[10px] font-mono text-white/80">${item.severity}</span>
                         </div>
-                        <p class="text-[11px] text-gray-400 truncate">${formatShelfLife(item.remainingHours)} left | normal: ${escapeHTML(item.normalShelfRange)} | ${escapeHTML(item.imageLabel)}</p>
+                        <p class="text-[11px] text-gray-400 truncate">${escapeHTML(item.estimatedShelfLife)} remaining | ${escapeHTML(item.imageLabel)} | risk ${item.riskScore}%</p>
                         <p class="text-[11px] text-gray-500 truncate">${escapeHTML(item.priorityReason)}</p>
                     </div>
                 </div>
@@ -816,13 +647,15 @@
             return;
         }
 
-        if (diagnosticsSummary) diagnosticsSummary.textContent = "Checking product names against normal shelf life, then scanning photos for low shelf-life signs...";
-        if (diagnosticsAlertList) diagnosticsAlertList.innerHTML = `<p class="text-xs text-gray-500 border border-white/5 rounded-lg p-3 bg-white/5">Analyzing listing images...</p>`;
+        if (diagnosticsSummary) diagnosticsSummary.textContent = "Sending listing details and photos to Gemini for shelf-life and routing assessment...";
+        if (diagnosticsAlertList) diagnosticsAlertList.innerHTML = `<p class="text-xs text-gray-500 border border-white/5 rounded-lg p-3 bg-white/5">Gemini is assessing active listings...</p>`;
 
         const scoredProducts = (await Promise.all(activeProducts.map(analyzeShelfLife))).sort((a, b) => b.riskScore - a.riskScore);
         if (renderToken !== diagnosticsRenderToken) return;
-
-        const highestRisk = scoredProducts[0];
+        scoredDiagnosticsProducts = scoredProducts;
+        const selectedId = diagnosticsListingSelect?.value;
+        const selectedProduct = scoredProducts.find(item => item.id === selectedId);
+        const highestRisk = selectedProduct || scoredProducts[0];
         const data = highestRisk.data;
         const imageSrc = highestRisk.imageSrc || getProductImage(data);
         const severityClasses = {
@@ -840,15 +673,15 @@
         if (diagnosticsBatchId) diagnosticsBatchId.textContent = `#FR-${highestRisk.id.substring(0, 6).toUpperCase()}`;
         if (diagnosticsRiskBar) diagnosticsRiskBar.style.width = `${Math.max(8, highestRisk.riskScore)}%`;
         if (diagnosticsShelfLife) {
-            diagnosticsShelfLife.textContent = formatShelfLife(highestRisk.remainingHours);
+            diagnosticsShelfLife.textContent = highestRisk.estimatedShelfLife;
             diagnosticsShelfLife.className = `text-xl font-bold mt-1 ${highestRisk.severity === "CRITICAL" ? "text-red-400" : highestRisk.severity === "URGENT" ? "text-amber-300" : "text-green-300"}`;
         }
         if (diagnosticsRoutingMode) {
             const icon = highestRisk.severity === "CRITICAL" ? "fa-bolt-lightning animate-bounce" : highestRisk.severity === "URGENT" ? "fa-route" : "fa-shield-halved";
-            diagnosticsRoutingMode.innerHTML = `<i class="fa-solid ${icon} text-xs"></i> ${highestRisk.routeMode}`;
+            diagnosticsRoutingMode.innerHTML = `<i class="fa-solid ${icon} text-xs"></i> ${escapeHTML(highestRisk.routeMode)}`;
         }
         if (diagnosticsSummary) {
-            diagnosticsSummary.textContent = `${highestRisk.insight} Recommended action: ${highestRisk.severity === "CRITICAL" ? "match a driver immediately" : highestRisk.severity === "URGENT" ? "prioritize dispatch today" : "keep monitoring"}.`;
+            diagnosticsSummary.textContent = `${highestRisk.insight} ${highestRisk.recommendation || ""}`;
         }
         if (diagnosticsImageFrame) {
             diagnosticsImageFrame.innerHTML = `
@@ -869,7 +702,35 @@
             `;
         }
         renderPriorityQueue(scoredProducts);
+        const failedCount = scoredProducts.filter(item => item.analysisError).length;
+        setModelStatus(failedCount ? `Gemini unavailable (${failedCount})` : "Gemini analysis complete", failedCount ? "red" : "emerald");
     }
+
+    diagnosticsListingSelect?.addEventListener("change", () => {
+        const selected = scoredDiagnosticsProducts.find(item => item.id === diagnosticsListingSelect.value);
+        if (!selected) return;
+        const severityClasses = {
+            CRITICAL: "text-[10px] bg-red-500/20 text-red-400 font-mono px-1.5 rounded border border-red-500/30",
+            URGENT: "text-[10px] bg-amber-500/20 text-amber-300 font-mono px-1.5 rounded border border-amber-500/30",
+            WATCH: "text-[10px] bg-yellow-500/20 text-yellow-300 font-mono px-1.5 rounded border border-yellow-500/30",
+            STABLE: "text-[10px] bg-green-500/20 text-green-300 font-mono px-1.5 rounded border border-green-500/30"
+        };
+        if (diagnosticsProductName) diagnosticsProductName.textContent = selected.data.name || "Produce Cargo";
+        if (diagnosticsSeverity) {
+            diagnosticsSeverity.textContent = selected.severity;
+            diagnosticsSeverity.className = severityClasses[selected.severity];
+        }
+        if (diagnosticsBatchId) diagnosticsBatchId.textContent = `#FR-${selected.id.substring(0, 6).toUpperCase()}`;
+        if (diagnosticsRiskBar) diagnosticsRiskBar.style.width = `${Math.max(8, selected.riskScore)}%`;
+        if (diagnosticsShelfLife) {
+            diagnosticsShelfLife.textContent = selected.estimatedShelfLife;
+            diagnosticsShelfLife.className = `text-xl font-bold mt-1 ${selected.severity === "CRITICAL" ? "text-red-400" : selected.severity === "URGENT" ? "text-amber-300" : "text-green-300"}`;
+        }
+        const icon = selected.severity === "CRITICAL" ? "fa-bolt-lightning animate-bounce" : selected.severity === "URGENT" ? "fa-route" : "fa-shield-halved";
+        if (diagnosticsRoutingMode) diagnosticsRoutingMode.innerHTML = `<i class="fa-solid ${icon} text-xs"></i> ${escapeHTML(selected.routeMode)}`;
+        if (diagnosticsSummary) diagnosticsSummary.textContent = `${selected.insight} ${selected.recommendation || ""}`;
+        if (diagnosticsImageFrame) diagnosticsImageFrame.innerHTML = `<img src="${escapeAttr(selected.imageSrc)}" alt="${escapeAttr(selected.data.name || "Produce")}" class="w-full h-full object-cover">`;
+    });
 
     function refreshDiagnosticsListingOptions() {
         if (!diagnosticsListingSelect) return;
@@ -892,43 +753,36 @@
         runDiagnosticsBtn.classList.add("opacity-60", "cursor-wait");
         runDiagnosticsBtn.textContent = "Analyzing…";
         setModelStatus("Gemini analyzing", "amber");
-        if (diagnosticsSummary) diagnosticsSummary.textContent = "Sending the selected listing and photo for a freshness assessment…";
+        if (diagnosticsSummary) diagnosticsSummary.textContent = "Sending all listing details and its photo to Gemini for reassessment…";
         try {
-            const response = await fetch("/api/shelf-life", {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({
-                    listing: {
-                        name: product.data.name || "Produce",
-                        category: product.data.category || "",
-                        harvestDate: product.data.harvestDate || null,
-                        description: product.data.description || "",
-                        status: product.data.status || "Searching"
-                    },
-                    imageUrl: getUploadedProductImage(product.data)
-                })
-            });
-            const responseText = await response.text();
-            let result;
-            try {
-                result = responseText ? JSON.parse(responseText) : {};
-            } catch {
-                throw new Error("The shelf-life API did not return JSON. Live Server cannot run Vercel API routes. Start the project with npm run dev and open the URL Vercel prints.");
-            }
-            if (!responseText && !response.ok) {
-                throw new Error("The shelf-life API is unavailable here. Run the project with npm run dev instead of VS Code Live Server.");
-            }
-            if (!response.ok) throw new Error(result.error || "Shelf-life analysis failed.");
-            diagnosticsProductName.textContent = product.data.name || "Produce";
-            diagnosticsSeverity.textContent = result.condition.toUpperCase();
+            const imageSrc = getUploadedProductImage(product.data);
+            const listing = {
+                name: product.data.name || "Produce",
+                category: product.data.category || "",
+                harvestDate: product.data.harvestDate ? new Date(dateToMillis(product.data.harvestDate)).toISOString().slice(0, 10) : null,
+                description: product.data.description || "",
+                status: product.data.status || "Searching",
+                quantity: product.data.quantity ?? null,
+                unit: product.data.unit || "",
+                location: product.data.location || "",
+                routeFrom: product.data.routeFrom || "",
+                routeTo: product.data.routeTo || ""
+            };
+            const cacheKey = JSON.stringify([product.id, listing, imageSrc]);
+            geminiDiagnosticsCache.delete(cacheKey);
+            const updated = await analyzeShelfLife(product);
+            scoredDiagnosticsProducts = scoredDiagnosticsProducts.map(item => item.id === product.id ? updated : item)
+                .sort((a, b) => b.riskScore - a.riskScore);
+            const selected = scoredDiagnosticsProducts.find(item => item.id === product.id);
+            diagnosticsProductName.textContent = selected.data.name || "Produce";
+            diagnosticsSeverity.textContent = selected.severity;
             diagnosticsBatchId.textContent = `#FR-${product.id.substring(0, 6).toUpperCase()}`;
-            diagnosticsRiskBar.style.width = `${Math.max(8, Math.min(100, result.riskScore))}%`;
-            diagnosticsShelfLife.textContent = result.estimatedShelfLife;
-            diagnosticsRoutingMode.innerHTML = `<i class="fa-solid fa-seedling text-xs"></i> ${escapeHTML(result.storageAdvice)}`;
-            diagnosticsSummary.textContent = `${result.summary} ${result.recommendation}`;
-            const photo = getUploadedProductImage(product.data) || getProductImage(product.data);
-            diagnosticsImageFrame.innerHTML = `<img src="${escapeAttr(photo)}" alt="${escapeAttr(product.data.name || "Produce")}" class="w-full h-full object-cover">`;
-            setModelStatus("Gemini scan complete", "emerald");
+            diagnosticsRiskBar.style.width = `${Math.max(8, selected.riskScore)}%`;
+            diagnosticsShelfLife.textContent = selected.estimatedShelfLife;
+            diagnosticsRoutingMode.textContent = selected.routeMode;
+            diagnosticsSummary.textContent = `${selected.insight} ${selected.recommendation || ""}`;
+            renderPriorityQueue(scoredDiagnosticsProducts);
+            setModelStatus(selected.analysisError ? "Scan failed" : "Gemini analysis complete", selected.analysisError ? "red" : "emerald");
         } catch (error) {
             console.error("Shelf-life Gemini scan failed:", error);
             if (diagnosticsSummary) diagnosticsSummary.textContent = "We could not analyze this listing right now. Please try again.";

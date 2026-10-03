@@ -20,7 +20,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const parts = [{ text: `Assess the visible freshness and remaining shelf life of this Nigerian farm produce listing. Treat the image as primary evidence when provided. Do not claim certainty from an image alone. Return ONLY valid JSON with these keys: condition (Fresh, Use soon, or Spoilage signs), estimatedShelfLife (short human-readable estimate), riskScore (integer 0-100, higher means more risk), storageAdvice (brief phrase), summary (one or two sentences explaining visible evidence and uncertainty), recommendation (one practical next step). Do not diagnose safety or say produce is safe to eat. Listing: ${JSON.stringify({ name: listing.name, category: listing.category, harvestDate: listing.harvestDate, description: listing.description, status: listing.status })}` }];
+    const parts = [{ text: `Assess the visible freshness and remaining shelf life of this Nigerian farm produce listing. Use all supplied listing details, especially harvest date, status, quantity, and description, together with the image when provided. Treat the image as evidence of visible condition, not age. Estimate remaining shelf life from both the crop type and harvest date. Do not claim certainty from an image alone. Return ONLY valid JSON with these keys: condition (Fresh, Use soon, or Spoilage signs), estimatedShelfLife (short human-readable remaining time estimate), riskScore (integer 0-100, higher means more risk), storageAdvice (brief phrase), routingMode (practical transport/storage handling mode based on shelf life and risk), summary (one or two sentences explaining the listing details and visible evidence, including uncertainty), recommendation (one practical next step). Do not diagnose safety or say produce is safe to eat. Listing: ${JSON.stringify({ name: listing.name, category: listing.category, harvestDate: listing.harvestDate, description: listing.description, status: listing.status, quantity: listing.quantity, unit: listing.unit, location: listing.location, routeFrom: listing.routeFrom, routeTo: listing.routeTo })}` }];
     if (imageUrl) {
       let parsedUrl;
       try {
@@ -77,6 +77,7 @@ export default async function handler(req, res) {
       riskScore,
       estimatedShelfLife: String(analysis.estimatedShelfLife || "Unable to estimate").slice(0, 80),
       storageAdvice: String(analysis.storageAdvice || "Store in a cool, dry place").slice(0, 100),
+      routingMode: String(analysis.routingMode || analysis.storageAdvice || "Standard handling").slice(0, 100),
       summary: String(analysis.summary || "No freshness details were returned.").slice(0, 500),
       recommendation: String(analysis.recommendation || "Inspect the produce again before dispatch.").slice(0, 250)
     });
