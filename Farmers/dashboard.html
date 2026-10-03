@@ -61,7 +61,6 @@
                     <i class="fa-solid fa-wallet"></i>
                     Payments
                 </a>
-
                 <a href="profile.html"
                     class="flex items-center gap-3 px-4 py-3 mx-4 rounded-lg hover:bg-green-800 mb-2">
                     <i class="fa-regular fa-user"></i>
@@ -111,7 +110,7 @@
                         class="absolute -top-2 -right-2 bg-red-500 text-white text-xs min-w-5 h-5 px-1 rounded-full hidden items-center justify-center">0</span>
                 </button>
 
-                <button class="text-xl">
+                <button class="text-xl" onclick="window.location.href='notifications.html'" aria-label="Notifications">
                     <i class="fa-regular fa-bell"></i>
                 </button>
 
@@ -147,9 +146,10 @@
                     Dashboard Overview
                 </h2>
 
-                <select
+                <label class="sr-only" for="dashboard-month-filter">View deliveries by month</label>
+                <select id="dashboard-month-filter" aria-label="View deliveries by month"
                     class="border rounded-lg px-4 py-2 bg-white">
-                    <option>June 20, 2025</option>
+                    <option value="">Loading delivery months…</option>
                 </select>
 
             </div>
@@ -208,7 +208,7 @@
 
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-semibold">
-                            Recent Shipments & Listings
+                            Deliveries for Selected Month
                         </h2>
                     </div>
 
@@ -352,6 +352,58 @@
     const activeEl = document.getElementById("metric-active");
     const pendingEl = document.getElementById("metric-pending");
     const listingsEl = document.getElementById("metric-listings");
+    const dashboardMonthFilter = document.getElementById("dashboard-month-filter");
+    let farmerProducts = [];
+
+    function deliveryDateMillis(data) {
+        const value = data.deliveredAt || data.completedAt || data.updatedAt || data.createdAt;
+        if (!value) return null;
+        if (typeof value.toDate === "function") return value.toDate().getTime();
+        if (typeof value === "object" && value.seconds) return value.seconds * 1000;
+        const parsed = new Date(value).getTime();
+        return Number.isNaN(parsed) ? null : parsed;
+    }
+
+    function renderSelectedMonthDeliveries() {
+        if (!dashboardMonthFilter || !recentContainer) return;
+        const selectedMonth = dashboardMonthFilter.value;
+        const delivered = farmerProducts.filter(({ data }) => data.status === "Delivered");
+        const monthRows = delivered.filter(({ data }) => {
+            if (selectedMonth === "all") return true;
+            const millis = deliveryDateMillis(data);
+            return millis !== null && new Date(millis).toISOString().slice(0, 7) === selectedMonth;
+        }).sort((a, b) => deliveryDateMillis(b.data) - deliveryDateMillis(a.data));
+
+        if (completedEl) completedEl.innerText = String(monthRows.length);
+        recentContainer.innerHTML = "";
+        if (!monthRows.length) {
+            recentContainer.innerHTML = `<p class="text-gray-500 py-6 text-center">No completed deliveries for this month.</p>`;
+            return;
+        }
+
+        monthRows.forEach(({ data }) => {
+            const productName = data.name || "Unnamed Crop";
+            const weight = data.weight || "0";
+            const unit = data.unit || "kg";
+            const routeFrom = data.routeFrom || data.location || "Unknown";
+            const routeTo = data.routeTo || data.destination || "Marketplace";
+            const price = data.price ? Number(data.price).toLocaleString() : "0";
+            const imageSrc = getProductImage(data);
+            const deliveredAtMillis = deliveryDateMillis(data);
+            const deliveredOn = deliveredAtMillis === null
+                ? "date unavailable"
+                : new Date(deliveredAtMillis).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
+            recentContainer.insertAdjacentHTML("beforeend", `
+                <div class="grid grid-cols-4 items-center gap-4 py-5 border-b last:border-0 px-2">
+                    <div class="flex items-center gap-4 min-w-0"><img src="${imageSrc}" alt="" class="w-16 h-16 rounded-xl object-cover border shrink-0"><div class="min-w-0"><h3 class="font-semibold text-base text-gray-800 truncate">${productName}</h3><p class="text-gray-500 text-sm">${weight} ${unit}</p></div></div>
+                    <div class="min-w-0"><h4 class="font-medium text-gray-800 truncate">${routeFrom} → ${routeTo}</h4><p class="text-gray-400 text-xs">Delivered ${deliveredOn}</p></div>
+                    <div class="min-w-0"><h4 class="font-semibold text-lg text-gray-900">₦${price}</h4><p class="text-gray-400 text-xs">Total value evaluated</p></div>
+                    <div class="text-right"><span class="bg-green-100 text-green-700 px-4 py-1.5 rounded-lg text-xs font-semibold inline-block text-center min-w-[100px]">Delivered</span></div>
+                </div>`);
+        });
+    }
+
+    dashboardMonthFilter?.addEventListener("change", renderSelectedMonthDeliveries);
 
     function hideLoading() {
         if (loadingScreen) loadingScreen.classList.add("hidden");
@@ -923,26 +975,36 @@
             where("status", "==", "In Transit")
         );
 
-        const completedQuery = query(
-            productsRef, 
-            where("farmerId", "==", user.uid), 
-            where("status", "==", "Delivered")
-        );
-
         // --- Snapshot Streams ---
 
         onSnapshot(allFarmerProductsQuery, (snapshot) => {
             let activeCount = 0;
             const diagnosticsProducts = [];
+            farmerProducts = [];
             snapshot.forEach((doc) => {
                 const data = doc.data();
                 diagnosticsProducts.push({ id: doc.id, data });
+                farmerProducts.push({ id: doc.id, data });
                 if (data.status !== "Delivered") {
                     activeCount++;
                 }
             });
             if (listingsEl) listingsEl.innerText = activeCount;
             cachedDiagnosticsProducts = diagnosticsProducts;
+            const deliveredMonths = [...new Set(farmerProducts
+                .filter(({ data }) => data.status === "Delivered")
+                .map(({ data }) => deliveryDateMillis(data))
+                .filter((millis) => millis !== null)
+                .map((millis) => new Date(millis).toISOString().slice(0, 7)))].sort().reverse();
+            const previousSelection = dashboardMonthFilter?.value;
+            if (dashboardMonthFilter) {
+                dashboardMonthFilter.innerHTML = `<option value="all">All time</option>${deliveredMonths.map((month) => `<option value="${month}">${new Date(`${month}-02T00:00:00`).toLocaleDateString([], { month: "long", year: "numeric" })}</option>`).join("")}`;
+                if (previousSelection === "all" || deliveredMonths.includes(previousSelection)) dashboardMonthFilter.value = previousSelection;
+            }
+            if (deliveredMonths.length && (!dashboardMonthFilter?.value || dashboardMonthFilter.value === "all")) {
+                dashboardMonthFilter.value = previousSelection === "all" ? "all" : deliveredMonths[0];
+            }
+            renderSelectedMonthDeliveries();
             refreshDiagnosticsListingOptions();
             renderShelfLifeDiagnostics(cachedDiagnosticsProducts);
         }, (err) => console.error("All products query failed:", err));
@@ -955,9 +1017,7 @@
             if (activeEl) activeEl.innerText = snapshot.size;
         }, (err) => console.error("Active shipments query failed:", err));
 
-        onSnapshot(completedQuery, (snapshot) => {
-            if (completedEl) completedEl.innerText = snapshot.size;
-        }, (err) => console.error("Completed deliveries query failed:", err));
+        // Delivery counts and history are rendered from the complete farmer snapshot above.
 
 
         // --- DYNAMIC RECENT SHIPPED/LISTED ITEMS STREAM ---
@@ -968,6 +1028,8 @@
         );
 
         onSnapshot(recentQuery, (snapshot) => {
+            renderSelectedMonthDeliveries();
+            return;
             if (!recentContainer) return;
             recentContainer.innerHTML = "";
 

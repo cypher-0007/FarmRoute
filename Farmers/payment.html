@@ -140,10 +140,10 @@
             </div>
 
             <div class="flex items-center gap-6">
-                <button class="relative text-xl text-gray-500 hover:text-gray-800 transition">
+                <a href="notifications.html" class="relative text-xl text-gray-500 hover:text-gray-800 transition" aria-label="Notifications">
                     <i class="fa-regular fa-bell"></i>
-                    <span class="absolute -top-1.5 -right-1.5 bg-green-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">2</span>
-                </button>
+                    <span id="header-notification-badge" class="absolute -top-2 -right-2 min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold items-center justify-center hidden">0</span>
+                </a>
 
                 <div class="flex items-center gap-3 border-l pl-6 border-gray-100">
                     <img id="user-avatar" alt="Profile picture" class="w-10 h-10 rounded-full object-cover border border-gray-100 hidden">
@@ -212,7 +212,10 @@
             <div class="space-y-3">
                 <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Cargo Parameters</h4>
                 <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 flex items-center gap-3">
-                    <div id="modal-emoji" class="text-2xl bg-white w-12 h-12 rounded-xl flex items-center justify-center border shadow-xs">📦</div>
+                    <div class="bg-white w-12 h-12 rounded-xl flex items-center justify-center border shadow-xs overflow-hidden shrink-0">
+                        <img id="modal-cargo-image" alt="Produce cargo" class="w-full h-full object-cover hidden">
+                        <i id="modal-cargo-fallback" class="fa-solid fa-leaf text-green-600 text-lg"></i>
+                    </div>
                     <div>
                         <h5 id="modal-crop-name" class="font-bold text-gray-800 text-sm">Produce Cargo</h5>
                         <p id="modal-weight" class="text-xs text-gray-500 mt-0.5">0 kg total allocation</p>
@@ -223,7 +226,10 @@
             <div class="space-y-3">
                 <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Assigned Driver</h4>
                 <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 flex items-center gap-3">
-                    <img src="https://i.pravatar.cc/100?img=60" class="w-10 h-10 rounded-full object-cover border border-gray-100 shrink-0">
+                    <div class="w-10 h-10 rounded-full border border-gray-100 bg-green-50 flex items-center justify-center shrink-0 overflow-hidden">
+                        <img id="modal-driver-image" alt="Assigned driver" class="w-full h-full object-cover hidden">
+                        <i id="modal-driver-fallback" class="fa-solid fa-user text-green-700 text-sm"></i>
+                    </div>
                     <div class="min-w-0">
                         <h4 id="modal-driver-name" class="font-semibold text-sm text-gray-800 truncate">Searching for Driver...</h4>
                         <p class="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
@@ -327,9 +333,14 @@
     const roleEl = document.getElementById("user-display-role");
     const avatarEl = document.getElementById("user-avatar");
     const messageBadgeEl = document.getElementById("message-notification-badge");
+    const notificationBadgeEl = document.getElementById("header-notification-badge");
     const loadingScreen = document.getElementById("loading-screen");
     const paymentsContainer = document.getElementById("payments-history-container");
     const paymentsBadge = document.getElementById("payments-badge");
+    let currentUserId = null;
+    let notificationReadState = { read: [], dismissed: [] };
+    let ownListingSnapshot = null;
+    let chatNotificationSnapshot = null;
 
     // Drawer Modal Elements
     const detailDrawer = document.getElementById("detail-drawer");
@@ -339,7 +350,10 @@
     const modalOrderId = document.getElementById("modal-order-id");
     const modalPrice = document.getElementById("modal-price");
     const modalStatusBadge = document.getElementById("modal-status-badge");
-    const modalEmoji = document.getElementById("modal-emoji");
+    const modalCargoImage = document.getElementById("modal-cargo-image");
+    const modalCargoFallback = document.getElementById("modal-cargo-fallback");
+    const modalDriverImage = document.getElementById("modal-driver-image");
+    const modalDriverFallback = document.getElementById("modal-driver-fallback");
     const modalCropName = document.getElementById("modal-crop-name");
     const modalWeight = document.getElementById("modal-weight");
     const modalDriverName = document.getElementById("modal-driver-name");
@@ -399,10 +413,53 @@
         }
     }
 
+    function updateNotificationBadge() {
+        if (!notificationBadgeEl || !currentUserId) return;
+        let channels = {};
+        try { channels = JSON.parse(localStorage.getItem("farmroute:notification-channels") || "{}"); } catch { channels = {}; }
+        const read = new Set(notificationReadState.read || []);
+        const dismissed = new Set(notificationReadState.dismissed || []);
+        let unread = 0;
+        if (channels.shipments !== false && ownListingSnapshot) {
+            ownListingSnapshot.forEach((productSnap) => {
+                const data = productSnap.data();
+                const status = data.status || "Searching";
+                const key = status === "Delivered"
+                    ? `shipment-${productSnap.id}-delivered`
+                    : status === "In Transit"
+                        ? `shipment-${productSnap.id}-in-transit`
+                        : `shipment-${productSnap.id}-searching`;
+                if (!read.has(key) && !dismissed.has(key)) unread++;
+            });
+        }
+        if (channels.messages !== false && chatNotificationSnapshot) {
+            chatNotificationSnapshot.forEach((roomSnap) => {
+                const data = roomSnap.data();
+                const counts = data.unreadCounts || data.unreadBy || data.unread || {};
+                if (Number(counts[currentUserId] || 0) > 0) {
+                    const key = `message-${roomSnap.id}`;
+                    if (!read.has(key) && !dismissed.has(key)) unread++;
+                }
+            });
+        }
+        notificationBadgeEl.textContent = unread > 99 ? "99+" : String(unread);
+        notificationBadgeEl.classList.toggle("hidden", unread === 0);
+        notificationBadgeEl.classList.toggle("flex", unread > 0);
+    }
+
+    window.addEventListener("storage", (event) => {
+        if (event.key === `farmroute:notifications:${currentUserId}` || event.key === "farmroute:notification-channels") {
+            try { notificationReadState = JSON.parse(localStorage.getItem(`farmroute:notifications:${currentUserId}`)) || { read: [], dismissed: [] }; } catch { notificationReadState = { read: [], dismissed: [] }; }
+            updateNotificationBadge();
+        }
+    });
+
     function listenForMessageNotifications(userId) {
         const chatsQuery = query(collection(db, "chats"), where("participants", "array-contains", userId));
         onSnapshot(chatsQuery, (snapshot) => {
+            chatNotificationSnapshot = snapshot;
             updateMessageBadge(getMessageNotificationCount(snapshot, userId));
+            updateNotificationBadge();
         }, (err) => {
             console.error("Message notification sync failed:", err);
             updateMessageBadge(0);
@@ -433,7 +490,8 @@
         modalOrderId.innerText = `#FR-${payload.orderId}`;
         modalPrice.innerText = `₦${payload.price}`;
         modalStatusBadge.innerText = payload.currentStatus;
-        modalEmoji.innerText = payload.productEmoji;
+        setModalImage(modalCargoImage, modalCargoFallback, payload.productImage);
+        setModalImage(modalDriverImage, modalDriverFallback, payload.driverImage);
         modalCropName.innerText = payload.cropName;
         modalWeight.innerText = `${payload.weight} ${payload.unit} total allocation`;
         modalDriverName.innerText = payload.driverName;
@@ -466,6 +524,25 @@
         }
 
         detailDrawer.classList.remove("hidden");
+    }
+
+    function setModalImage(imageEl, fallbackEl, source) {
+        if (!imageEl || !fallbackEl) return;
+        imageEl.onerror = () => {
+            imageEl.classList.add("hidden");
+            fallbackEl.classList.remove("hidden");
+        };
+        if (!source) {
+            imageEl.removeAttribute("src");
+            imageEl.classList.add("hidden");
+            fallbackEl.classList.remove("hidden");
+            return;
+        }
+        imageEl.onload = () => {
+            imageEl.classList.remove("hidden");
+            fallbackEl.classList.add("hidden");
+        };
+        imageEl.src = source;
     }
 
     function closeModalDrawer() {
@@ -578,6 +655,8 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
+    currentUserId = user.uid;
+    try { notificationReadState = JSON.parse(localStorage.getItem(`farmroute:notifications:${user.uid}`)) || { read: [], dismissed: [] }; } catch { notificationReadState = { read: [], dismissed: [] }; }
     nameEl.innerText = user.displayName || "FarmRoute User";
     hideLoading();
     listenForMessageNotifications(user.uid);
@@ -597,10 +676,12 @@ onAuthStateChanged(auth, async (user) => {
     const productsRef = collection(db, "products");
     const paymentsQuery = query(productsRef, where("farmerId", "==", user.uid));
 
-    // Cache driver names so we only fetch each driver once
+    // Cache driver names and profile images so each driver is fetched once.
     const driverCache = {};
 
     onSnapshot(paymentsQuery, async (snapshot) => {
+        ownListingSnapshot = snapshot;
+        updateNotificationBadge();
         if (!paymentsContainer) return;
 
         paymentsContainer.innerHTML = "";
@@ -612,7 +693,6 @@ onAuthStateChanged(auth, async (user) => {
                     No recorded ledger items found.
                 </p>
             `;
-            paymentsBadge.classList.add("hidden");
             return;
         }
 
@@ -644,12 +724,14 @@ onAuthStateChanged(auth, async (user) => {
             // Fetch Driver Name
             // -----------------------------
             let driverName = "Verified Transporter";
+            let driverImage = "";
 
             if (data.driverId) {
 
                 if (driverCache[data.driverId]) {
 
-                    driverName = driverCache[data.driverId];
+                    driverName = driverCache[data.driverId].name;
+                    driverImage = driverCache[data.driverId].image;
 
                 } else {
 
@@ -667,8 +749,8 @@ onAuthStateChanged(auth, async (user) => {
                                 driverData.fullName ||
                                 driverData.displayName ||
                                 "Verified Transporter";
-
-                            driverCache[data.driverId] = driverName;
+                            driverImage = driverData.profilePictureUrl || driverData.profilePictureURL || driverData.photoURL || driverData.avatarUrl || driverData.avatar || "";
+                            driverCache[data.driverId] = { name: driverName, image: driverImage };
 
                         }
 
@@ -722,7 +804,7 @@ onAuthStateChanged(auth, async (user) => {
                 descriptionText = "Cargo en route";
             }
 
-            const productEmoji = "📦";
+            const productImage = (Array.isArray(data.images) && data.images[0]) || data.imageUrl || data.photoURL || "";
 
             window.cachedPayments[id] = {
                 id,
@@ -735,7 +817,8 @@ onAuthStateChanged(auth, async (user) => {
                 driverName,
                 price,
                 currentStatus: rawStatus,
-                productEmoji,
+                productImage,
+                driverImage,
                 driverSubaccount
             };
 
@@ -780,6 +863,7 @@ onAuthStateChanged(auth, async (user) => {
         } else {
             paymentsBadge.classList.add("hidden");
         }
+
     });
 });
 
