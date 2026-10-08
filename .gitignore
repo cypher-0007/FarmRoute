@@ -2,6 +2,7 @@
 node_modules/
 functions/node_modules/
 .vercel/
+dist/
 
 # Secrets: keep every real environment file, key, certificate, and service account
 # out of Git. Commit only the redacted example files.

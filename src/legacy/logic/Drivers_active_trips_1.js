@@ -1,0 +1,403 @@
+import { auth, db } from "../../../backend/firebaseConfig.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { doc, getDoc, collection, query, where, onSnapshot, updateDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { createNotification } from "../../../backend/notificationService.js";
+
+export function initialize() {
+const LOGIN_PAGE_URL = "../login.html";
+
+    function showNoticeModal(message, title = "FarmRoute Notice", type = "error") {
+        const modal = document.createElement("div");
+        modal.className = "fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm";
+        modal.innerHTML = `
+            <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center shadow-xl">
+                <div class="w-14 h-14 rounded-full ${type === "error" ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"} mx-auto mb-4 flex items-center justify-center text-xl">
+                    <i class="fa-solid ${type === "error" ? "fa-circle-xmark" : "fa-circle-check"}"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">${title}</h3>
+                <p class="text-gray-500 text-sm mb-6 leading-relaxed"></p>
+                <button class="w-full py-3 px-4 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl font-semibold text-sm">Dismiss</button>
+            </div>`;
+        modal.querySelector("p").textContent = message;
+        modal.querySelector("button").addEventListener("click", () => modal.remove());
+        document.body.appendChild(modal);
+    }
+
+    const nameEl = document.getElementById("user-display-name");
+    const roleEl = document.getElementById("user-display-role");
+    const avatarEl = document.getElementById("user-avatar");
+    const tripsWrapper = document.getElementById("trips-wrapper");
+
+    let cachedTrips = [];
+
+    const fallbackImages = {
+        tomatoes: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=200",
+        pepper: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=200",
+        yam: "https://images.unsplash.com/photo-1603048297172-c92544798d5a?w=200",
+        maize: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=200",
+        default: "https://images.unsplash.com/photo-1595855759920-86582396756a?w=200"
+    };
+
+    const statusStyles = {
+        "Matched": "bg-green-50 text-green-700 border-green-200",
+        "In Transit": "bg-blue-50 text-blue-700 border-blue-200",
+        "Driver Delivered": "bg-amber-50 text-amber-700 border-amber-200 animate-pulse"
+    };
+
+    function normalizeStatus(status) {
+        return String(status || "").trim().toLowerCase();
+    }
+
+    function isActiveTrip(trip) {
+        return ["matched", "in transit", "driver delivered"].includes(normalizeStatus(trip.status));
+    }
+
+    function getProfileAvatar(profile) {
+        return profile?.profilePictureUrl || profile?.profilePictureURL || profile?.photoURL || profile?.avatarUrl || profile?.avatar || "";
+    }
+
+    function updateHeaderAvatar(src) {
+        if (!avatarEl || !src) return;
+        avatarEl.src = src;
+    }
+
+    const messageBadgeEl = document.getElementById("message-notification-badge");
+
+    function getMessageNotificationCount(snapshot, userId) {
+        let unreadTotal = 0;
+        let hasUnreadData = false;
+        snapshot.forEach((roomSnap) => {
+            const room = roomSnap.data();
+            if (room.unreadCounts || room.unreadBy || room.unread) hasUnreadData = true;
+            const countMap = room.unreadCounts || room.unreadBy || room.unread || {};
+            const count = Number(countMap[userId] || 0);
+            if (count > 0) unreadTotal += count;
+        });
+        return unreadTotal;
+    }
+
+    function updateMessageBadge(count) {
+        if (!messageBadgeEl) return;
+        if (count > 0) {
+            messageBadgeEl.textContent = count > 99 ? "99+" : String(count);
+            messageBadgeEl.classList.remove("hidden");
+        } else {
+            messageBadgeEl.classList.add("hidden");
+        }
+    }
+
+    function listenForMessageNotifications(userId) {
+        const chatsQuery = query(collection(db, "chats"), where("participants", "array-contains", userId));
+        onSnapshot(chatsQuery, (snapshot) => updateMessageBadge(getMessageNotificationCount(snapshot, userId)), () => updateMessageBadge(0));
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            window.location.href = LOGIN_PAGE_URL;
+            return;
+        }
+
+        nameEl.innerText = user.displayName || "Logistics Driver";
+        roleEl.innerText = "Driver";
+        updateHeaderAvatar(user.photoURL);
+        listenForMessageNotifications(user.uid);
+
+        try {
+            const userDocSnap = await getDoc(doc(db, "users", user.uid));
+            if (userDocSnap.exists()) {
+                const userData = userDocSnap.data();
+                if (userData.name) nameEl.innerText = userData.name;
+                if (userData.role) roleEl.innerText = userData.role;
+                updateHeaderAvatar(getProfileAvatar(userData) || user.photoURL);
+            }
+        } catch (err) {
+            console.error("Firestore user payload recovery failure:", err);
+        }
+
+        const activeTripStatuses = ["Matched", "In Transit", "Driver Delivered"];
+        const tripsById = new Map();
+        let tripListenerErrors = 0;
+
+        function refreshTripList() {
+            cachedTrips = Array.from(tripsById.values()).filter(isActiveTrip);
+            renderTrips();
+        }
+
+        activeTripStatuses.forEach((status) => {
+            const q = query(
+                collection(db, "products"),
+                where("driverId", "==", user.uid),
+                where("status", "==", status)
+            );
+
+            onSnapshot(q, (snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === "removed") {
+                        tripsById.delete(change.doc.id);
+                    } else {
+                        tripsById.set(change.doc.id, { id: change.doc.id, ...change.doc.data() });
+                    }
+                });
+                refreshTripList();
+            }, (error) => {
+                tripListenerErrors++;
+                console.error(`Trips synchronization failed for ${status}:`, error);
+                if (tripListenerErrors === activeTripStatuses.length) {
+                    tripsWrapper.innerHTML = `<div class="text-center py-6 text-red-500 text-sm">We could not load your trips. Please refresh and try again.</div>`;
+                }
+            });
+        });
+    });
+
+    function renderTrips() {
+        if (cachedTrips.length === 0) {
+            tripsWrapper.innerHTML = `
+                <div class="text-center py-16 text-gray-500">
+                    <i class="fa-solid fa-truck text-5xl mb-4 block text-gray-300"></i>
+                    <p class="font-medium text-base">No active trip plans assigned right now.</p>
+                    <p class="text-xs text-gray-400 mt-1">Accept open offers via the Available Loads marketplace window.</p>
+                </div>`;
+            return;
+        }
+
+        tripsWrapper.innerHTML = cachedTrips.map(trip => {
+            const name = trip.name || "Unknown Produce";
+            const imgKey = name.toLowerCase().trim();
+            const imageSrc = (trip.images && trip.images.length > 0) 
+                ? trip.images[0]
+                : (trip.imageUrl || fallbackImages[imgKey] || fallbackImages.default);
+
+            const totalPayout = Number(trip.totalValue || trip.price || 0);
+            
+            // Map the status style cleanly
+            let displayStatus = trip.status;
+            if (trip.status === "Driver Delivered") displayStatus = "Awaiting Escrow Release";
+            const statusClass = statusStyles[trip.status] || "bg-gray-100 text-gray-700 border-gray-200";
+
+            const routeFromClean = trip.routeFrom || trip.location || 'N/A';
+            const routeToClean = trip.routeTo || 'Lagos';
+            const pickup = trip.pickupPoint || 'Not Specified';
+            const dropoff = trip.dropoffPoint || 'Not Specified';
+
+            // Conditional buttons configuration states
+            let buttonText = "Start Transit";
+            let buttonColor = "bg-blue-600 hover:bg-blue-700";
+            let buttonDisabledAttr = "";
+
+            if (trip.status === "In Transit") {
+                buttonText = "Mark Delivered";
+                buttonColor = "bg-emerald-700 hover:bg-emerald-800";
+            } else if (trip.status === "Driver Delivered") {
+                buttonText = "Awaiting Verification";
+                buttonColor = "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed";
+                buttonDisabledAttr = "disabled";
+            }
+
+            return `
+                <div class="trip-card group flex flex-col py-5 px-3 hover:bg-gray-50/60 rounded-xl transition-all duration-200 cursor-pointer" data-id="${trip.id}">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 w-full">
+                        
+                        <div class="flex items-center gap-4 min-w-[220px]">
+                            <img src="${imageSrc}" class="w-14 h-14 rounded-xl object-cover shrink-0 border border-gray-200 shadow-xs" alt="${name}">
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <h3 class="font-semibold text-base text-gray-900 truncate group-hover:text-emerald-800 transition-colors">${name}</h3>
+                                    <i class="fa-solid fa-chevron-down text-[10px] text-gray-400 group-hover:text-emerald-600 transition-transform duration-200 chevron-icon"></i>
+                                </div>
+                                <p class="text-gray-500 text-xs mt-1 flex items-center gap-2">
+                                    <span class="font-semibold text-gray-800">${trip.quantity || 0} ${trip.unit || 'Bags'}</span>
+                                    <span class="text-gray-300">|</span>
+                                    <span class="text-gray-500">${trip.category || 'Produce'}</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="min-w-[160px] flex-1">
+                            <span class="block text-[10px] font-bold uppercase text-gray-400 tracking-wider mb-1">Route Path</span>
+                            <div class="flex items-center gap-2 text-gray-700 font-medium text-sm">
+                                <span class="truncate max-w-[120px]">${routeFromClean}</span>
+                                <i class="fa-solid fa-arrow-right text-[10px] text-gray-400"></i>
+                                <span class="truncate max-w-[120px]">${routeToClean}</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between lg:justify-end gap-8 w-full lg:w-auto pt-4 lg:pt-0 border-t lg:border-t-0 border-gray-100">
+                            <div class="text-left lg:text-right min-w-[110px]">
+                                <span class="block text-[10px] font-bold uppercase text-gray-400 tracking-wider mb-0.5">Guaranteed Payout</span>
+                                <h4 class="font-bold text-lg text-emerald-700 tracking-tight">
+                                    ₦${totalPayout.toLocaleString()}
+                                </h4>
+                                <span class="${statusClass} border px-2 py-0.2 rounded text-[10px] font-semibold mt-1 inline-flex items-center gap-1 uppercase tracking-wider">
+                                    <span class="w-1 h-1 rounded-full bg-current"></span> ${displayStatus}
+                                </span>
+                            </div>
+
+                            <div>
+                                <button data-id="${trip.id}" data-status="${trip.status}" ${buttonDisabledAttr} class="update-trip-btn text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition duration-200 shadow-sm whitespace-nowrap cursor-pointer ${buttonColor}">
+                                    ${buttonText}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="details-drawer hidden overflow-hidden mt-4 pt-4 border-t border-gray-100 transition-all duration-300">
+                        <div class="bg-gray-50/50 p-4 rounded-xl grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
+                            <div class="flex items-start gap-3 bg-white p-3 rounded-xl border border-gray-200/60 shadow-2xs">
+                                <div class="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100">
+                                    <i class="fa-solid fa-location-dot text-emerald-600"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Pickup Location</span>
+                                    <p class="font-medium text-gray-800 break-words">${pickup}</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-3 bg-white p-3 rounded-xl border border-gray-200/60 shadow-2xs">
+                                <div class="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100">
+                                    <i class="fa-solid fa-route text-blue-600"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Drop-off Destination</span>
+                                    <p class="font-medium text-gray-800 break-words">${dropoff}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join("");
+
+        // Setup Accordion Toggles
+        document.querySelectorAll(".trip-card").forEach(card => {
+            card.addEventListener("click", (e) => {
+                if (e.target.closest('.update-trip-btn') || e.target.closest('.details-drawer')) return;
+
+                const drawer = card.querySelector(".details-drawer");
+                const chevron = card.querySelector(".chevron-icon");
+                
+                if (drawer.classList.contains("hidden")) {
+                    drawer.classList.remove("hidden");
+                    chevron.classList.add("rotate-180");
+                } else {
+                    drawer.classList.add("hidden");
+                    chevron.classList.remove("rotate-180");
+                }
+            });
+        });
+
+        // Status Management Loop Click Binding
+        document.querySelectorAll(".update-trip-btn").forEach(button => {
+            button.addEventListener("click", (e) => {
+                e.stopPropagation(); // Stop details drawer card toggle firing
+                const tripId = e.target.getAttribute("data-id");
+                const currentStatus = e.target.getAttribute("data-status");
+                handleUpdateTrip(tripId, currentStatus);
+            });
+        });
+    }
+
+    async function handleUpdateTrip(tripId, currentStatus) {
+        let tripUpdated = false;
+        let nextStatus = "";
+        if (currentStatus === "Matched") {
+            nextStatus = "In Transit";
+        } else if (currentStatus === "In Transit") {
+            nextStatus = "Driver Delivered"; // Intercepted: changes to intermediate status instead of final delivered status
+        }
+
+        if (!nextStatus) return;
+
+        try {
+            const tripRef = doc(db, "products", tripId);
+            const tripSnap = await getDoc(tripRef);
+            const tripData = tripSnap.exists() ? tripSnap.data() : {};
+            const currentUser = auth.currentUser;
+            const paymentStatus = nextStatus === "Driver Delivered" ? "awaiting" : "escrow";
+
+            await updateDoc(tripRef, {
+                status: nextStatus,
+                paymentStatus,
+                updatedAt: serverTimestamp(),
+                ...(nextStatus === "In Transit" ? { inTransitAt: serverTimestamp() } : {}),
+                ...(nextStatus === "Driver Delivered" ? { driverDeliveredAt: serverTimestamp() } : {})
+            });
+            tripUpdated = true;
+
+            if (currentUser) {
+                const listingCode = `FR-${tripId.slice(0, 8).toUpperCase()}`;
+                const isDeliveredToHub = nextStatus === "Driver Delivered";
+                const actionText = isDeliveredToHub ? "has arrived at the delivery hub" : "is now in transit";
+                const driverBody = isDeliveredToHub
+                    ? `${tripData.name || "Your delivery"} reached the delivery hub. The farmer will review it and release escrow.`
+                    : `${tripData.name || "Your delivery"} is on the way from ${tripData.routeFrom || tripData.location || "pickup"} to ${tripData.routeTo || tripData.destination || "the destination"}.`;
+                const farmerBody = isDeliveredToHub
+                    ? `${tripData.name || "Your listing"} (${listingCode}) arrived at the delivery hub. Review the delivery to authorize escrow release.`
+                    : `The driver started delivery for ${tripData.name || "your listing"} (${listingCode}); it is now in transit.`;
+                await Promise.all([
+                    createNotification(db, currentUser.uid, {
+                        recipientRole: "driver",
+                        type: isDeliveredToHub ? "payment" : "shipment",
+                        title: `${tripData.name || "Your trip"} ${actionText}`,
+                        body: driverBody,
+                        href: isDeliveredToHub ? "payments.html" : "active_trips.html",
+                        relatedId: listingCode
+                    }),
+                    createNotification(db, tripData.farmerId || tripData.userId, {
+                        recipientRole: "farmer",
+                        type: isDeliveredToHub ? "payment" : "shipment",
+                        title: isDeliveredToHub ? `Delivery ${listingCode} is awaiting your review` : `Listing ${listingCode} is in transit`,
+                        body: farmerBody,
+                        href: isDeliveredToHub ? "payment.html" : "listings.html",
+                        relatedId: listingCode
+                    })
+                ]);
+            }
+
+            if (currentUser) {
+                await setDoc(doc(db, "payments", tripId), {
+                    loadId: tripId,
+                    productId: tripId,
+                    driverId: currentUser.uid,
+                    farmerId: tripData.farmerId || tripData.userId || "",
+                    productName: tripData.name || tripData.productName || "Produce Load",
+                    routeFrom: tripData.routeFrom || tripData.location || tripData.pickupPoint || "Pickup",
+                    routeTo: tripData.routeTo || tripData.destination || tripData.dropoffPoint || "Delivery",
+                    amount: Number(tripData.totalValue || tripData.price || 0),
+                    status: paymentStatus,
+                    paymentStatus,
+                    reference: tripData.escrowPaymentRef || tripData.paymentGatewayRef || `FR-${tripId.slice(0, 8).toUpperCase()}`,
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
+            }
+        } catch (error) {
+            console.error("Firestore progress updates structural exception caught: ", error);
+
+            // The listing update is the trip-state change. A failed payment ledger sync
+            // must not present a false failure after the status has already changed.
+            if (tripUpdated) {
+                console.warn("Trip state updated, but payment ledger sync failed:", error);
+                return;
+            }
+
+            showNoticeModal("Could not update trip state. Check network connectivity.");
+        }
+    }
+
+    const sideBtn = document.getElementById("side-btn");
+    const closeSideBtn = document.getElementById("closeside-btn");
+    const sideBar = document.getElementById("side-bar");
+
+    if (sideBtn && sideBar) {
+        sideBtn.addEventListener("click", () => sideBar.classList.remove("max-md:hidden"));
+    }
+    if (closeSideBtn && sideBar) {
+        closeSideBtn.addEventListener("click", () => sideBar.classList.add("max-md:hidden"));
+    }
+
+    document.getElementById("logout-btn")?.addEventListener("click", () => {
+        signOut(auth)
+            .then(() => { window.location.href = LOGIN_PAGE_URL; })
+            .catch((err) => console.error(err));
+    });
+  return {};
+}
